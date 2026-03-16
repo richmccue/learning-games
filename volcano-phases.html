@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volcano Eruption Phases</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,600;1,8..60,300&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #0a0604;
+  --panel: rgba(20,12,6,0.9);
+  --gold: #c8922a;
+  --ember: #ff5500;
+  --lava-hot: #ff7b00;
+  --lava-glow: #ffb347;
+  --ash: #7a6655;
+  --text: #e2cfb8;
+  --muted: #7a6248;
+  --border: rgba(200,146,42,0.2);
+}
+
+body {
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Source Serif 4', serif;
+  color: var(--text);
+  overflow-x: hidden;
+  padding: 16px 12px 24px;
+}
+
+/* ─── HEADER ─── */
+.header {
+  text-align: center;
+  margin-bottom: 14px;
+}
+.header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 3.5vw, 2rem);
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  text-shadow: 0 0 40px rgba(200,146,42,0.5);
+  font-weight: 700;
+}
+.header p {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+}
+
+/* ─── MAIN LAYOUT ─── */
+.layout {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 1000px;
+  align-items: flex-start;
+}
+
+/* ─── VOLCANO CANVAS PANEL ─── */
+.volcano-panel {
+  flex: 1 1 520px;
+  min-width: 0;
+  position: relative;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 60px rgba(255,85,0,0.08);
+}
+
+/* ─── PHASE PANEL ─── */
+.phase-panel {
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phase-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 14px 12px;
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+.phase-card.active {
+  border-color: var(--ember);
+  box-shadow: 0 0 22px rgba(255,85,0,0.18), inset 0 0 12px rgba(255,85,0,0.05);
+}
+.phase-card .phase-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.phase-card.active .phase-num { color: var(--ember); }
+.phase-card .phase-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+.phase-card.active .phase-name { color: var(--lava-glow); }
+.phase-card .phase-desc {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.5;
+  font-style: italic;
+}
+.phase-card.active .phase-desc { color: #b8a088; }
+
+/* Activity bar */
+.activity-bar {
+  display: flex;
+  gap: 3px;
+  margin-top: 8px;
+}
+.activity-bar span {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.07);
+  transition: background 0.4s;
+}
+.phase-card.active .activity-bar span.lit { background: var(--ember); }
+
+/* ─── SLIDER SECTION ─── */
+.slider-section {
+  width: 100%;
+  margin-top: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 24px 16px;
+}
+
+.slider-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.slider-label {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.phase-indicator {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.88rem;
+  color: var(--gold);
+  font-style: italic;
+  transition: color 0.3s;
+}
+
+/* Phase tick marks */
+.tick-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  padding: 0 2px;
+}
+.tick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  flex: 1;
+  transition: opacity 0.2s;
+}
+.tick:hover { opacity: 0.8; }
+.tick-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--muted);
+  background: transparent;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.tick.active .tick-dot {
+  background: var(--ember);
+  border-color: var(--lava-glow);
+  box-shadow: 0 0 10px var(--ember);
+}
+.tick-label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-align: center;
+  max-width: 60px;
+  line-height: 1.3;
+  font-style: italic;
+}
+.tick.active .tick-label { color: var(--lava-glow); }
+
+/* Slider */
+.slider-wrap {
+  position: relative;
+  margin: 4px 0 6px;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(to right,
+    var(--ember) 0%,
+    var(--ember) var(--fill),
+    rgba(255,255,255,0.08) var(--fill),
+    rgba(255,255,255,0.08) 100%
+  );
+  --fill: 0%;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ffb347, #ff5500);
+  border: 2px solid #ffb347;
+  box-shadow: 0 0 16px rgba(255,100,0,0.7);
+  cursor: grab;
+  transition: box-shadow 0.2s;
+}
+input[type=range]:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  box-shadow: 0 0 28px rgba(255,130,0,0.9);
+}
+input[type=range]::-moz-range-thumb {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ffb347, #ff5500);
+  border: 2px solid #ffb347;
+  box-shadow: 0 0 16px rgba(255,100,0,0.7);
+  cursor: grab;
+}
+
+/* Play button */
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.play-btn {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  padding: 7px 20px;
+  border: 1px solid rgba(200,146,42,0.4);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+.play-btn:hover { background: rgba(200,146,42,0.1); border-color: var(--gold); }
+.play-btn.playing { color: var(--ember); border-color: var(--ember); background: rgba(255,85,0,0.08); }
+
+.hint-text {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Label tooltip on canvas */
+.canvas-tooltip {
+  position: absolute;
+  background: rgba(10,6,3,0.93);
+  border: 1px solid rgba(200,146,42,0.35);
+  border-radius: 5px;
+  padding: 7px 11px;
+  font-size: 0.76rem;
+  color: #c8b090;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 180px;
+  line-height: 1.45;
+  z-index: 10;
+}
+.canvas-tooltip strong {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  color: var(--lava-glow);
+  font-size: 0.78rem;
+  margin-bottom: 3px;
+}
+.canvas-tooltip.show { opacity: 1; }
+
+@media (max-width: 680px) {
+  .layout { flex-direction: column; }
+  .phase-panel { flex-direction: row; flex-wrap: wrap; flex: none; width: 100%; }
+  .phase-card { flex: 1 1 calc(50% - 5px); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Anatomy of a Volcanic Eruption</h1>
+  <p>Drag the slider or press Play to journey through all five phases</p>
+</div>
+
+<div class="layout">
+  <!-- VOLCANO CANVAS + SLIDER -->
+  <div class="volcano-panel">
+    <canvas id="vc" width="560" height="500"></canvas>
+    <div class="canvas-tooltip" id="ctt"><strong id="cttTitle"></strong><span id="cttDesc"></span></div>
+
+    <!-- SLIDER -->
+    <div class="slider-section">
+      <div class="slider-top">
+        <span class="slider-label">Eruption Phase</span>
+        <span class="phase-indicator" id="phaseIndicator">Phase 1 — Quiescence</span>
+      </div>
+      <div class="tick-row" id="tickRow"></div>
+      <div class="slider-wrap">
+        <input type="range" id="phaseSlider" min="0" max="400" value="0" step="1">
+      </div>
+      <div class="controls-row">
+        <button class="play-btn" id="playBtn">▶ Auto-Play</button>
+        <span class="hint-text">Slide manually or auto-play the full eruption sequence</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE CARDS -->
+  <div class="phase-panel" id="phasePanel">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// PHASE DEFINITIONS
+// ─────────────────────────────────────────
+const PHASES = [
+  {
+    id: 0, name: "Quiescence", short: "Dormant",
+    range: [0, 80],
+    activity: 1,
+    desc: "The volcano is sleeping. Molten rock is slowly building up deep underground, but nothing is happening at the surface. It could stay this way for decades — or longer.",
+    labels: [
+      { x: 0.5, y: 0.22, name: "Summit Crater", desc: "The opening at the top is blocked by cooled, hardened lava from past eruptions. No gas or ash is coming out right now." },
+      { x: 0.5, y: 0.72, name: "Magma Chamber", desc: "A big pocket of melted rock sits deep underground. It's slowly filling up, but pressure is still low — like a bottle that's barely been squeezed." },
+      { x: 0.15, y: 0.52, name: "Stable Flanks", desc: "The sides of the volcano aren't moving or cracking. There are no earthquakes, and the ground looks completely normal." },
+    ]
+  },
+  {
+    id: 1, name: "Unrest & Inflation", short: "Unrest",
+    range: [80, 160],
+    activity: 2,
+    desc: "The volcano is waking up. New melted rock is pushing up from deep below, causing small earthquakes and making the mountain swell slightly — like a balloon slowly being inflated.",
+    labels: [
+      { x: 0.5, y: 0.18, name: "Fumaroles", desc: "Cracks near the top start releasing steam and gases. This happens because the rising heat is cooking underground water and rock." },
+      { x: 0.5, y: 0.68, name: "Inflating Chamber", desc: "Fresh molten rock is being pushed into the underground chamber, stretching the rock around it. The whole mountaintop actually rises a little bit." },
+      { x: 0.2, y: 0.58, name: "Seismic Swarm", desc: "Hundreds of tiny earthquakes happen as molten rock forces its way through cracks in the rock. Scientists can track exactly where the magma is moving." },
+      { x: 0.5, y: 0.82, name: "Magma Intrusion", desc: "Super-hot molten rock rises from deep below and mixes into the existing underground chamber, heating everything up and increasing pressure." },
+    ]
+  },
+  {
+    id: 2, name: "Phreatic Explosions", short: "Phreatic",
+    range: [160, 240],
+    activity: 3,
+    desc: "The rising heat turns underground water into steam so fast that it explodes — like opening a pressure cooker. These blasts throw out ash and old rocks, but no fresh lava yet.",
+    labels: [
+      { x: 0.5, y: 0.08, name: "Steam Column", desc: "A huge blast of steam shoots upward, carrying chunks of old rock high into the air. This can happen with almost no warning." },
+      { x: 0.5, y: 0.22, name: "Crater Blowout", desc: "The explosion blows the hardened lava plug out of the top, opening up the vent so that magma can eventually reach the surface." },
+      { x: 0.38, y: 0.38, name: "Ash Fall", desc: "Crushed-up rock falls back down like grey snow. This is old rock — not fresh lava — because the melted rock hasn't made it to the surface yet." },
+      { x: 0.5, y: 0.62, name: "Hydrothermal Zone", desc: "Underground water gets superheated by the rising magma below it. When water turns to steam instantly, it expands so fast it causes an explosion." },
+    ]
+  },
+  {
+    id: 3, name: "Magmatic Eruption", short: "Eruption",
+    range: [240, 340],
+    activity: 5,
+    desc: "Fresh molten rock reaches the surface — this is a full eruption! Rivers of lava pour out, jets of lava spray into the sky, and a massive cloud of ash rises high above the volcano.",
+    labels: [
+      { x: 0.5, y: 0.04, name: "Eruption Column", desc: "A giant column of ash and gas blasts upward, sometimes reaching higher than commercial planes fly. Ash can drift thousands of kilometres downwind." },
+      { x: 0.28, y: 0.12, name: "Lava Bombs", desc: "Globs of molten rock get thrown into the air like a catapult. They spin and cool as they fly, landing as solid rock chunks sometimes far from the volcano." },
+      { x: 0.5, y: 0.25, name: "Lava Fountain", desc: "Gas trapped in the molten rock escapes explosively, shooting streams of glowing lava up to 500 metres into the air — taller than the CN Tower." },
+      { x: 0.18, y: 0.48, name: "Pyroclastic Flow", desc: "A fast-moving avalanche of hot gas, ash, and rock fragments rushes down the slope. It can travel faster than a car on a highway and is extremely dangerous." },
+      { x: 0.5, y: 0.66, name: "Draining Chamber", desc: "Magma is rushing out so fast that the underground chamber starts to empty. If too much drains out, the ground above can collapse inward, forming a crater called a caldera." },
+    ]
+  },
+  {
+    id: 4, name: "Waning & Repose", short: "Waning",
+    range: [340, 400],
+    activity: 2,
+    desc: "The eruption is winding down. Lava slows to a trickle, the ash cloud shrinks, and the volcano starts to cool off. A thick layer of ash now covers the surrounding land.",
+    labels: [
+      { x: 0.5, y: 0.14, name: "Residual Plume", desc: "A weak wisp of ash and gas still drifts from the top, but the worst is over. Scientists lower the alert level as activity drops." },
+      { x: 0.18, y: 0.5, name: "Cooling Lava Flow", desc: "The outer surface of the lava hardens into a dark crust, but the inside stays hot and keeps slowly moving for days or even weeks." },
+      { x: 0.5, y: 0.64, name: "Depleted Chamber", desc: "A lot of the molten rock has been emptied out. It will take years or even decades for the chamber to slowly refill from deep below." },
+      { x: 0.72, y: 0.44, name: "Tephra Deposit", desc: "A thick blanket of ash covers the land around the volcano. Over time, this ash breaks down and actually makes the soil very fertile for growing crops." },
+    ]
+  }
+];
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let sliderVal = 0;     // 0–400
+let playing = false;
+let playRaf = null;
+let playSpeed = 0.6;
+let hoverLabel = null;
+
+const canvas = document.getElementById('vc');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const slider = document.getElementById('phaseSlider');
+const phaseIndicator = document.getElementById('phaseIndicator');
+const playBtn = document.getElementById('playBtn');
+const ctt = document.getElementById('ctt');
+const cttTitle = document.getElementById('cttTitle');
+const cttDesc = document.getElementById('cttDesc');
+
+// ─────────────────────────────────────────
+// PHASE CARDS
+// ─────────────────────────────────────────
+function buildPhaseCards() {
+  const panel = document.getElementById('phasePanel');
+  panel.innerHTML = '';
+  PHASES.forEach((ph, i) => {
+    const card = document.createElement('div');
+    card.className = 'phase-card';
+    card.id = 'card' + i;
+    const bars = Array.from({length:5}, (_,j) =>
+      `<span class="${j < ph.activity ? 'lit' : ''}"></span>`).join('');
+    card.innerHTML = `
+      <div class="phase-num">Phase ${i+1}</div>
+      <div class="phase-name">${ph.name}</div>
+      <div class="phase-desc">${ph.desc}</div>
+      <div class="activity-bar">${bars}</div>`;
+    card.addEventListener('click', () => {
+      sliderVal = ph.range[0];
+      slider.value = sliderVal;
+      updateAll();
+    });
+    panel.appendChild(card);
+  });
+}
+
+function buildTicks() {
+  const row = document.getElementById('tickRow');
+  row.innerHTML = '';
+  PHASES.forEach((ph, i) => {
+    const t = document.createElement('div');
+    t.className = 'tick';
+    t.id = 'tick' + i;
+    t.innerHTML = `<div class="tick-dot"></div><div class="tick-label">${ph.short}</div>`;
+    t.addEventListener('click', () => {
+      sliderVal = ph.range[0];
+      slider.value = sliderVal;
+      updateAll();
+    });
+    row.appendChild(t);
+  });
+}
+
+// ─────────────────────────────────────────
+// WHICH PHASE IS ACTIVE
+// ─────────────────────────────────────────
+function getPhase(val) {
+  for (let i = PHASES.length-1; i >= 0; i--) {
+    if (val >= PHASES[i].range[0]) return i;
+  }
+  return 0;
+}
+
+function getLocalT(val) {
+  const ph = PHASES[getPhase(val)];
+  const span = ph.range[1] - ph.range[0];
+  return Math.min(1, (val - ph.range[0]) / span);
+}
+
+// ─────────────────────────────────────────
+// UPDATE UI
+// ─────────────────────────────────────────
+function updateAll() {
+  const phIdx = getPhase(sliderVal);
+  const ph = PHASES[phIdx];
+  // fill
+  const pct = (sliderVal / 400 * 100).toFixed(1);
+  slider.style.setProperty('--fill', pct + '%');
+
+  // cards
+  PHASES.forEach((p, i) => {
+    document.getElementById('card'+i).classList.toggle('active', i === phIdx);
+    document.getElementById('tick'+i).classList.toggle('active', i === phIdx);
+  });
+
+  phaseIndicator.textContent = `Phase ${phIdx+1} — ${ph.name}`;
+  drawVolcano(sliderVal);
+}
+
+// ─────────────────────────────────────────
+// DRAWING ENGINE
+// ─────────────────────────────────────────
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function easeIn(t) { return t * t; }
+function easeOut(t) { return 1 - (1-t)*(1-t); }
+function easeInOut(t) { return t < 0.5 ? 2*t*t : 1-2*(1-t)*(1-t); }
+
+// Particle systems
+let particles = [];
+let lavaParticles = [];
+let pyroclasticParticles = [];
+let frame = 0;
+
+function spawnParticle(x, y, vx, vy, life, size, color, type='smoke') {
+  particles.push({x, y, vx, vy, life, maxLife:life, size, color, type});
+}
+
+function spawnLavaBomb(x, y, angle, speed, size) {
+  lavaParticles.push({
+    x, y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    life: 90, maxLife: 90,
+    size, trail: []
+  });
+}
+
+function spawnPyroFlow(side) {
+  pyroclasticParticles.push({
+    x: W*0.5 + (side > 0 ? 22 : -22),
+    y: H * 0.29,
+    vx: side * (1.8 + Math.random()),
+    vy: 0.4 + Math.random() * 0.3,
+    life: 80, maxLife: 80,
+    size: 10 + Math.random()*8,
+    side
+  });
+}
+
+function drawVolcano(val) {
+  ctx.clearRect(0, 0, W, H);
+  frame++;
+
+  const phIdx = getPhase(val);
+  const t = getLocalT(val);
+  // global progress 0–1
+  const gt = val / 400;
+
+  // ── SKY ──
+  const skyColors = [
+    ['#0d0603','#1a0a00'],   // 0 dormant
+    ['#0f0804','#1e0d03'],   // 1 unrest
+    ['#150c04','#260f04'],   // 2 phreatic
+    ['#1a0800','#2e0e00'],   // 3 eruption
+    ['#110804','#1e0c03'],   // 4 waning
+  ];
+  const skyGrad = ctx.createLinearGradient(0,0,0,H*0.55);
+  const sc = skyColors[phIdx];
+  skyGrad.addColorStop(0, sc[0]);
+  skyGrad.addColorStop(1, sc[1]);
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars (fade out during eruption)
+  const starOpacity = phIdx < 2 ? 0.5 : phIdx === 4 ? lerp(0.1, 0.45, t) : 0.05;
+  ctx.save(); ctx.globalAlpha = starOpacity;
+  [[40,22],[100,45],[180,18],[420,30],[530,14],[610,40]].forEach(([sx,sy]) => {
+    ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI*2);
+    ctx.fillStyle = '#ffe8c0'; ctx.fill();
+  });
+  ctx.restore();
+
+  // ── ERUPTION COLUMN (phase 2-3) ──
+  if (phIdx >= 2) {
+    const colH = phIdx === 2 ? lerp(0, 60, t) :
+                 phIdx === 3 ? lerp(60, 200, t) :
+                               lerp(200, 40, t);
+    const colW = phIdx === 3 ? lerp(30, 90, t) : 30;
+    const cx = W * 0.5;
+    const cy = H * 0.26;
+
+    // Column body
+    for (let seg = 0; seg < colH; seg += 12) {
+      const segT = seg / colH;
+      const segW = colW * (1 + segT * 1.4);
+      const alpha = lerp(0.55, 0, segT);
+      const gray = phIdx === 3 ? lerp(80, 140, segT) : lerp(100, 160, segT);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const g = ctx.createRadialGradient(cx, cy-seg, 0, cx, cy-seg, segW);
+      g.addColorStop(0, `rgb(${gray},${gray-10},${gray-20})`);
+      g.addColorStop(1, `rgba(${gray},${gray-10},${gray-20},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(cx, cy-seg, segW, segW*0.5, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // ── LAVA FOUNTAIN (phase 3) ──
+  if (phIdx === 3) {
+    const fH = lerp(0, 70, Math.min(1, t*2));
+    const fcx = W*0.5, fcy = H*0.26;
+    // Fountain streaks
+    for (let i = 0; i < 8; i++) {
+      const ang = -Math.PI*0.5 + (Math.random()-0.5)*0.6;
+      const spd = fH * (0.6 + Math.random()*0.5);
+      const ex = fcx + Math.cos(ang)*spd*0.5;
+      const ey = fcy + Math.sin(ang)*spd;
+      const alpha = 0.5 + Math.sin(frame*0.2 + i)*0.2;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = i%3===0 ? '#ffaa00' : i%3===1 ? '#ff6600' : '#ff3300';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(fcx, fcy); ctx.lineTo(ex, ey);
+      ctx.stroke();
+      // tip glow
+      const tg = ctx.createRadialGradient(ex,ey,0,ex,ey,6);
+      tg.addColorStop(0,'rgba(255,200,80,0.8)');
+      tg.addColorStop(1,'rgba(255,100,0,0)');
+      ctx.fillStyle = tg; ctx.beginPath(); ctx.arc(ex,ey,6,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // ── GROUND CROSS-SECTION ──
+  const groundY = H * 0.52;
+
+  // Ground gradient
+  const gGrad = ctx.createLinearGradient(0, groundY, 0, H);
+  gGrad.addColorStop(0, '#3a2818');
+  gGrad.addColorStop(0.3, '#2a1e14');
+  gGrad.addColorStop(1, '#18100a');
+  ctx.fillStyle = gGrad;
+  ctx.fillRect(0, groundY, W, H - groundY);
+
+  // Rock texture lines
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  ctx.strokeStyle = '#c8a070';
+  ctx.lineWidth = 0.5;
+  [0.6,0.72,0.85].forEach(fy => {
+    ctx.beginPath(); ctx.moveTo(0, H*fy); ctx.lineTo(W, H*fy);
+    ctx.setLineDash([4,12]); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // ── VOLCANO CONE ──
+  const coneApex = { x: W*0.5, y: H*0.215 };
+  const coneBaseL = { x: W*0.19, y: groundY };
+  const coneBaseR = { x: W*0.81, y: groundY };
+
+  // Ash layer (phase 3-4 deposit right side)
+  if (phIdx >= 3) {
+    const ashDepth = phIdx === 3 ? lerp(0, 12, t) : lerp(12, 20, t);
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = '#5a4535';
+    ctx.beginPath();
+    ctx.moveTo(coneBaseR.x, groundY);
+    ctx.quadraticCurveTo(W*0.68, groundY - ashDepth*0.3, W*0.95, groundY - ashDepth);
+    ctx.lineTo(W, groundY - ashDepth); ctx.lineTo(W, groundY);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  // Cone body
+  const coneGrad = ctx.createLinearGradient(coneApex.x - 20, coneApex.y, coneBaseR.x, groundY);
+  coneGrad.addColorStop(0, '#4a3020');
+  coneGrad.addColorStop(0.5, '#3a2418');
+  coneGrad.addColorStop(1, '#2a1810');
+  ctx.beginPath();
+  ctx.moveTo(coneApex.x, coneApex.y);
+  ctx.lineTo(coneBaseR.x, groundY);
+  ctx.lineTo(coneBaseL.x, groundY);
+  ctx.closePath();
+  ctx.fillStyle = coneGrad;
+  ctx.fill();
+
+  // Cone shadow (left)
+  const shadowGrad = ctx.createLinearGradient(coneApex.x, coneApex.y, coneBaseL.x, groundY);
+  shadowGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  shadowGrad.addColorStop(1, 'rgba(0,0,0,0.35)');
+  ctx.beginPath();
+  ctx.moveTo(coneApex.x, coneApex.y);
+  ctx.lineTo(coneBaseL.x, groundY);
+  ctx.lineTo(coneApex.x, groundY);
+  ctx.closePath();
+  ctx.fillStyle = shadowGrad;
+  ctx.fill();
+
+  // Tephra bands visible in cross-section
+  [0.3, 0.55, 0.75].forEach((bandT, bi) => {
+    ctx.save(); ctx.globalAlpha = 0.18 + bi*0.06;
+    ctx.strokeStyle = bi % 2 === 0 ? '#7a5535' : '#5a3520';
+    ctx.lineWidth = bi === 1 ? 2 : 1;
+    const bY = lerp(coneApex.y, groundY, bandT);
+    const bW = lerp(5, (coneBaseR.x - coneBaseL.x) * 0.5, bandT);
+    ctx.beginPath();
+    ctx.moveTo(W*0.5 - bW, bY);
+    ctx.lineTo(W*0.5 + bW, bY);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // ── LAVA FLOWS (phase 3-4) ──
+  if (phIdx >= 3) {
+    const flowProgress = phIdx === 3 ? lerp(0, 0.8, t) : lerp(0.8, 1, t);
+    const flowAlpha = phIdx === 4 ? lerp(0.75, 0.35, t) : 0.75;
+
+    // Left flow
+    ctx.save(); ctx.globalAlpha = flowAlpha;
+    ctx.strokeStyle = '#ff4400'; ctx.lineWidth = 9; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(coneBaseL.x, groundY);
+    ctx.quadraticCurveTo(
+      lerp(coneBaseL.x, W*0.03, flowProgress * 0.5),
+      groundY + lerp(0, 10, flowProgress),
+      lerp(coneBaseL.x, W*0.03, flowProgress),
+      groundY + lerp(0, 16, flowProgress)
+    );
+    ctx.stroke();
+    ctx.strokeStyle = '#ffaa00'; ctx.lineWidth = 4; ctx.globalAlpha = flowAlpha * 0.5;
+    ctx.beginPath();
+    ctx.moveTo(coneBaseL.x, groundY);
+    ctx.quadraticCurveTo(
+      lerp(coneBaseL.x, W*0.03, flowProgress * 0.5), groundY + lerp(0,8,flowProgress),
+      lerp(coneBaseL.x, W*0.03, flowProgress), groundY + lerp(0,14,flowProgress)
+    );
+    ctx.stroke();
+    // Cooled crust overlay
+    if (phIdx === 4) {
+      ctx.strokeStyle = '#2a1408'; ctx.lineWidth = 3; ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(coneBaseL.x, groundY - 2);
+      ctx.quadraticCurveTo(W*0.1, groundY+5, W*0.03, groundY+14);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Right flow
+    ctx.save(); ctx.globalAlpha = flowAlpha * 0.7;
+    ctx.strokeStyle = '#ff5500'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(coneBaseR.x, groundY);
+    ctx.quadraticCurveTo(
+      lerp(coneBaseR.x, W*0.97, flowProgress * 0.5), groundY + lerp(0,8,flowProgress),
+      lerp(coneBaseR.x, W*0.97, flowProgress), groundY + lerp(0,14,flowProgress)
+    );
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ── PYROCLASTIC FLOW (peak of phase 3) ──
+  if (phIdx === 3 && t > 0.55) {
+    const pyT = (t - 0.55) / 0.45;
+    ctx.save();
+    // Dense flow body
+    ctx.globalAlpha = 0.55 * pyT;
+    const pyGrad = ctx.createLinearGradient(coneBaseL.x, groundY, W*0.0, groundY+30);
+    pyGrad.addColorStop(0, 'rgba(180,100,40,0.9)');
+    pyGrad.addColorStop(1, 'rgba(80,40,15,0)');
+    ctx.fillStyle = pyGrad;
+    ctx.beginPath();
+    ctx.moveTo(coneBaseL.x, groundY);
+    ctx.quadraticCurveTo(W*0.08, groundY+20, lerp(coneBaseL.x, W*0.0, pyT), groundY+lerp(0,40,pyT));
+    ctx.lineTo(lerp(coneBaseL.x, W*0.0, pyT), groundY+4);
+    ctx.quadraticCurveTo(W*0.08, groundY+8, coneBaseL.x, groundY-4);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  // ── MAGMA CHAMBERS ──
+  // glow intensity per phase
+  const chamberGlow = [0.65, 0.78, 0.85, 1.0, 0.6][phIdx];
+  const chamberPulse = phIdx >= 1 && phIdx <= 3
+    ? chamberGlow + Math.sin(frame * (phIdx===3?0.18:0.1)) * 0.12
+    : chamberGlow;
+
+  // Deep reservoir
+  drawEllipse(W*0.5, H*0.97, W*0.28, H*0.045,
+    [[0,'#882000'],[0.5,'#aa2800'],[1,'#661800']],
+    chamberPulse * 0.5, true);
+
+  // Secondary chamber
+  drawEllipse(W*0.5, H*0.84, W*0.14, H*0.065,
+    [[0,'#cc3800'],[0.55,'#ee5000'],[1,'#aa2a00']],
+    chamberPulse * 0.72, true);
+
+  // Main chamber — partially drained in phase 3-4
+  const chamberDrain = phIdx === 3 ? lerp(0, 0.35, t) : phIdx === 4 ? lerp(0.35, 0.5, t) : 0;
+  const chamberRY = H * 0.11 * (1 - chamberDrain * 0.4);
+  drawEllipse(W*0.5, H*0.725 + chamberDrain*H*0.025, W*0.2, chamberRY,
+    [[0,'#ff5500'],[0.4,'#ff3800'],[0.8,'#cc2200'],[1,'#882000']],
+    chamberPulse, true);
+
+  // ── CONDUIT ──
+  const conduitGlow = [0.55, 0.65, 0.75, 1.0, 0.6][phIdx];
+  const conduitPulse = phIdx >= 1
+    ? conduitGlow + Math.sin(frame * 0.15) * 0.15
+    : conduitGlow;
+
+  // Conduit walls
+  ctx.fillStyle = '#1a0e08';
+  ctx.beginPath();
+  ctx.moveTo(W*0.5 - 22, H*0.74);
+  ctx.lineTo(W*0.5 - 10, H*0.26);
+  ctx.lineTo(W*0.5 + 10, H*0.26);
+  ctx.lineTo(W*0.5 + 22, H*0.74);
+  ctx.closePath(); ctx.fill();
+
+  // Lava inside conduit
+  const lavaGrad = ctx.createLinearGradient(W*0.5, H*0.74, W*0.5, H*0.26);
+  lavaGrad.addColorStop(0, `rgba(255,60,0,${conduitPulse})`);
+  lavaGrad.addColorStop(0.6, `rgba(255,100,0,${conduitPulse * 0.8})`);
+  lavaGrad.addColorStop(1, `rgba(255,150,30,${conduitPulse * 0.6})`);
+  ctx.fillStyle = lavaGrad;
+  ctx.beginPath();
+  ctx.moveTo(W*0.5 - 16, H*0.74);
+  ctx.lineTo(W*0.5 - 7, H*0.26);
+  ctx.lineTo(W*0.5 + 7, H*0.26);
+  ctx.lineTo(W*0.5 + 16, H*0.74);
+  ctx.closePath(); ctx.fill();
+
+  // Hot core
+  const hotGrad = ctx.createLinearGradient(W*0.5, H*0.74, W*0.5, H*0.28);
+  hotGrad.addColorStop(0, `rgba(255,180,0,${conduitPulse * 0.6})`);
+  hotGrad.addColorStop(1, `rgba(255,220,80,${conduitPulse * 0.35})`);
+  ctx.fillStyle = hotGrad;
+  ctx.beginPath();
+  ctx.moveTo(W*0.5 - 6, H*0.74);
+  ctx.lineTo(W*0.5 - 3, H*0.27);
+  ctx.lineTo(W*0.5 + 3, H*0.27);
+  ctx.lineTo(W*0.5 + 6, H*0.74);
+  ctx.closePath(); ctx.fill();
+
+  // Branch conduit (parasitic)
+  ctx.save();
+  ctx.globalAlpha = conduitPulse * 0.7;
+  ctx.strokeStyle = '#ff5500'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(W*0.5 - 14, H*0.65);
+  ctx.quadraticCurveTo(W*0.35, H*0.62, W*0.3, H*0.54);
+  ctx.stroke();
+  ctx.strokeStyle = '#ff9900'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(W*0.5 - 14, H*0.65);
+  ctx.quadraticCurveTo(W*0.35, H*0.62, W*0.3, H*0.54);
+  ctx.stroke();
+  ctx.restore();
+
+  // ── PARASITIC CONE ──
+  ctx.beginPath();
+  ctx.moveTo(W*0.3, H*0.54);
+  ctx.lineTo(W*0.25, groundY);
+  ctx.lineTo(W*0.35, groundY);
+  ctx.closePath();
+  const parGrad = ctx.createLinearGradient(W*0.3, H*0.54, W*0.35, groundY);
+  parGrad.addColorStop(0, '#3a2418'); parGrad.addColorStop(1, '#2a1810');
+  ctx.fillStyle = parGrad; ctx.fill();
+
+  // ── CRATER ──
+  const craterGlow = [0.3, 0.4, 0.7, 1.0, 0.55][phIdx];
+  const craterPulse = craterGlow + Math.sin(frame * 0.2) * (phIdx === 3 ? 0.2 : 0.08);
+
+  // Crater rim
+  ctx.beginPath();
+  ctx.ellipse(W*0.5, H*0.215, 36, 12, 0, 0, Math.PI*2);
+  ctx.fillStyle = '#2a1810'; ctx.fill();
+  ctx.strokeStyle = '#4a3020'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // Crater interior glow
+  ctx.save();
+  ctx.globalAlpha = craterPulse;
+  const crGrad = ctx.createRadialGradient(W*0.5, H*0.215, 0, W*0.5, H*0.215, 30);
+  crGrad.addColorStop(0, '#ff8c00');
+  crGrad.addColorStop(0.5, '#ff4400');
+  crGrad.addColorStop(1, 'rgba(200,30,0,0)');
+  ctx.fillStyle = crGrad;
+  ctx.beginPath(); ctx.ellipse(W*0.5, H*0.215, 30, 10, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // Fumarole wisps (phase 1+)
+  if (phIdx >= 1) {
+    const wispCount = phIdx === 1 ? 2 : phIdx === 4 ? 1 : 0;
+    for (let wi = 0; wi < wispCount; wi++) {
+      ctx.save();
+      ctx.globalAlpha = lerp(0.4, 0.1, Math.abs(Math.sin(frame*0.03 + wi*1.2)));
+      const wG = ctx.createRadialGradient(W*0.5 + wi*8, H*0.18, 0, W*0.5 + wi*8, H*0.18, 18);
+      wG.addColorStop(0, 'rgba(200,190,180,0.6)');
+      wG.addColorStop(1, 'rgba(150,140,130,0)');
+      ctx.fillStyle = wG;
+      ctx.beginPath(); ctx.ellipse(W*0.5 + wi*8, H*0.18 - frame%40*0.6, 10, 14, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // ── GROUND SURFACE LINE ──
+  ctx.save();
+  ctx.globalAlpha = 0.6;
+  const surfGrad = ctx.createLinearGradient(0, groundY, W, groundY);
+  surfGrad.addColorStop(0, '#2a1810');
+  surfGrad.addColorStop(0.5, '#3a2018');
+  surfGrad.addColorStop(1, '#2a1810');
+  ctx.strokeStyle = surfGrad; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke();
+  ctx.restore();
+
+  // ── LABELS ──
+  drawLabels(phIdx, t);
+}
+
+// ─────────────────────────────────────────
+// DRAW ELLIPSE HELPER
+// ─────────────────────────────────────────
+function drawEllipse(cx, cy, rx, ry, stops, alpha, glow) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(rx, ry));
+  stops.forEach(([pos, color]) => g.addColorStop(pos, color));
+  if (glow) {
+    ctx.shadowColor = '#ff6600';
+    ctx.shadowBlur = 20;
+  }
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// ─────────────────────────────────────────
+// DRAW LABELS
+// ─────────────────────────────────────────
+let labelHitAreas = [];
+
+function drawLabels(phIdx, t) {
+  const ph = PHASES[phIdx];
+  labelHitAreas = [];
+
+  ph.labels.forEach((lb, i) => {
+    const lx = lb.x * W;
+    const ly = lb.y * H;
+
+    // Dot
+    const dotR = 5;
+    ctx.save();
+    ctx.shadowColor = '#ffaa44';
+    ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(lx, ly, dotR, 0, Math.PI*2);
+    ctx.fillStyle = '#ffb347'; ctx.fill();
+    ctx.restore();
+
+    // Pulse ring
+    const ring = (frame * 0.04 + i * 0.6) % 1;
+    ctx.save();
+    ctx.globalAlpha = (1 - ring) * 0.5;
+    ctx.beginPath(); ctx.arc(lx, ly, dotR + ring * 16, 0, Math.PI*2);
+    ctx.strokeStyle = '#ffaa44'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+
+    // Label text
+    const textX = lb.x > 0.6 ? lx - 8 : lx + 10;
+    const align = lb.x > 0.6 ? 'right' : 'left';
+
+    ctx.save();
+    ctx.font = `600 11px 'Source Serif 4', serif`;
+    ctx.textAlign = align;
+    ctx.textBaseline = 'middle';
+    // shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 6;
+    ctx.fillStyle = hoverLabel === i ? '#ffe0a0' : '#e8d5b0';
+    ctx.fillText(lb.name, textX, ly);
+    ctx.restore();
+
+    // Hit area
+    const tw = ctx.measureText(lb.name).width + 12;
+    const haX = align === 'right' ? textX - tw : textX - 6;
+    labelHitAreas.push({ i, x: haX, y: ly - 10, w: tw + dotR*2, h: 20, name: lb.name, desc: lb.desc });
+  });
+}
+
+// ─────────────────────────────────────────
+// CANVAS HOVER
+// ─────────────────────────────────────────
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  let hit = null;
+  for (const ha of labelHitAreas) {
+    if (mx >= ha.x && mx <= ha.x + ha.w && my >= ha.y && my <= ha.y + ha.h) {
+      hit = ha; break;
+    }
+  }
+
+  if (hit) {
+    hoverLabel = hit.i;
+    cttTitle.textContent = hit.name;
+    cttDesc.textContent = hit.desc;
+    const px = (hit.x / W) * rect.width + rect.left - document.querySelector('.volcano-panel').getBoundingClientRect().left;
+    const py = (hit.y / H) * rect.height - 44;
+    ctt.style.left = Math.min(px, rect.width - 195) + 'px';
+    ctt.style.top = py + 'px';
+    ctt.classList.add('show');
+    canvas.style.cursor = 'pointer';
+  } else {
+    hoverLabel = null;
+    ctt.classList.remove('show');
+    canvas.style.cursor = 'default';
+  }
+});
+canvas.addEventListener('mouseleave', () => {
+  hoverLabel = null;
+  ctt.classList.remove('show');
+});
+
+// ─────────────────────────────────────────
+// ANIMATION LOOP
+// ─────────────────────────────────────────
+function animLoop() {
+  if (playing) {
+    sliderVal = Math.min(400, sliderVal + playSpeed);
+    slider.value = sliderVal;
+    if (sliderVal >= 400) { sliderVal = 400; stopPlay(); }
+    updateAll();
+  } else {
+    drawVolcano(sliderVal);
+    frame++;
+  }
+  requestAnimationFrame(animLoop);
+}
+
+// Slider
+slider.addEventListener('input', () => {
+  sliderVal = +slider.value;
+  updateAll();
+});
+
+// Play
+function stopPlay() {
+  playing = false;
+  playBtn.textContent = '▶ Auto-Play';
+  playBtn.classList.remove('playing');
+}
+playBtn.addEventListener('click', () => {
+  if (playing) { stopPlay(); return; }
+  if (sliderVal >= 400) sliderVal = 0;
+  playing = true;
+  playBtn.textContent = '⏹ Stop';
+  playBtn.classList.add('playing');
+});
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+buildPhaseCards();
+buildTicks();
+slider.style.setProperty('--fill', '0%');
+updateAll();
+animLoop();
+</script>
+</body>
+</html>
