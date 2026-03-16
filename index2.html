@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rich's Games 4 Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-top:#5bb8d4; --sky-mid:#8fd4e8; --sky-low:#b8e8f0;
+  --ocean:#1a7fa8; --ocean-deep:#0d4f6e;
+  --cedar:#c0392b; --cedar-dk:#8b1a1a;
+  --salmon:#e8734a; --gold:#f0b429;
+  --fern:#2d6a4f; --fern-lt:#52b788;
+  --ink:#1a1a2e; --card-bg:#fdf6ec;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--sky-top);overflow-x:hidden;}
+
+/* HERO */
+.hero{position:relative;min-height:82vh;overflow:hidden;display:flex;align-items:center;background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 55%,var(--sky-low) 80%,#d0eef8 100%);}
+.mist-layer{position:absolute;left:0;right:0;pointer-events:none;}
+.mist-1{top:30%;height:80px;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.3) 20%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.25) 80%,transparent 100%);animation:mist 18s ease-in-out infinite alternate;}
+.mist-2{top:50%;height:60px;background:linear-gradient(90deg,rgba(255,255,255,.2) 0%,transparent 30%,rgba(255,255,255,.35) 60%,transparent 100%);animation:mist 24s ease-in-out infinite alternate-reverse;}
+@keyframes mist{from{transform:translateX(-60px)}to{transform:translateX(60px)}}
+.hero-clouds{position:absolute;top:0;left:0;right:0;height:200px;pointer-events:none;}
+.hcloud{position:absolute;background:rgba(255,255,255,.88);border-radius:50px;}
+.hcloud::before,.hcloud::after{content:'';position:absolute;background:rgba(255,255,255,.88);border-radius:50%;}
+.hc1{width:140px;height:44px;top:30px;left:8%;animation:hdrift 30s linear infinite;}
+.hc1::before{width:68px;height:68px;top:-38px;left:14px;}.hc1::after{width:48px;height:48px;top:-24px;left:64px;}
+.hc2{width:100px;height:32px;top:60px;left:55%;animation:hdrift 22s linear infinite;animation-delay:-10s;}
+.hc2::before{width:50px;height:50px;top:-28px;left:10px;}.hc2::after{width:36px;height:36px;top:-16px;left:44px;}
+.hc3{width:180px;height:54px;top:15px;left:30%;animation:hdrift 38s linear infinite;animation-delay:-18s;}
+.hc3::before{width:85px;height:85px;top:-48px;left:20px;}.hc3::after{width:62px;height:62px;top:-32px;left:80px;}
+@keyframes hdrift{from{transform:translateX(-220px)}to{transform:translateX(110vw)}}
+
+.forest-bg{position:absolute;bottom:108px;left:0;right:0;pointer-events:none;z-index:1;}
+.ocean-strip{position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(180deg,var(--ocean) 0%,var(--ocean-deep) 100%);border-top:4px solid var(--ink);z-index:2;}
+.wave-top{position:absolute;top:-28px;left:-10px;right:-10px;pointer-events:none;}
+
+.hero-chars{position:absolute;bottom:108px;left:0;right:0;z-index:4;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;}
+.char{animation:float 4s ease-in-out infinite;filter:drop-shadow(4px 8px 6px rgba(0,0,0,.25));}
+.char:nth-child(2){animation-delay:-1s}.char:nth-child(3){animation-delay:-2s}.char:nth-child(4){animation-delay:-.5s}.char:nth-child(5){animation-delay:-1.7s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+.hero-text{position:relative;z-index:10;margin-left:clamp(20px,7vw,110px);margin-bottom:200px;animation:slide-in .8s cubic-bezier(.2,1.4,.4,.9) both;}
+@keyframes slide-in{from{transform:translateX(-60px) rotate(-4deg);opacity:0}to{transform:translateX(0) rotate(0);opacity:1}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--gold);border:3px solid var(--ink);border-radius:50px;padding:4px 16px;font-family:'Fredoka One',cursive;font-size:.9rem;color:var(--ink);box-shadow:3px 3px 0 var(--ink);margin-bottom:14px;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.hero-title{font-family:'Fredoka One',cursive;font-size:clamp(2.4rem,6vw,4.5rem);line-height:1.0;color:white;text-shadow:4px 4px 0 var(--ocean-deep);}
+.hero-title .line2{display:block;color:var(--gold);text-shadow:4px 4px 0 var(--cedar-dk);font-size:clamp(3rem,8vw,6rem);}
+.hero-sub{font-size:1.1rem;font-weight:700;color:rgba(255,255,255,.9);margin:14px 0 0;text-shadow:1px 1px 0 rgba(0,0,0,.3);}
+
+.orca-fin{position:absolute;bottom:125px;right:80px;z-index:5;animation:fin 6s ease-in-out infinite;pointer-events:none;}
+@keyframes fin{0%,100%{transform:translateY(12px)}40%,60%{transform:translateY(-4px)}}
+
+/* BAND */
+.formline-band{position:relative;z-index:10;background:var(--cedar);border-top:4px solid var(--ink);border-bottom:4px solid var(--ink);padding:10px 0;overflow:hidden;}
+.fscroll{display:flex;gap:32px;align-items:center;animation:scroll-b 25s linear infinite;white-space:nowrap;width:max-content;}
+@keyframes scroll-b{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.fitem{font-family:'Fredoka One',cursive;font-size:1rem;color:white;letter-spacing:2px;display:flex;align-items:center;gap:12px;}
+.fdot{width:10px;height:10px;background:var(--gold);border-radius:50%;border:2px solid var(--ink);flex-shrink:0;}
+
+/* GAMES SECTION */
+.games-section{position:relative;z-index:5;background:linear-gradient(180deg,#e8f4f8 0%,#d4edf5 100%);padding:52px 24px 72px;}
+.games-section::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 15% 30%,rgba(192,57,43,.05) 0%,transparent 40%),radial-gradient(circle at 80% 70%,rgba(26,127,168,.07) 0%,transparent 40%);pointer-events:none;}
+.section-header{text-align:center;margin-bottom:44px;}
+.section-kicker{display:inline-block;font-family:'Fredoka One',cursive;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;color:var(--ocean);background:white;border:2.5px solid var(--ink);border-radius:50px;padding:3px 18px;box-shadow:3px 3px 0 var(--ink);margin-bottom:12px;}
+.section-title{font-family:'Fredoka One',cursive;font-size:clamp(2rem,5vw,3.2rem);color:var(--ink);line-height:1.1;}
+
+/* CARDS */
+.games-list{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:26px;}
+
+.game-card{background:var(--card-bg);border:3.5px solid var(--ink);border-radius:24px;overflow:hidden;display:flex;box-shadow:6px 6px 0 var(--ink);transition:transform .15s,box-shadow .15s;animation:card-in .5s ease both;position:relative;}
+.game-card:nth-child(1){animation-delay:.05s}.game-card:nth-child(2){animation-delay:.12s}.game-card:nth-child(3){animation-delay:.19s}.game-card:nth-child(4){animation-delay:.26s}.game-card:nth-child(5){animation-delay:.33s}
+@keyframes card-in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.game-card:hover{transform:translate(-4px,-4px);box-shadow:10px 10px 0 var(--ink);}
+.game-card::before{content:'';position:absolute;top:0;left:0;width:8px;height:100%;background:var(--ac,var(--cedar));z-index:1;}
+
+.card-info{flex:1;padding:24px 28px 24px 36px;display:flex;flex-direction:column;justify-content:center;}
+.card-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.card-tag{font-family:'Fredoka One',cursive;font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;border:2.5px solid var(--ink);border-radius:50px;padding:2px 12px;background:var(--tbg,#ffe0cc);color:var(--ink);}
+.card-title{font-family:'Fredoka One',cursive;font-size:1.55rem;color:var(--ink);margin-bottom:8px;line-height:1.15;}
+.card-desc{font-size:.97rem;font-weight:700;color:#444;line-height:1.5;max-width:400px;}
+.card-play{display:inline-flex;align-items:center;gap:8px;margin-top:18px;background:var(--ac,var(--cedar));color:white;border:3px solid var(--ink);border-radius:50px;padding:8px 22px;font-family:'Fredoka One',cursive;font-size:1.05rem;text-decoration:none;box-shadow:4px 4px 0 var(--ink);width:fit-content;transition:transform .12s,box-shadow .12s;}
+.card-play:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);}
+.play-pip{background:rgba(255,255,255,.28);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0;}
+
+/* Thumbnail — live iframe preview */
+.card-thumb{width:220px;min-width:220px;height:170px;border-left:3.5px solid var(--ink);position:relative;overflow:hidden;flex-shrink:0;background:var(--tmbg,#cce9f5);}
+
+/* Scale iframe down so full page fits in thumb box */
+.card-thumb iframe{
+  width:900px;
+  height:700px;
+  border:none;
+  transform-origin:top left;
+  transform:scale(0.244);   /* 220/900 ≈ 0.244 */
+  pointer-events:none;
+  position:absolute;
+  top:0;left:0;
+}
+
+/* Clickable overlay so the whole card is the link */
+.card-thumb-overlay{
+  position:absolute;inset:0;z-index:2;
+  display:flex;align-items:flex-end;justify-content:flex-end;
+  padding:8px;
+}
+
+/* Dot-pattern texture over iframe */
+.card-thumb::after{
+  content:'';
+  position:absolute;inset:0;z-index:3;
+  background-image:radial-gradient(circle,rgba(0,0,0,.03) 1.5px,transparent 1.5px);
+  background-size:10px 10px;
+  pointer-events:none;
+}
+
+/* Per-card colours */
+.game-card:nth-child(1){--ac:var(--cedar);    --tmbg:#fff3e8;--tbg:#fde8d8;}
+.game-card:nth-child(2){--ac:var(--ocean);    --tmbg:#d6eef8;--tbg:#cce9f5;}
+.game-card:nth-child(3){--ac:var(--fern);     --tmbg:#d8f2e8;--tbg:#d4f0e4;}
+.game-card:nth-child(4){--ac:var(--salmon);   --tmbg:#fdebd8;--tbg:#fde8ce;}
+.game-card:nth-child(5){--ac:#6b4fa0;         --tmbg:#ede8ff;--tbg:#ece0ff;}
+
+/* FOOTER */
+footer{position:relative;z-index:5;background:var(--ocean-deep);border-top:4px solid var(--ink);padding:32px 24px;text-align:center;overflow:hidden;}
+footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲';position:absolute;top:-10px;left:-5px;right:-5px;font-size:2rem;letter-spacing:4px;opacity:.18;pointer-events:none;}
+.footer-inner{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.footer-logo{font-family:'Fredoka One',cursive;font-size:1.5rem;color:white;text-shadow:2px 2px 0 var(--ocean);}
+.footer-logo span{color:var(--gold);}
+.footer-chars{font-size:1.8rem;letter-spacing:8px;}
+.footer-tagline{font-weight:700;font-size:.9rem;color:rgba(255,255,255,.65);}
+.footer-copy{font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;margin-top:8px;}
+
+@media(max-width:660px){
+  .card-thumb{width:120px;min-width:120px;height:140px;}
+  .card-thumb iframe{width:900px;height:700px;transform:scale(0.133);}
+  .card-info{padding:16px 14px 16px 22px;}.card-title{font-size:1.15rem;}
+  .hero-text{margin-left:16px;margin-bottom:200px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ══════════════════════════════════════════ -->
+<section class="hero">
+
+  <div class="hero-clouds">
+    <div class="hcloud hc1"></div>
+    <div class="hcloud hc2"></div>
+    <div class="hcloud hc3"></div>
+  </div>
+  <div class="mist-layer mist-1"></div>
+  <div class="mist-layer mist-2"></div>
+
+  <!-- Mountain + forest backdrop -->
+  <div class="forest-bg">
+    <svg viewBox="0 0 1440 240" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="width:100%;height:240px;display:block;">
+      <polygon points="0,240 140,80 260,145 380,40 520,130 660,60 800,140 950,30 1090,120 1230,50 1360,110 1440,70 1440,240" fill="rgba(200,230,240,0.5)"/>
+      <polygon points="0,240 100,130 200,165 350,95 500,155 650,105 780,160 900,88 1020,155 1150,105 1300,145 1440,95 1440,240" fill="rgba(175,210,228,0.55)"/>
+      <g fill="#1e4d2b" opacity="0.78">
+        <path d="M-10,240 L0,190 L15,170 L25,152 L35,170 L48,155 L58,138 L68,120 L78,138 L88,155 L98,138 L108,122 L118,138 L128,155 L140,170 L154,155 L166,138 L178,122 L190,106 L202,90 L214,106 L226,122 L238,106 L250,92 L262,106 L274,122 L290,138 L306,122 L320,106 L334,90 L348,74 L362,90 L376,106 L390,90 L402,76 L414,90 L428,106 L444,122 L460,106 L474,90 L488,76 L502,60 L516,76 L530,90 L544,76 L558,62 L572,76 L586,90 L602,106 L618,90 L632,76 L646,60 L660,46 L674,60 L688,76 L702,60 L716,48 L730,62 L744,76 L758,62 L772,48 L786,62 L800,76 L816,90 L832,76 L846,62 L860,48 L874,34 L888,48 L902,62 L916,48 L930,36 L944,50 L958,64 L972,50 L986,36 L1000,50 L1014,64 L1030,78 L1046,64 L1060,50 L1074,36 L1088,22 L1102,36 L1116,50 L1130,36 L1144,50 L1158,64 L1174,50 L1188,64 L1204,78 L1220,64 L1236,78 L1252,92 L1268,78 L1284,92 L1300,106 L1318,92 L1334,106 L1350,120 L1368,106 L1384,120 L1400,134 L1418,148 L1434,134 L1450,148 L1460,165 L1460,240 Z"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Hero text -->
+  <div class="hero-text">
+    <div class="hero-badge">🌊 Pacific Northwest Learning Adventure</div>
+    <h1 class="hero-title">
+      Rich's Games
+      <span class="line2">4 Learning!</span>
+    </h1>
+    <p class="hero-sub">🐋 Play with Raven, Orca &amp; friends — learn from the land! 🦅</p>
+  </div>
+
+  <!-- Characters -->
+  <div class="hero-chars">
+    <!-- Bear Elder -->
+    <div class="char" style="margin-bottom:-5px;margin-right:-18px;">
+      <svg width="130" height="200" viewBox="0 0 130 200">
+        <ellipse cx="65" cy="145" rx="46" ry="52" fill="#7B4B2A"/>
+        <ellipse cx="65" cy="148" rx="30" ry="36" fill="#C0392B" opacity=".85"/>
+        <path d="M52,132 Q65,120 78,132 Q78,145 65,148 Q52,145 52,132Z" fill="#F0B429" opacity=".9"/>
+        <circle cx="65" cy="134" r="6" fill="#C0392B"/>
+        <ellipse cx="24" cy="148" rx="16" ry="10" fill="#7B4B2A" transform="rotate(-30 24 148)"/>
+        <ellipse cx="106" cy="148" rx="16" ry="10" fill="#7B4B2A" transform="rotate(30 106 148)"/>
+        <ellipse cx="30" cy="156" rx="14" ry="9" fill="#8B5E3C" transform="rotate(-25 30 156)"/>
+        <ellipse cx="100" cy="156" rx="14" ry="9" fill="#8B5E3C" transform="rotate(25 100 156)"/>
+        <circle cx="65" cy="80" r="38" fill="#7B4B2A"/>
+        <circle cx="33" cy="58" r="12" fill="#7B4B2A"/><circle cx="97" cy="58" r="12" fill="#7B4B2A"/>
+        <circle cx="33" cy="58" r="7" fill="#C0856A"/><circle cx="97" cy="58" r="7" fill="#C0856A"/>
+        <ellipse cx="65" cy="86" rx="22" ry="17" fill="#C0856A"/>
+        <circle cx="53" cy="74" r="7" fill="white"/><circle cx="77" cy="74" r="7" fill="white"/>
+        <circle cx="55" cy="75" r="4" fill="#1a1a2e"/><circle cx="79" cy="75" r="4" fill="#1a1a2e"/>
+        <circle cx="56" cy="74" r="1.5" fill="white"/><circle cx="80" cy="74" r="1.5" fill="white"/>
+        <ellipse cx="65" cy="86" rx="7" ry="5" fill="#4a2a1a"/>
+        <path d="M55,94 Q65,102 75,94" stroke="#4a2a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M30,66 Q65,54 100,66" stroke="#C0392B" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <circle cx="65" cy="59" r="5" fill="#F0B429" stroke="#1a1a2e" stroke-width="1.5"/>
+        <ellipse cx="45" cy="190" rx="18" ry="9" fill="#5C3317"/>
+        <ellipse cx="85" cy="190" rx="18" ry="9" fill="#5C3317"/>
+      </svg>
+    </div>
+    <!-- Raven -->
+    <div class="char" style="margin-bottom:0;">
+      <svg width="115" height="215" viewBox="0 0 115 215">
+        <ellipse cx="57" cy="148" rx="40" ry="58" fill="#1a1a2e"/>
+        <path d="M30,122 Q57,110 84,122 L80,178 Q57,188 34,178Z" fill="#C0392B" opacity=".7"/>
+        <path d="M40,130 Q57,122 74,130 L72,170 Q57,176 42,170Z" fill="#1a1a2e"/>
+        <ellipse cx="57" cy="150" rx="10" ry="8" fill="#F0B429" stroke="#1a1a2e" stroke-width="1.5"/>
+        <ellipse cx="57" cy="150" rx="5" ry="4" fill="#1a1a2e"/>
+        <path d="M17,132 Q5,158 14,178 Q28,162 32,142Z" fill="#1a1a2e"/>
+        <path d="M97,132 Q109,158 100,178 Q86,162 82,142Z" fill="#1a1a2e"/>
+        <circle cx="57" cy="72" r="34" fill="#1a1a2e"/>
+        <path d="M57,84 L80,92 L57,98Z" fill="#F0B429" stroke="#1a1a2e" stroke-width="1.5"/>
+        <circle cx="44" cy="64" r="8" fill="white"/><circle cx="70" cy="64" r="8" fill="white"/>
+        <circle cx="44" cy="63" r="5" fill="#1a1a2e"/><circle cx="70" cy="63" r="5" fill="#1a1a2e"/>
+        <circle cx="45" cy="62" r="1.5" fill="white"/><circle cx="71" cy="62" r="1.5" fill="white"/>
+        <path d="M50,40 Q48,20 43,8 Q52,18 54,38" fill="#C0392B"/>
+        <path d="M57,38 Q57,16 57,4 Q62,16 62,38" fill="#F0B429"/>
+        <path d="M64,40 Q66,20 71,8 Q62,18 60,38" fill="#C0392B"/>
+        <path d="M40,202 L30,210 M40,202 L38,211 M40,202 L46,209" stroke="#F0B429" stroke-width="3" stroke-linecap="round"/>
+        <path d="M72,202 L62,210 M72,202 L70,211 M72,202 L78,209" stroke="#F0B429" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <!-- Salmon child -->
+    <div class="char" style="margin-bottom:18px;margin-left:-8px;margin-right:-8px;">
+      <svg width="102" height="168" viewBox="0 0 102 168">
+        <ellipse cx="51" cy="113" rx="30" ry="42" fill="#E8734A"/>
+        <ellipse cx="51" cy="115" rx="20" ry="29" fill="#5BB8D4" opacity=".9"/>
+        <path d="M39,102 Q51,94 63,102 Q63,114 51,117 Q39,114 39,102Z" fill="white" opacity=".8"/>
+        <circle cx="51" cy="106" r="3" fill="#E8734A" opacity=".6"/>
+        <circle cx="44" cy="113" r="2.5" fill="#E8734A" opacity=".6"/>
+        <circle cx="58" cy="113" r="2.5" fill="#E8734A" opacity=".6"/>
+        <ellipse cx="18" cy="120" rx="12" ry="7" fill="#E8734A" transform="rotate(25 18 120)"/>
+        <ellipse cx="84" cy="120" rx="12" ry="7" fill="#E8734A" transform="rotate(-25 84 120)"/>
+        <path d="M35,150 Q20,160 16,172 Q28,165 36,162Z" fill="#E8734A"/>
+        <path d="M67,150 Q82,160 86,172 Q74,165 66,162Z" fill="#E8734A"/>
+        <circle cx="51" cy="62" r="28" fill="#E8734A"/>
+        <path d="M26,58 Q51,38 76,58 L73,68 Q51,58 29,68Z" fill="#C0392B"/>
+        <circle cx="51" cy="42" r="5" fill="#F0B429" stroke="#1a1a2e" stroke-width="1.5"/>
+        <ellipse cx="51" cy="68" rx="16" ry="13" fill="#f5a880"/>
+        <circle cx="41" cy="60" r="6" fill="white"/><circle cx="61" cy="60" r="6" fill="white"/>
+        <circle cx="42" cy="61" r="3.5" fill="#1a1a2e"/><circle cx="62" cy="61" r="3.5" fill="#1a1a2e"/>
+        <circle cx="43" cy="60" r="1" fill="white"/><circle cx="63" cy="60" r="1" fill="white"/>
+        <path d="M43,72 Q51,78 59,72" stroke="#C0693A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <circle cx="36" cy="69" r="4" fill="#ff9999" opacity=".5"/>
+        <circle cx="66" cy="69" r="4" fill="#ff9999" opacity=".5"/>
+        <ellipse cx="36" cy="158" rx="13" ry="7" fill="#C0693A"/>
+        <ellipse cx="66" cy="158" rx="13" ry="7" fill="#C0693A"/>
+      </svg>
+    </div>
+    <!-- Orca child -->
+    <div class="char" style="margin-bottom:8px;margin-left:-8px;">
+      <svg width="108" height="178" viewBox="0 0 108 178">
+        <ellipse cx="54" cy="122" rx="34" ry="46" fill="#1a1a2e"/>
+        <path d="M36,108 Q54,98 72,108 L68,148 Q54,155 40,148Z" fill="white"/>
+        <ellipse cx="54" cy="128" rx="12" ry="9" fill="#1a1a2e" stroke="#C0392B" stroke-width="2"/>
+        <path d="M20,120 Q8,132 10,150 Q22,140 26,124Z" fill="#1a1a2e"/>
+        <path d="M88,120 Q100,132 98,150 Q86,140 82,124Z" fill="#1a1a2e"/>
+        <path d="M54,76 Q60,57 65,42 Q58,58 52,76Z" fill="#1a1a2e"/>
+        <ellipse cx="54" cy="78" rx="34" ry="30" fill="#1a1a2e"/>
+        <ellipse cx="38" cy="68" rx="11" ry="9" fill="white"/><ellipse cx="70" cy="68" rx="11" ry="9" fill="white"/>
+        <circle cx="38" cy="69" r="6" fill="#1a1a2e"/><circle cx="70" cy="69" r="6" fill="#1a1a2e"/>
+        <circle cx="36" cy="67" r="2" fill="white"/><circle cx="68" cy="67" r="2" fill="white"/>
+        <ellipse cx="54" cy="92" rx="20" ry="12" fill="white"/>
+        <path d="M44,94 Q54,102 64,94" stroke="#5BB8D4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M22,70 Q54,60 86,70" stroke="#C0392B" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <circle cx="54" cy="64" r="5" fill="#F0B429" stroke="#1a1a2e" stroke-width="1.5"/>
+        <path d="M36,165 Q24,175 20,185 Q32,178 40,170Z" fill="#1a1a2e"/>
+        <path d="M72,165 Q84,175 88,185 Q76,178 68,170Z" fill="#1a1a2e"/>
+      </svg>
+    </div>
+    <!-- Cedar Waxwing girl -->
+    <div class="char" style="margin-bottom:22px;margin-left:-14px;">
+      <svg width="92" height="158" viewBox="0 0 92 158">
+        <ellipse cx="46" cy="107" rx="28" ry="38" fill="#C8A86B"/>
+        <path d="M22,118 Q46,110 70,118 L68,140 Q46,147 24,140Z" fill="#A0522D" opacity=".8"/>
+        <path d="M20,134 Q46,130 72,134 L70,145 Q46,149 22,145Z" fill="#F0B429"/>
+        <path d="M36,118 Q46,112 56,118 Q56,128 46,130 Q36,128 36,118Z" fill="#C0392B" opacity=".7"/>
+        <path d="M18,110 Q8,120 12,132 Q22,124 22,114Z" fill="#8B6914"/>
+        <path d="M74,110 Q84,120 80,132 Q70,124 70,114Z" fill="#8B6914"/>
+        <circle cx="46" cy="60" r="26" fill="#C8A86B"/>
+        <path d="M40,36 Q38,20 34,8 Q42,18 44,34" fill="#1a1a2e"/>
+        <path d="M46,34 Q46,16 48,6 Q52,18 50,34" fill="#1a1a2e"/>
+        <path d="M18,55 Q46,44 74,55 Q74,68 62,72 Q46,76 30,72 Q18,68 18,55Z" fill="#1a1a2e"/>
+        <ellipse cx="46" cy="65" rx="14" ry="11" fill="#C8A86B"/>
+        <circle cx="26" cy="76" r="4" fill="#C0392B"/><circle cx="66" cy="76" r="4" fill="#C0392B"/>
+        <circle cx="38" cy="57" r="5.5" fill="white"/><circle cx="54" cy="57" r="5.5" fill="white"/>
+        <circle cx="39" cy="58" r="3" fill="#1a1a2e"/><circle cx="55" cy="58" r="3" fill="#1a1a2e"/>
+        <circle cx="40" cy="57" r="1" fill="white"/><circle cx="56" cy="57" r="1" fill="white"/>
+        <path d="M42,68 L54,71 L46,75Z" fill="#8B6914"/>
+        <ellipse cx="46" cy="74" rx="8" ry="5" fill="#F0B429"/>
+        <circle cx="33" cy="68" r="4" fill="#ff9999" opacity=".45"/>
+        <circle cx="59" cy="68" r="4" fill="#ff9999" opacity=".45"/>
+        <path d="M36,145 L28,152 M36,145 L34,154 M36,145 L42,151" stroke="#8B6914" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M56,145 L48,152 M56,145 L54,154 M56,145 L62,151" stroke="#8B6914" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Orca fin -->
+  <div class="orca-fin">
+    <svg width="100" height="90" viewBox="0 0 100 90">
+      <path d="M50,82 Q30,42 15,10 Q35,47 55,62 Q75,42 85,10 Q72,44 50,82Z" fill="#1a1a2e"/>
+      <ellipse cx="30" cy="46" rx="6" ry="5" fill="white" opacity=".65"/>
+    </svg>
+  </div>
+
+  <!-- Ocean -->
+  <div class="ocean-strip">
+    <svg class="wave-top" viewBox="0 0 1440 32" preserveAspectRatio="none">
+      <path d="M0,16 C180,0 360,32 540,16 C720,0 900,32 1080,16 C1260,0 1380,28 1440,16 L1440,32 L0,32Z" fill="#1a7fa8"/>
+      <path d="M0,20 C200,6 400,34 600,20 C800,6 1000,34 1200,20 C1320,8 1400,26 1440,20 L1440,32 L0,32Z" fill="#0d4f6e" opacity=".5"/>
+    </svg>
+    <span style="position:absolute;bottom:52px;left:34%;font-size:2rem;animation:sjump 4s ease-in-out infinite;pointer-events:none;">🐟</span>
+    <span style="position:absolute;bottom:42px;left:58%;font-size:1.5rem;animation:sjump 3s ease-in-out infinite;animation-delay:-1.5s;pointer-events:none;">🐟</span>
+    <span style="position:absolute;bottom:32px;right:14%;font-size:1.1rem;animation:sjump 5s ease-in-out infinite;animation-delay:-3s;pointer-events:none;">🐟</span>
+  </div>
+</section>
+<style>
+@keyframes sjump{0%,100%{transform:translateY(0) scaleX(1)}25%{transform:translateY(-30px) scaleX(1)}50%{transform:translateY(-52px) rotate(25deg) scaleX(-1)}75%{transform:translateY(-20px) scaleX(-1)}}
+</style>
+
+<!-- FORMLINE BAND -->
+<div class="formline-band">
+  <div class="fscroll">
+    <div class="fitem"><span class="fdot"></span>🐋 ORCA</div><div class="fitem"><span class="fdot"></span>🦅 EAGLE</div><div class="fitem"><span class="fdot"></span>🐟 SALMON</div><div class="fitem"><span class="fdot"></span>🐻 BEAR</div><div class="fitem"><span class="fdot"></span>🌲 CEDAR</div><div class="fitem"><span class="fdot"></span>🌊 OCEAN</div><div class="fitem"><span class="fdot"></span>🦆 HERON</div><div class="fitem"><span class="fdot"></span>🪶 RAVEN</div><div class="fitem"><span class="fdot"></span>🌙 MOON</div><div class="fitem"><span class="fdot"></span>⭐ STARS</div>
+    <div class="fitem"><span class="fdot"></span>🐋 ORCA</div><div class="fitem"><span class="fdot"></span>🦅 EAGLE</div><div class="fitem"><span class="fdot"></span>🐟 SALMON</div><div class="fitem"><span class="fdot"></span>🐻 BEAR</div><div class="fitem"><span class="fdot"></span>🌲 CEDAR</div><div class="fitem"><span class="fdot"></span>🌊 OCEAN</div><div class="fitem"><span class="fdot"></span>🦆 HERON</div><div class="fitem"><span class="fdot"></span>🪶 RAVEN</div><div class="fitem"><span class="fdot"></span>🌙 MOON</div><div class="fitem"><span class="fdot"></span>⭐ STARS</div>
+  </div>
+</div>
+
+<!-- ═══ GAMES ══════════════════════════════════════════ -->
+<section class="games-section" id="games">
+  <div class="section-header">
+    <div class="section-kicker">🌊 Choose Your Game</div>
+    <h2 class="section-title">Play &amp; Learn with<br>the Coastal Crew!</h2>
+  </div>
+
+  <div class="games-list">
+
+    <!-- 1 — Volcano Phases -->
+    <div class="game-card">
+      <div class="card-info">
+        <div class="card-tags">
+          <span class="card-tag">🌋 Science</span>
+          <span class="card-tag">Ages 10+</span>
+        </div>
+        <div class="card-title">Anatomy of a Volcanic Eruption</div>
+        <p class="card-desc">Drag the slider to journey through all five eruption phases.</p>
+        <a class="card-play" href="https://richmccue.github.io/learning-games/volcano-phases.html" target="_blank">
+          <span class="play-pip">▶</span> Play Now
+        </a>
+      </div>
+      <div class="card-thumb">
+        <iframe src="https://richmccue.github.io/learning-games/volcano-phases.html"
+                loading="lazy" title="Volcano Phases preview" scrolling="no"></iframe>
+        <div class="card-thumb-overlay"></div>
+      </div>
+    </div>
+
+    <!-- 2 — Lik̓wala Defender -->
+    <div class="game-card">
+      <div class="card-info">
+        <div class="card-tags">
+          <span class="card-tag">🪶 Language</span>
+          <span class="card-tag">Ages 7+</span>
+        </div>
+        <div class="card-title">Lik̓wala Defender</div>
+        <p class="card-desc">Match falling images to their first letter — defend the language!</p>
+        <a class="card-play" href="https://richmccue.github.io/likwala/likwala-defender.html" target="_blank">
+          <span class="play-pip">▶</span> Play Now
+        </a>
+      </div>
+      <div class="card-thumb">
+        <iframe src="https://richmccue.github.io/likwala/likwala-defender.html"
+                loading="lazy" title="Lik̓wala Defender preview" scrolling="no"></iframe>
+        <div class="card-thumb-overlay"></div>
+      </div>
+    </div>
+
+    <!-- 3 — Lik̓wala Soundboard -->
+    <div class="game-card">
+      <div class="card-info">
+        <div class="card-tags">
+          <span class="card-tag">🔊 Language</span>
+          <span class="card-tag">All Ages</span>
+        </div>
+        <div class="card-title">Lik̓wala Alphabet Soundboard</div>
+        <p class="card-desc">Click each letter tile to hear its authentic pronunciation.</p>
+        <a class="card-play" href="https://richmccue.github.io/likwala/likwala-soundboard.html" target="_blank">
+          <span class="play-pip">▶</span> Play Now
+        </a>
+      </div>
+      <div class="card-thumb">
+        <iframe src="https://richmccue.github.io/likwala/likwala-soundboard.html"
+                loading="lazy" title="Lik̓wala Soundboard preview" scrolling="no"></iframe>
+        <div class="card-thumb-overlay"></div>
+      </div>
+    </div>
+
+    <!-- 4 — Brazilian Portuguese -->
+    <div class="game-card">
+      <div class="card-info">
+        <div class="card-tags">
+          <span class="card-tag">🇧🇷 Language</span>
+          <span class="card-tag">Ages 8+</span>
+        </div>
+        <div class="card-title">O Alfabeto Brasileiro</div>
+        <p class="card-desc">Tap every letter to hear Brazilian Portuguese pronunciation.</p>
+        <a class="card-play" href="https://richmccue.github.io/brasil-letters/portuguese.html" target="_blank">
+          <span class="play-pip">▶</span> Play Now
+        </a>
+      </div>
+      <div class="card-thumb">
+        <iframe src="https://richmccue.github.io/brasil-letters/portuguese.html"
+                loading="lazy" title="O Alfabeto Brasileiro preview" scrolling="no"></iframe>
+        <div class="card-thumb-overlay"></div>
+      </div>
+    </div>
+
+    <!-- 5 — Flappy Matt -->
+    <div class="game-card">
+      <div class="card-info">
+        <div class="card-tags">
+          <span class="card-tag">🎮 Arcade</span>
+          <span class="card-tag">All Ages</span>
+        </div>
+        <div class="card-title">Flappy Matt</div>
+        <p class="card-desc">Tap or press space — flap your way past every obstacle!</p>
+        <a class="card-play" href="https://richmccue.github.io/papertowel/" target="_blank">
+          <span class="play-pip">▶</span> Play Now
+        </a>
+      </div>
+      <div class="card-thumb">
+        <iframe src="https://richmccue.github.io/papertowel/"
+                loading="lazy" title="Flappy Matt preview" scrolling="no"></iframe>
+        <div class="card-thumb-overlay"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Rich's Games <span>4 Learning</span></div>
+    <div class="footer-chars">🐋 🦅 🐟 🐻 🌲</div>
+    <div class="footer-tagline">Learning from the land, the sea &amp; the sky of the Pacific Northwest 🌊</div>
+    <div class="footer-copy">Made with ♥ on the traditional territories of the Coast Salish peoples · Rich's Games 4 Learning</div>
+  </div>
+</footer>
+
+</body>
+</html>
