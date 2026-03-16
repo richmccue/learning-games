@@ -18,7 +18,7 @@
 body{font-family:'Nunito',sans-serif;background:var(--sky-top);overflow-x:hidden;}
 
 /* HERO */
-.hero{position:relative;min-height:82vh;overflow:hidden;display:flex;align-items:center;background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 55%,var(--sky-low) 80%,#d0eef8 100%);}
+.hero{position:relative;min-height:25vh;overflow:hidden;display:flex;align-items:center;background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 55%,var(--sky-low) 80%,#d0eef8 100%);}
 .mist-layer{position:absolute;left:0;right:0;pointer-events:none;}
 .mist-1{top:30%;height:80px;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.3) 20%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.25) 80%,transparent 100%);animation:mist 18s ease-in-out infinite alternate;}
 .mist-2{top:50%;height:60px;background:linear-gradient(90deg,rgba(255,255,255,.2) 0%,transparent 30%,rgba(255,255,255,.35) 60%,transparent 100%);animation:mist 24s ease-in-out infinite alternate-reverse;}
@@ -34,39 +34,30 @@ body{font-family:'Nunito',sans-serif;background:var(--sky-top);overflow-x:hidden
 .hc3::before{width:85px;height:85px;top:-48px;left:20px;}.hc3::after{width:62px;height:62px;top:-32px;left:80px;}
 @keyframes hdrift{from{transform:translateX(-220px)}to{transform:translateX(110vw)}}
 
-.forest-bg{position:absolute;bottom:108px;left:0;right:0;pointer-events:none;z-index:1;}
-.ocean-strip{position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(180deg,var(--ocean) 0%,var(--ocean-deep) 100%);border-top:4px solid var(--ink);z-index:2;}
-.wave-top{position:absolute;top:-28px;left:-10px;right:-10px;pointer-events:none;}
+.forest-bg{position:absolute;bottom:70px;left:0;right:0;pointer-events:none;z-index:1;}
+.ocean-strip{position:absolute;bottom:0;left:0;right:0;height:72px;background:linear-gradient(180deg,var(--ocean) 0%,var(--ocean-deep) 100%);border-top:3px solid var(--ink);z-index:2;}
+.wave-top{position:absolute;top:-18px;left:-10px;right:-10px;pointer-events:none;}
 
-.hero-chars{position:absolute;bottom:108px;left:0;right:0;z-index:4;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;}
+.hero-chars{position:absolute;bottom:70px;left:0;right:0;z-index:4;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;}
 .char{animation:float 4s ease-in-out infinite;filter:drop-shadow(4px 8px 6px rgba(0,0,0,.25));}
 .char:nth-child(2){animation-delay:-1s}.char:nth-child(3){animation-delay:-2s}.char:nth-child(4){animation-delay:-.5s}.char:nth-child(5){animation-delay:-1.7s}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
-.hero-text{position:relative;z-index:10;margin-left:clamp(20px,7vw,110px);margin-bottom:200px;animation:slide-in .8s cubic-bezier(.2,1.4,.4,.9) both;}
+.hero-text{position:relative;z-index:10;margin-left:clamp(20px,7vw,110px);margin-bottom:110px;animation:slide-in .8s cubic-bezier(.2,1.4,.4,.9) both;}
 @keyframes slide-in{from{transform:translateX(-60px) rotate(-4deg);opacity:0}to{transform:translateX(0) rotate(0);opacity:1}}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--gold);border:3px solid var(--ink);border-radius:50px;padding:4px 16px;font-family:'Fredoka One',cursive;font-size:.9rem;color:var(--ink);box-shadow:3px 3px 0 var(--ink);margin-bottom:14px;animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-.hero-title{font-family:'Fredoka One',cursive;font-size:clamp(2.4rem,6vw,4.5rem);line-height:1.0;color:white;text-shadow:4px 4px 0 var(--ocean-deep);}
-.hero-title .line2{display:block;color:var(--gold);text-shadow:4px 4px 0 var(--cedar-dk);font-size:clamp(3rem,8vw,6rem);}
+.hero-title{font-family:'Fredoka One',cursive;font-size:clamp(1.4rem,3.5vw,2.6rem);line-height:1.0;color:white;text-shadow:4px 4px 0 var(--ocean-deep);}
+.hero-title .line2{display:block;color:var(--gold);text-shadow:4px 4px 0 var(--cedar-dk);font-size:clamp(1.8rem,4.8vw,3.6rem);}
 .hero-sub{font-size:1.1rem;font-weight:700;color:rgba(255,255,255,.9);margin:14px 0 0;text-shadow:1px 1px 0 rgba(0,0,0,.3);}
 
-.orca-fin{position:absolute;bottom:125px;right:80px;z-index:5;animation:fin 6s ease-in-out infinite;pointer-events:none;}
+.orca-fin{position:absolute;bottom:76px;right:80px;z-index:5;animation:fin 6s ease-in-out infinite;pointer-events:none;}
 @keyframes fin{0%,100%{transform:translateY(12px)}40%,60%{transform:translateY(-4px)}}
 
-/* BAND */
-.formline-band{position:relative;z-index:10;background:var(--cedar);border-top:4px solid var(--ink);border-bottom:4px solid var(--ink);padding:10px 0;overflow:hidden;}
-.fscroll{display:flex;gap:32px;align-items:center;animation:scroll-b 25s linear infinite;white-space:nowrap;width:max-content;}
-@keyframes scroll-b{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.fitem{font-family:'Fredoka One',cursive;font-size:1rem;color:white;letter-spacing:2px;display:flex;align-items:center;gap:12px;}
-.fdot{width:10px;height:10px;background:var(--gold);border-radius:50%;border:2px solid var(--ink);flex-shrink:0;}
-
 /* GAMES SECTION */
-.games-section{position:relative;z-index:5;background:linear-gradient(180deg,#e8f4f8 0%,#d4edf5 100%);padding:52px 24px 72px;}
+.games-section{position:relative;z-index:5;background:linear-gradient(180deg,#e8f4f8 0%,#d4edf5 100%);padding:28px 24px 72px;}
 .games-section::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 15% 30%,rgba(192,57,43,.05) 0%,transparent 40%),radial-gradient(circle at 80% 70%,rgba(26,127,168,.07) 0%,transparent 40%);pointer-events:none;}
-.section-header{text-align:center;margin-bottom:44px;}
-.section-kicker{display:inline-block;font-family:'Fredoka One',cursive;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;color:var(--ocean);background:white;border:2.5px solid var(--ink);border-radius:50px;padding:3px 18px;box-shadow:3px 3px 0 var(--ink);margin-bottom:12px;}
-.section-title{font-family:'Fredoka One',cursive;font-size:clamp(2rem,5vw,3.2rem);color:var(--ink);line-height:1.1;}
+
+.intro-text{max-width:920px;margin:0 auto 32px;font-size:1.05rem;font-weight:600;color:#3a5a6a;line-height:1.7;}
 
 /* CARDS */
 .games-list{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:26px;}
@@ -168,19 +159,17 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
 
   <!-- Hero text -->
   <div class="hero-text">
-    <div class="hero-badge">🌊 Pacific Northwest Learning Adventure</div>
     <h1 class="hero-title">
       Rich's Games
       <span class="line2">4 Learning!</span>
     </h1>
-    <p class="hero-sub">🐋 Play with Raven, Orca &amp; friends — learn from the land! 🦅</p>
   </div>
 
   <!-- Characters -->
   <div class="hero-chars">
     <!-- Bear Elder -->
-    <div class="char" style="margin-bottom:-5px;margin-right:-18px;">
-      <svg width="130" height="200" viewBox="0 0 130 200">
+    <div class="char" style="margin-bottom:-3px;margin-right:-10px;">
+      <svg width="72" height="110" viewBox="0 0 130 200">
         <ellipse cx="65" cy="145" rx="46" ry="52" fill="#7B4B2A"/>
         <ellipse cx="65" cy="148" rx="30" ry="36" fill="#C0392B" opacity=".85"/>
         <path d="M52,132 Q65,120 78,132 Q78,145 65,148 Q52,145 52,132Z" fill="#F0B429" opacity=".9"/>
@@ -206,7 +195,7 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
     </div>
     <!-- Raven -->
     <div class="char" style="margin-bottom:0;">
-      <svg width="115" height="215" viewBox="0 0 115 215">
+      <svg width="63" height="118" viewBox="0 0 115 215">
         <ellipse cx="57" cy="148" rx="40" ry="58" fill="#1a1a2e"/>
         <path d="M30,122 Q57,110 84,122 L80,178 Q57,188 34,178Z" fill="#C0392B" opacity=".7"/>
         <path d="M40,130 Q57,122 74,130 L72,170 Q57,176 42,170Z" fill="#1a1a2e"/>
@@ -227,8 +216,8 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
       </svg>
     </div>
     <!-- Salmon child -->
-    <div class="char" style="margin-bottom:18px;margin-left:-8px;margin-right:-8px;">
-      <svg width="102" height="168" viewBox="0 0 102 168">
+    <div class="char" style="margin-bottom:10px;margin-left:-5px;margin-right:-5px;">
+      <svg width="56" height="92" viewBox="0 0 102 168">
         <ellipse cx="51" cy="113" rx="30" ry="42" fill="#E8734A"/>
         <ellipse cx="51" cy="115" rx="20" ry="29" fill="#5BB8D4" opacity=".9"/>
         <path d="M39,102 Q51,94 63,102 Q63,114 51,117 Q39,114 39,102Z" fill="white" opacity=".8"/>
@@ -254,8 +243,8 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
       </svg>
     </div>
     <!-- Orca child -->
-    <div class="char" style="margin-bottom:8px;margin-left:-8px;">
-      <svg width="108" height="178" viewBox="0 0 108 178">
+    <div class="char" style="margin-bottom:5px;margin-left:-5px;">
+      <svg width="60" height="98" viewBox="0 0 108 178">
         <ellipse cx="54" cy="122" rx="34" ry="46" fill="#1a1a2e"/>
         <path d="M36,108 Q54,98 72,108 L68,148 Q54,155 40,148Z" fill="white"/>
         <ellipse cx="54" cy="128" rx="12" ry="9" fill="#1a1a2e" stroke="#C0392B" stroke-width="2"/>
@@ -275,8 +264,8 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
       </svg>
     </div>
     <!-- Cedar Waxwing girl -->
-    <div class="char" style="margin-bottom:22px;margin-left:-14px;">
-      <svg width="92" height="158" viewBox="0 0 92 158">
+    <div class="char" style="margin-bottom:12px;margin-left:-8px;">
+      <svg width="51" height="87" viewBox="0 0 92 158">
         <ellipse cx="46" cy="107" rx="28" ry="38" fill="#C8A86B"/>
         <path d="M22,118 Q46,110 70,118 L68,140 Q46,147 24,140Z" fill="#A0522D" opacity=".8"/>
         <path d="M20,134 Q46,130 72,134 L70,145 Q46,149 22,145Z" fill="#F0B429"/>
@@ -304,7 +293,7 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
 
   <!-- Orca fin -->
   <div class="orca-fin">
-    <svg width="100" height="90" viewBox="0 0 100 90">
+    <svg width="55" height="50" viewBox="0 0 100 90">
       <path d="M50,82 Q30,42 15,10 Q35,47 55,62 Q75,42 85,10 Q72,44 50,82Z" fill="#1a1a2e"/>
       <ellipse cx="30" cy="46" rx="6" ry="5" fill="white" opacity=".65"/>
     </svg>
@@ -316,30 +305,18 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
       <path d="M0,16 C180,0 360,32 540,16 C720,0 900,32 1080,16 C1260,0 1380,28 1440,16 L1440,32 L0,32Z" fill="#1a7fa8"/>
       <path d="M0,20 C200,6 400,34 600,20 C800,6 1000,34 1200,20 C1320,8 1400,26 1440,20 L1440,32 L0,32Z" fill="#0d4f6e" opacity=".5"/>
     </svg>
-    <span style="position:absolute;bottom:52px;left:34%;font-size:2rem;animation:sjump 4s ease-in-out infinite;pointer-events:none;">🐟</span>
-    <span style="position:absolute;bottom:42px;left:58%;font-size:1.5rem;animation:sjump 3s ease-in-out infinite;animation-delay:-1.5s;pointer-events:none;">🐟</span>
-    <span style="position:absolute;bottom:32px;right:14%;font-size:1.1rem;animation:sjump 5s ease-in-out infinite;animation-delay:-3s;pointer-events:none;">🐟</span>
+    <span style="position:absolute;bottom:28px;left:34%;font-size:1.2rem;animation:sjump 4s ease-in-out infinite;pointer-events:none;">🐟</span>
+    <span style="position:absolute;bottom:20px;left:58%;font-size:1rem;animation:sjump 3s ease-in-out infinite;animation-delay:-1.5s;pointer-events:none;">🐟</span>
+    <span style="position:absolute;bottom:14px;right:14%;font-size:.85rem;animation:sjump 5s ease-in-out infinite;animation-delay:-3s;pointer-events:none;">🐟</span>
   </div>
 </section>
 <style>
 @keyframes sjump{0%,100%{transform:translateY(0) scaleX(1)}25%{transform:translateY(-30px) scaleX(1)}50%{transform:translateY(-52px) rotate(25deg) scaleX(-1)}75%{transform:translateY(-20px) scaleX(-1)}}
 </style>
 
-<!-- FORMLINE BAND -->
-<div class="formline-band">
-  <div class="fscroll">
-    <div class="fitem"><span class="fdot"></span>🐋 ORCA</div><div class="fitem"><span class="fdot"></span>🦅 EAGLE</div><div class="fitem"><span class="fdot"></span>🐟 SALMON</div><div class="fitem"><span class="fdot"></span>🐻 BEAR</div><div class="fitem"><span class="fdot"></span>🌲 CEDAR</div><div class="fitem"><span class="fdot"></span>🌊 OCEAN</div><div class="fitem"><span class="fdot"></span>🦆 HERON</div><div class="fitem"><span class="fdot"></span>🪶 RAVEN</div><div class="fitem"><span class="fdot"></span>🌙 MOON</div><div class="fitem"><span class="fdot"></span>⭐ STARS</div>
-    <div class="fitem"><span class="fdot"></span>🐋 ORCA</div><div class="fitem"><span class="fdot"></span>🦅 EAGLE</div><div class="fitem"><span class="fdot"></span>🐟 SALMON</div><div class="fitem"><span class="fdot"></span>🐻 BEAR</div><div class="fitem"><span class="fdot"></span>🌲 CEDAR</div><div class="fitem"><span class="fdot"></span>🌊 OCEAN</div><div class="fitem"><span class="fdot"></span>🦆 HERON</div><div class="fitem"><span class="fdot"></span>🪶 RAVEN</div><div class="fitem"><span class="fdot"></span>🌙 MOON</div><div class="fitem"><span class="fdot"></span>⭐ STARS</div>
-  </div>
-</div>
-
 <!-- ═══ GAMES ══════════════════════════════════════════ -->
 <section class="games-section" id="games">
-  <div class="section-header">
-    <div class="section-kicker">🌊 Choose Your Game</div>
-    <h2 class="section-title">Play &amp; Learn with<br>the Coastal Crew!</h2>
-  </div>
-
+  <p class="intro-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.</p>
   <div class="games-list">
 
     <!-- 1 — Volcano Phases -->
