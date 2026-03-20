@@ -545,16 +545,16 @@ function drawBadge(finalScore, total) {
   ctx.textBaseline = 'middle';
   ctx.fillText(finalScore + '/' + total, cx, cy + 52);
 
-  // "IS MY PHONE LISTENING?" arc bottom
+  // "MY PHONE IS NOT LISTENING!" arc bottom
   ctx.save();
-  ctx.font = 'bold 13px Bangers, Impact, sans-serif';
+  ctx.font = 'bold 12px Bangers, Impact, sans-serif';
   ctx.fillStyle = '#0D0D0D';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const botText = 'IS MY PHONE LISTENING?';
+  const botText = 'MY PHONE IS NOT LISTENING!';
   const botR = 88;
-  const botStart = Math.PI * 0.18;
-  const botEnd = Math.PI * 0.82;
+  const botStart = Math.PI * 0.15;
+  const botEnd = Math.PI * 0.85;
   const botStep = (botEnd - botStart) / (botText.length - 1);
   for (let i = 0; i < botText.length; i++) {
     const angle = botStart + i * botStep;
