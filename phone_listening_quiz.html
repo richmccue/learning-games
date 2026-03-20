@@ -203,7 +203,7 @@ body{
 
   <div class="comic-header">
     <div class="comic-title">IS MY PHONE<br><span>LISTENING TO ME?</span></div>
-    <div><span class="comic-sub">★ THE QUIZ ★</span></div>
+    <div><span class="comic-sub">★ PUT YOUR SKILLS TO THE TEST! ★</span></div>
   </div>
 
   <!-- INTRO -->
@@ -225,18 +225,18 @@ body{
       </div>
     </div>
     <div class="intro-body">
-      This quiz throws <strong>20 conspiracy theories</strong> and <strong>7 real data techniques</strong> at you — totally randomized. Can you tell which is which?<br><br>
+      This quiz throws <strong>7 conspiracy theories</strong> and <strong>7 real data techniques</strong> at you — totally randomized. Can you tell which is which?<br><br>
       Answer <strong>True / False</strong> or <strong>Yes / No</strong> on each claim, then get the real explanation. Score points for every correct answer!
     </div>
     <button class="start-btn" id="start-btn">LET'S GO! →</button>
-    <div class="q-count-info">27 QUESTIONS — SHUFFLED EVERY TIME</div>
+    <div class="q-count-info">14 QUESTIONS — SHUFFLED EVERY TIME</div>
   </div>
 
   <!-- GAME -->
   <div id="game-area" style="display:none;">
     <div class="score-bar">
       <div>SCORE: <span class="score-val" id="score-display">0</span></div>
-      <div id="q-counter" style="font-size:17px;">Q 1 / 27</div>
+      <div id="q-counter" style="font-size:17px;">Q 1 / 17</div>
     </div>
     <div class="progress-wrap">
       <div class="progress-fill" id="progress-fill" style="width:0%"></div>
@@ -276,7 +276,7 @@ body{
   <!-- RESULTS -->
   <div class="results-panel" id="results-screen">
     <div style="font-family:'Bangers',cursive;font-size:14px;letter-spacing:3px;color:#555;margin-top:0.5rem;">FINAL SCORE</div>
-    <div class="results-big" id="results-big">0/27</div>
+    <div class="results-big" id="results-big">0/17</div>
     <div class="results-label">CORRECT ANSWERS</div>
     <hr class="results-divider">
     <div style="display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:1rem;">
@@ -303,27 +303,39 @@ body{
 
 </div>
 <script>
+function playTaDa(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const t=ctx.currentTime;
+    const notes=[523.25,659.25,783.99,1046.50];
+    const times=[0,0.12,0.24,0.36];
+    notes.forEach((freq,i)=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.type='triangle';
+      osc.frequency.setValueAtTime(freq,t+times[i]);
+      gain.gain.setValueAtTime(0,t+times[i]);
+      gain.gain.linearRampToValueAtTime(0.35,t+times[i]+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001,t+times[i]+0.3);
+      osc.start(t+times[i]);
+      osc.stop(t+times[i]+0.35);
+    });
+  }catch(e){}
+}
+
 const ALL_QUESTIONS=[
-  {text:"Phone screens act as microphone diaphragms, vibrating with sound to secretly transmit audio via the charging port.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Screens are rigid, laminated structures — they cannot flex like a microphone diaphragm. The charging port also lacks the Analog-to-Digital Converters needed to process structural vibrations."},
-  {text:"Phones emit high-frequency tones that trigger household objects to record data and send it back.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Passive household objects — lamps, cups, furniture — have no electronic components that can respond to ultrasonic frequencies or transmit data. They are completely inert."},
-  {text:"Vibration motors in phones can be switched into 'input mode' to function as low-frequency microphones.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Haptic drivers are output-only components. They lack the high-fidelity sampling circuitry required to capture speech-range audio frequencies."},
-  {text:"Sudden battery drops are caused by hidden background audio-to-text processing for advertising.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Battery drain is caused by display brightness, GPS, and app syncing. Real-time audio processing is actually a low-power task — not a realistic culprit for sudden drain."},
-  {text:"TVs play silent ultrasonic codes that phones secretly 'hear' to link your viewing habits to your ad profile.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Modern iOS and Android gate microphone access. Apps cannot listen in the background without a visible mic-in-use indicator showing on screen."},
-  {text:"Phones use low-level electromagnetic frequencies to plant brand names into a user's subconscious.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Phones use non-ionizing RF bands that lack the power or precision to influence neural pathways or inject linguistic concepts. This is not physically possible."},
-  {text:"Phones maintain a 24-hour audio cache that only uploads when the device is charging.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"24 hours of raw audio requires gigabytes of storage and would cause a massive, easily-detected spike in data usage. No such transfers have ever been found by researchers."},
+  /* ── 7 CONSPIRACY THEORIES (3 easy, 4 hard) ── */
+  // Easy
+  {text:"Phones maintain a 24-hour audio cache that secretly uploads while your device is charging.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"24 hours of raw audio requires gigabytes of storage and would cause a massive, easily-detected spike in data usage. No such transfers have ever been found by researchers."},
+  {text:"Deleted apps leave behind hidden background processes that continue monitoring your environment.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Mobile operating systems use strict sandboxing. Once an app is uninstalled, all its process IDs and permissions are fully purged from the system registry."},
+  {text:"Airplane Mode is a facade — the phone keeps broadcasting audio on distress frequencies.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Airplane Mode is a genuine hardware-level kill switch for all radios, mandated by regulatory bodies like the FCC for aviation safety. It is not a software illusion."},
+  // Hard
+  {text:"Gyroscopes in phones are sensitive enough to detect sound waves and convert them into usable audio files.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"MEMS gyroscopes are hardware-capped at around 200 Hz — far below the 8,000 Hz minimum required to reconstruct human speech."},
   {text:"SIM cards contain microscopic hidden microphones that bypass operating system permissions.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"SIM cards follow strict ISO/IEC 7816 standards. They have no hardware traces for audio input and no physical space for a MEMS microphone."},
   {text:"High-speed phone cameras can 'see' vibrations on glass surfaces and translate them into reconstructed speech.",type:"yn",answer:false,category:"CONSPIRACY THEORY",explain:"'Visual microphone' research requires 1,000+ fps. Standard phone cameras shoot at 30–60 fps — nowhere near fast enough to sample vibrations for speech reconstruction."},
-  {text:"CPU temperature fluctuations are a side effect of real-time voice decryption happening in the background.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"CPU heat is a byproduct of electrical resistance in normal processing. Thermal changes are far too slow to correlate with millisecond-level audio events."},
-  {text:"Deleted apps leave behind background processes designed to continue monitoring your environment.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Mobile operating systems use strict sandboxing. Once an app is uninstalled, all its process IDs and permissions are fully purged from the system registry."},
-  {text:"Phones can listen to nearby Bluetooth devices to build a 'social graph' of your interests and conversations.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"BLE is designed for data exchange and proximity detection. Intercepting encrypted audio from a remote device would require breaching global encryption standards."},
-  {text:"Gyroscopes in phones are sensitive enough to detect sound waves and convert them into usable audio files.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"MEMS gyroscopes are hardware-capped at around 200 Hz — far below the 8,000 Hz minimum required to reconstruct human speech."},
-  {text:"Algorithms analyse 'emotional frequencies' in a room to determine if a user is in a buying mood.",type:"yn",answer:false,category:"CONSPIRACY THEORY",explain:"There is no such thing as an 'emotional frequency' in physics. Advertising algorithms rely on deterministic data like search history, location, and purchase behaviour."},
-  {text:"LED flashlights in phones pulse at nanosecond intervals to beam audio data to smart streetlights.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"LED drivers in phones cannot switch at nanosecond speeds. Such pulsing would also produce detectable electromagnetic interference visible to any standard RF scanner."},
   {text:"Vapor chambers inside phones act as echo chambers that amplify distant whispers for internal sensors.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Vapor chambers are vacuum-sealed and filled with coolant fluid. They are designed for thermal conductivity and actually dampen sound rather than amplify it."},
-  {text:"Phones monitor CO₂ levels to estimate the number of people talking in a room.",type:"yn",answer:false,category:"CONSPIRACY THEORY",explain:"Most smartphones lack CO₂ or O₂ sensors. Barometers and hygrometers cannot distinguish between human breath and atmospheric weather changes."},
-  {text:"Airplane Mode is a facade — the device continues broadcasting audio via distress frequencies.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Airplane Mode is a genuine hardware-level kill switch for all radios, mandated by regulatory bodies like the FCC for aviation safety. It is not a software illusion."},
-  {text:"Haptic feedback timing is synchronised with ambient sound to secretly create audio-text records.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Haptic events are localized to screen coordinates. They lack the temporal resolution or microphone access required to record ambient sound."},
-  {text:"Individual OLED pixels act as light-based sensors that detect sound-induced air pressure changes.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"OLEDs are light-emitting diodes — not photo-sensitive transistors. They lack the circuitry needed to convert air pressure into electrical signals."},
+  /* ── 7 REAL FACTS / TECHNIQUES ── */
   {text:"Browser fingerprinting can identify you across the web even after you clear your cookies or use Incognito mode.",type:"tf",answer:true,category:"REAL TECHNIQUE",explain:"Sites snapshot your screen resolution, installed fonts, browser version, time zone, and hardware specs. Combined, these create a near-unique signature that survives cookie clearing."},
   {text:"Data brokers legally buy and sell your personal information, connecting your behaviour across thousands of websites.",type:"tf",answer:true,category:"REAL TECHNIQUE",explain:"Data brokers aggregate information from apps, websites, and public records — then sell combined profiles to advertisers. This is real, widespread, and largely legal."},
   {text:"Lookalike modelling means you can receive an ad for something your friend searched for — without searching for it yourself.",type:"tf",answer:true,category:"REAL TECHNIQUE",explain:"If your phone and a friend's were in the same location and they later searched for something, the algorithm may serve you the same ad. No microphone needed — proximity data is enough."},
@@ -387,7 +399,7 @@ function handleAnswer(chosen){
     const isCorrectBtn=(b.textContent==='TRUE'||b.textContent==='YES')===q.answer;
     b.classList.add(isCorrectBtn?'correct':'wrong');
   });
-  if(correct){score++;setMascot('correct');}
+  if(correct){score++;setMascot('correct');playTaDa();}
   else{setMascot('wrong');}
   document.getElementById('score-display').textContent=score;
   const verdict=document.getElementById('feedback-verdict');
@@ -412,10 +424,10 @@ function showResults(){
   document.getElementById('results-big').textContent=score+'/'+total;
   const pct=score/total;
   let verdict,sub,eyes,bubble;
-  if(pct===1){verdict="PERFECT SCORE! You're a certified digital detective!";sub="You cut through every myth and nailed every real technique. Your phone is definitely not fooling you.";eyes=":D";bubble="PERFECT!!";}
-  else if(pct>=0.85){verdict="Almost flawless! Sharp mind!";sub="You know your data brokers from your conspiracy theories. Just one or two myths slipped through.";eyes=":)";bubble="So close!!";}
-  else if(pct>=0.65){verdict="Not bad — but the myths still got you a little!";sub="You caught most of the facts, but a few myths snuck past. The real data tricks are sneakier than they look.";eyes=":|";bubble="Keep trying!";}
-  else if(pct>=0.45){verdict="Half right. The myths ARE pretty convincing...";sub="That's the point — they're designed to sound plausible. Play again and you'll spot the patterns.";eyes=":/";bubble="Play again!";}
+  if(pct===1){verdict="PERFECT SCORE! You're a certified digital detective!";sub="14 out of 14 — you cut through every myth and nailed every real technique. Your phone is definitely not fooling you.";eyes=":D";bubble="PERFECT!!";}
+  else if(pct>=0.85){verdict="Almost flawless! Sharp mind!";sub="You know your data brokers from your conspiracy theories. Just one myth slipped through — play again to go perfect.";eyes=":)";bubble="So close!!";}
+  else if(pct>=0.65){verdict="Not bad — but the myths still got you!";sub="You caught most of the facts, but a few conspiracy theories snuck past. The tricky ones are designed to sound plausible.";eyes=":|";bubble="Keep trying!";}
+  else if(pct>=0.45){verdict="Half right. The myths ARE pretty convincing...";sub="That's the point — they're designed to sound believable. Play again and you'll start to spot the patterns.";eyes=":/";bubble="Play again!";}
   else{verdict="Your phone is NOT listening. But it fooled you!";sub="Don't worry — that's exactly why this quiz exists. Play again and the real story will start to click.";eyes=":(";bubble="Try again!";}
   document.getElementById('results-verdict').textContent=verdict;
   document.getElementById('results-sub').textContent=sub;
