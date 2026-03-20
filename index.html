@@ -63,7 +63,7 @@ body{font-family:'Nunito',sans-serif;background:var(--sky-top);overflow-x:hidden
 .games-list{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:26px;}
 
 .game-card{background:var(--card-bg);border:3.5px solid var(--ink);border-radius:24px;overflow:hidden;display:flex;box-shadow:6px 6px 0 var(--ink);transition:transform .15s,box-shadow .15s;animation:card-in .5s ease both;position:relative;}
-.game-card:nth-child(1){animation-delay:.05s}.game-card:nth-child(2){animation-delay:.12s}.game-card:nth-child(3){animation-delay:.19s}.game-card:nth-child(4){animation-delay:.26s}.game-card:nth-child(5){animation-delay:.33s}
+.game-card:nth-child(1){animation-delay:.05s}.game-card:nth-child(2){animation-delay:.12s}.game-card:nth-child(3){animation-delay:.19s}.game-card:nth-child(4){animation-delay:.26s}.game-card:nth-child(5){animation-delay:.33s}.game-card:nth-child(6){animation-delay:.40s}
 @keyframes card-in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .game-card:hover{transform:translate(-4px,-4px);box-shadow:10px 10px 0 var(--ink);}
 .game-card::before{content:'';position:absolute;top:0;left:0;width:8px;height:100%;background:var(--ac,var(--cedar));z-index:1;}
@@ -109,11 +109,12 @@ body{font-family:'Nunito',sans-serif;background:var(--sky-top);overflow-x:hidden
 }
 
 /* Per-card colours */
-.game-card:nth-child(1){--ac:var(--cedar);    --tmbg:#fff3e8;--tbg:#fde8d8;}
-.game-card:nth-child(2){--ac:var(--ocean);    --tmbg:#d6eef8;--tbg:#cce9f5;}
-.game-card:nth-child(3){--ac:var(--fern);     --tmbg:#d8f2e8;--tbg:#d4f0e4;}
-.game-card:nth-child(4){--ac:var(--salmon);   --tmbg:#fdebd8;--tbg:#fde8ce;}
-.game-card:nth-child(5){--ac:#6b4fa0;         --tmbg:#ede8ff;--tbg:#ece0ff;}
+.game-card:nth-child(1){--ac:#E8312A;         --tmbg:#fff5cc;--tbg:#ffe89a;}
+.game-card:nth-child(2){--ac:var(--cedar);    --tmbg:#fff3e8;--tbg:#fde8d8;}
+.game-card:nth-child(3){--ac:var(--ocean);    --tmbg:#d6eef8;--tbg:#cce9f5;}
+.game-card:nth-child(4){--ac:var(--fern);     --tmbg:#d8f2e8;--tbg:#d4f0e4;}
+.game-card:nth-child(5){--ac:var(--salmon);   --tmbg:#fdebd8;--tbg:#fde8ce;}
+.game-card:nth-child(6){--ac:#6b4fa0;         --tmbg:#ede8ff;--tbg:#ece0ff;}
 
 /* FOOTER */
 footer{position:relative;z-index:5;background:var(--ocean-deep);border-top:4px solid var(--ink);padding:32px 24px;text-align:center;overflow:hidden;}
@@ -319,7 +320,27 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
   <p class="intro-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.</p>
   <div class="games-list">
 
-    <!-- 1 — Volcano Phases -->
+    <!-- 1 — Is My Phone Listening? -->
+    <div class="game-card">
+      <div class="card-info">
+        <div class="card-tags">
+          <span class="card-tag">📱 Digital Literacy</span>
+          <span class="card-tag">Ages 13+</span>
+        </div>
+        <div class="card-title">Is My Phone Listening to Me?</div>
+        <p class="card-desc">True or false — can you separate the conspiracy theories from the real data tricks advertisers actually use?</p>
+        <a class="card-play" href="phone_listening_quiz.html" target="_blank">
+          <span class="play-pip">▶</span> Play Now
+        </a>
+      </div>
+      <div class="card-thumb">
+        <iframe src="phone_listening_quiz.html"
+                loading="lazy" title="Is My Phone Listening? preview" scrolling="no"></iframe>
+        <div class="card-thumb-overlay"></div>
+      </div>
+    </div>
+
+    <!-- 2 — Volcano Phases -->
     <div class="game-card">
       <div class="card-info">
         <div class="card-tags">
@@ -339,7 +360,7 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
       </div>
     </div>
 
-    <!-- 2 — Lik̓wala Defender -->
+    <!-- 3 — Lik̓wala Defender -->
     <div class="game-card">
       <div class="card-info">
         <div class="card-tags">
@@ -359,7 +380,7 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
       </div>
     </div>
 
-    <!-- 3 — Lik̓wala Soundboard -->
+    <!-- 4 — Lik̓wala Soundboard -->
     <div class="game-card">
       <div class="card-info">
         <div class="card-tags">
@@ -379,7 +400,7 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
       </div>
     </div>
 
-    <!-- 4 — Brazilian Portuguese -->
+    <!-- 5 — Brazilian Portuguese -->
     <div class="game-card">
       <div class="card-info">
         <div class="card-tags">
@@ -399,7 +420,7 @@ footer::before{content:'🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲
       </div>
     </div>
 
-    <!-- 5 — Flappy Matt -->
+    <!-- 6 — Flappy Matt -->
     <div class="game-card">
       <div class="card-info">
         <div class="card-tags">
