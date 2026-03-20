@@ -538,33 +538,12 @@ function drawBadge(finalScore, total) {
   }
   ctx.restore();
 
-  // Score in centre bottom
-  ctx.font = 'bold 26px Bangers, Impact, sans-serif';
+  // "My Phone Is Not Listening!" inside white circle bottom
+  ctx.font = 'bold 14px Bangers, Impact, sans-serif';
   ctx.fillStyle = '#E8312A';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(finalScore + '/' + total, cx, cy + 52);
-
-  // "MY PHONE IS NOT LISTENING!" arc bottom
-  ctx.save();
-  ctx.font = 'bold 12px Bangers, Impact, sans-serif';
-  ctx.fillStyle = '#0D0D0D';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const botText = 'MY PHONE IS NOT LISTENING!';
-  const botR = 88;
-  const botStart = Math.PI * 0.15;
-  const botEnd = Math.PI * 0.85;
-  const botStep = (botEnd - botStart) / (botText.length - 1);
-  for (let i = 0; i < botText.length; i++) {
-    const angle = botStart + i * botStep;
-    ctx.save();
-    ctx.translate(cx + botR * Math.cos(angle), cy + botR * Math.sin(angle));
-    ctx.rotate(angle - Math.PI / 2);
-    ctx.fillText(botText[i], 0, 0);
-    ctx.restore();
-  }
-  ctx.restore();
+  ctx.fillText('My Phone Is Not Listening!', cx, cy + 52);
 
   // Outer border
   ctx.strokeStyle = '#0D0D0D';
