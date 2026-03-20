@@ -3,493 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Is Your Phone Listening? — A Quiz Zine</title>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<title>Is My Phone Listening? — Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --yellow:#FFE033;
+  --blue:#3B7DD8;
+  --red:#E8312A;
+  --green:#2DB560;
+  --white:#FFFEF5;
+  --black:#0D0D0D;
+  --panel:#F0EEDA;
+}
+body{
+  background:var(--yellow);
+  background-image:radial-gradient(circle,#0D0D0D 1px,transparent 1px);
+  background-size:18px 18px;
+  font-family:'Comic Neue',cursive;
+  min-height:100vh;
+  padding:1.5rem 1rem 4rem;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+#quiz-root{width:100%;max-width:640px;}
 
-  :root {
-    --ink: #1a1a1a;
-    --paper: #f5f2eb;
-    --paper2: #ece8de;
-    --paper3: #ddd9ce;
-    --border: #1a1a1a;
-    --muted: #5a5650;
-    --correct-bg: #1a1a1a;
-    --correct-fg: #f5f2eb;
-    --wrong-border: #1a1a1a;
-    --accent: #c8441a;
-  }
+/* Header */
+.comic-header{
+  text-align:center;
+  background:var(--blue);
+  border:4px solid var(--black);
+  box-shadow:6px 6px 0 var(--black);
+  padding:1.25rem 1rem 1rem;
+  margin-bottom:1.25rem;
+  position:relative;
+  overflow:hidden;
+}
+.comic-header::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.18) 1px,transparent 1px);
+  background-size:12px 12px;
+}
+.comic-title{
+  font-family:'Bangers',cursive;
+  font-size:42px;line-height:1.0;
+  color:var(--yellow);
+  -webkit-text-stroke:2px var(--black);
+  text-shadow:3px 3px 0 var(--black);
+  letter-spacing:1px;position:relative;
+}
+.comic-title span{color:var(--white);-webkit-text-stroke:2px var(--black);}
+.comic-sub{
+  font-family:'Bangers',cursive;font-size:16px;letter-spacing:3px;
+  color:var(--white);background:var(--red);
+  display:inline-block;padding:2px 14px;border:2px solid var(--black);margin-top:8px;position:relative;
+}
 
-  body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Courier Prime', monospace;
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 2rem 1rem 4rem;
-  }
+/* Speech bubble */
+.speech-bubble{
+  background:var(--white);border:3px solid var(--black);border-radius:16px;
+  padding:10px 16px;position:relative;display:inline-block;
+  font-family:'Bangers',cursive;font-size:16px;letter-spacing:0.5px;
+  color:var(--black);box-shadow:3px 3px 0 var(--black);text-align:left;
+}
+.speech-bubble::after{
+  content:'';position:absolute;bottom:-14px;left:24px;
+  width:0;height:0;border-left:10px solid transparent;
+  border-right:6px solid transparent;border-top:14px solid var(--black);
+}
+.speech-bubble::before{
+  content:'';position:absolute;bottom:-10px;left:25px;
+  width:0;height:0;border-left:9px solid transparent;
+  border-right:5px solid transparent;border-top:12px solid var(--white);z-index:1;
+}
 
-  #quiz-root {
-    width: 100%;
-    max-width: 660px;
-  }
+/* Score bar */
+.score-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--black);color:var(--yellow);
+  font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px;
+  padding:8px 14px;border:3px solid var(--black);margin-bottom:1rem;
+}
+.score-val{font-size:26px;color:var(--yellow);}
 
-  /* ── Header ── */
-  .zine-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 3px double var(--border);
-  }
+/* Progress */
+.progress-wrap{
+  background:var(--white);border:3px solid var(--black);height:18px;margin-bottom:1rem;overflow:hidden;
+}
+.progress-fill{
+  height:100%;background:var(--red);
+  background-image:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(0,0,0,0.15) 4px,rgba(0,0,0,0.15) 8px);
+  transition:width 0.4s ease;border-right:2px solid var(--black);
+}
 
-  .zine-vol {
-    font-size: 11px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
+/* Mascot row */
+.mascot-row{display:flex;align-items:flex-end;gap:12px;margin-bottom:1rem;}
 
-  .zine-title {
-    font-family: 'Special Elite', serif;
-    font-size: 32px;
-    line-height: 1.1;
-    color: var(--ink);
-    margin-bottom: 6px;
-  }
+/* Question panel */
+.q-panel{
+  background:var(--panel);border:4px solid var(--black);
+  box-shadow:6px 6px 0 var(--black);padding:1.25rem;margin-bottom:1rem;
+}
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.q-num-badge{
+  font-family:'Bangers',cursive;font-size:13px;letter-spacing:2px;
+  background:var(--black);color:var(--yellow);padding:2px 10px;display:inline-block;
+}
+.q-type-badge{
+  font-family:'Bangers',cursive;font-size:13px;letter-spacing:2px;
+  background:var(--blue);color:var(--white);padding:2px 10px;border:2px solid var(--black);display:inline-block;
+}
+.q-category{font-family:'Bangers',cursive;font-size:13px;letter-spacing:2px;color:var(--red);margin-bottom:8px;}
+.q-text{font-family:'Bangers',cursive;font-size:24px;line-height:1.3;color:var(--black);margin-bottom:1.25rem;}
 
-  .zine-sub {
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 4px 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    margin: 8px 0;
-    display: inline-block;
-    padding: 3px 16px;
-  }
+/* Buttons */
+.btn-row{display:flex;gap:12px;}
+.ans-btn{
+  flex:1;font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;
+  padding:12px 0;background:var(--yellow);color:var(--black);
+  border:3px solid var(--black);box-shadow:4px 4px 0 var(--black);
+  cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;
+}
+.ans-btn:hover:not(:disabled){transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--black);}
+.ans-btn:active:not(:disabled){transform:translate(2px,2px);box-shadow:2px 2px 0 var(--black);}
+.ans-btn:disabled{cursor:default;}
+.ans-btn.correct{background:var(--green);color:var(--white);border-color:var(--black);box-shadow:4px 4px 0 var(--black);}
+.ans-btn.wrong{background:#ccc;color:#888;box-shadow:none;transform:none;}
 
-  .zine-tagline {
-    font-size: 12px;
-    color: var(--muted);
-    font-style: italic;
-    margin-top: 4px;
-  }
+/* Feedback */
+.feedback-box{
+  margin-top:1rem;padding:12px 14px;background:var(--white);
+  border:3px solid var(--black);box-shadow:4px 4px 0 var(--black);
+  font-size:14px;line-height:1.6;color:var(--black);display:none;
+}
+.feedback-box.show{display:block;}
+.feedback-verdict{font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;margin-bottom:4px;}
+.feedback-verdict.right{color:var(--green);}
+.feedback-verdict.wrong-v{color:var(--red);}
 
-  /* ── Score bar ── */
-  .score-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-    color: var(--muted);
-  }
+.next-btn{
+  width:100%;font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;
+  padding:13px 0;background:var(--blue);color:var(--white);
+  border:3px solid var(--black);box-shadow:5px 5px 0 var(--black);
+  cursor:pointer;margin-top:1rem;display:none;transition:transform 0.08s,box-shadow 0.08s;
+}
+.next-btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--black);}
+.next-btn.show{display:block;}
 
-  .score-val {
-    font-family: 'Special Elite', serif;
-    font-size: 24px;
-    color: var(--ink);
-    letter-spacing: 0;
-  }
+/* Intro */
+.intro-panel{background:var(--white);border:4px solid var(--black);box-shadow:6px 6px 0 var(--black);padding:1.5rem;text-align:center;}
+.intro-body{
+  font-size:14px;line-height:1.8;color:#222;text-align:left;
+  margin:1rem 0 1.25rem;background:var(--panel);border:2px solid var(--black);padding:10px 14px;
+}
+.intro-body strong{font-weight:700;color:var(--black);}
+.start-btn{
+  font-family:'Bangers',cursive;font-size:26px;letter-spacing:3px;
+  padding:14px 44px;background:var(--red);color:var(--white);
+  border:3px solid var(--black);box-shadow:5px 5px 0 var(--black);
+  cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;
+}
+.start-btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--black);}
+.q-count-info{font-family:'Bangers',cursive;font-size:14px;letter-spacing:2px;color:#555;margin-top:10px;}
 
-  .streak-pip {
-    display: inline-block;
-    width: 10px; height: 10px;
-    border: 1.5px solid var(--border);
-    margin-left: 3px;
-    transform: rotate(45deg);
-    background: var(--paper);
-  }
-
-  .streak-pip.lit { background: var(--ink); }
-
-  /* ── Progress ── */
-  .progress-line {
-    height: 4px;
-    background: var(--paper3);
-    margin-bottom: 1.5rem;
-    border: 1px solid var(--border);
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: var(--ink);
-    transition: width 0.4s ease;
-  }
-
-  /* ── Mascot ── */
-  .mascot-wrap {
-    text-align: center;
-    margin-bottom: 1.25rem;
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  .mascot-wrap svg {
-    display: block;
-    margin: 0 auto 6px;
-    color: var(--ink);
-  }
-
-  /* ── Question card ── */
-  .q-card {
-    background: var(--paper);
-    border: 2px solid var(--border);
-    padding: 1.25rem;
-    position: relative;
-    margin-bottom: 0.75rem;
-  }
-
-  .q-card::after {
-    content: '';
-    position: absolute;
-    top: 5px; left: 5px;
-    right: -5px; bottom: -5px;
-    border: 2px solid var(--paper3);
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  .q-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .q-label {
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .q-type-badge {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    border: 1px solid var(--border);
-    padding: 2px 7px;
-    color: var(--ink);
-    background: var(--paper2);
-  }
-
-  .q-category {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 8px;
-  }
-
-  .q-text {
-    font-family: 'Special Elite', serif;
-    font-size: 19px;
-    line-height: 1.45;
-    color: var(--ink);
-    margin-bottom: 1.25rem;
-  }
-
-  /* ── Buttons ── */
-  .btn-row {
-    display: flex;
-    gap: 12px;
-  }
-
-  .ans-btn {
-    flex: 1;
-    font-family: 'Courier Prime', monospace;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 11px 0;
-    background: var(--paper);
-    color: var(--ink);
-    border: 2px solid var(--border);
-    cursor: pointer;
-    transition: background 0.1s, color 0.1s;
-  }
-
-  .ans-btn:hover:not(:disabled) {
-    background: var(--ink);
-    color: var(--paper);
-  }
-
-  .ans-btn:disabled { cursor: default; }
-
-  .ans-btn.correct {
-    background: var(--ink);
-    color: var(--paper);
-    border-color: var(--ink);
-  }
-
-  .ans-btn.wrong {
-    border-style: dashed;
-    opacity: 0.35;
-  }
-
-  /* ── Feedback ── */
-  .feedback-box {
-    margin-top: 1rem;
-    padding: 10px 14px;
-    border-left: 4px solid var(--border);
-    font-size: 13px;
-    line-height: 1.65;
-    background: var(--paper2);
-    color: var(--ink);
-    display: none;
-  }
-
-  .feedback-box.show { display: block; }
-
-  .feedback-verdict {
-    font-family: 'Special Elite', serif;
-    font-size: 17px;
-    margin-bottom: 5px;
-  }
-
-  .feedback-verdict.right { color: var(--ink); }
-  .feedback-verdict.wrong-v { color: var(--accent); }
-
-  .next-btn {
-    width: 100%;
-    font-family: 'Courier Prime', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 12px 0;
-    background: var(--ink);
-    color: var(--paper);
-    border: 2px solid var(--ink);
-    cursor: pointer;
-    margin-top: 1rem;
-    display: none;
-  }
-
-  .next-btn:hover { background: #333; }
-  .next-btn.show { display: block; }
-
-  /* ── Results ── */
-  .results-screen {
-    display: none;
-    text-align: center;
-    padding: 2rem 0;
-    border: 2px solid var(--border);
-    position: relative;
-  }
-
-  .results-screen::after {
-    content: '';
-    position: absolute;
-    top: 5px; left: 5px;
-    right: -5px; bottom: -5px;
-    border: 2px solid var(--paper3);
-    z-index: -1;
-  }
-
-  .results-screen.show { display: block; }
-
-  .results-big {
-    font-family: 'Special Elite', serif;
-    font-size: 72px;
-    line-height: 1;
-    color: var(--ink);
-    margin: 0.75rem 0 0.25rem;
-  }
-
-  .results-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1rem;
-  }
-
-  .results-divider {
-    border: none;
-    border-top: 1px dashed var(--border);
-    margin: 1rem 2rem;
-  }
-
-  .results-verdict {
-    font-family: 'Special Elite', serif;
-    font-size: 20px;
-    margin: 0.75rem 1.5rem 0.5rem;
-    color: var(--ink);
-    line-height: 1.3;
-  }
-
-  .results-sub {
-    font-size: 13px;
-    color: var(--muted);
-    margin: 0 2rem 1.5rem;
-    line-height: 1.7;
-  }
-
-  .play-again-btn {
-    font-family: 'Courier Prime', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 12px 36px;
-    background: var(--ink);
-    color: var(--paper);
-    border: 2px solid var(--ink);
-    cursor: pointer;
-    margin-bottom: 0.5rem;
-  }
-
-  .play-again-btn:hover { background: #333; }
-
-  /* ── Intro screen ── */
-  .intro-screen {
-    border: 2px solid var(--border);
-    padding: 2rem 2rem;
-    text-align: center;
-    position: relative;
-  }
-
-  .intro-screen::after {
-    content: '';
-    position: absolute;
-    top: 5px; left: 5px;
-    right: -5px; bottom: -5px;
-    border: 2px solid var(--paper3);
-    z-index: -1;
-  }
-
-  .intro-body {
-    font-size: 13px;
-    line-height: 1.8;
-    color: var(--muted);
-    margin: 1rem 0 1.5rem;
-    text-align: left;
-  }
-
-  .intro-body strong {
-    color: var(--ink);
-    font-weight: 700;
-  }
-
-  .start-btn {
-    font-family: 'Courier Prime', monospace;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 13px 40px;
-    background: var(--ink);
-    color: var(--paper);
-    border: 2px solid var(--ink);
-    cursor: pointer;
-  }
-
-  .start-btn:hover { background: #333; }
-
-  .q-count-info {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 1rem;
-  }
-
-  .scratch-rule {
-    border: none;
-    border-top: 2px solid var(--border);
-    margin: 1.25rem 0;
-  }
-
-  .game-area { display: block; }
-
-  @media (max-width: 500px) {
-    .zine-title { font-size: 24px; }
-    .q-text { font-size: 16px; }
-    .results-big { font-size: 56px; }
-  }
+/* Results */
+.results-panel{background:var(--white);border:4px solid var(--black);box-shadow:6px 6px 0 var(--black);padding:1.5rem;text-align:center;display:none;}
+.results-panel.show{display:block;}
+.results-big{
+  font-family:'Bangers',cursive;font-size:80px;line-height:1;color:var(--black);
+  -webkit-text-stroke:2px var(--black);text-shadow:4px 4px 0 var(--blue);margin:0.5rem 0 0.25rem;
+}
+.results-label{font-family:'Bangers',cursive;font-size:16px;letter-spacing:3px;color:#555;margin-bottom:1rem;}
+.results-verdict{font-family:'Bangers',cursive;font-size:22px;color:var(--black);margin:0.75rem 1rem 0.5rem;line-height:1.3;}
+.results-sub{font-size:14px;color:#444;margin:0 1rem 1.5rem;line-height:1.7;}
+.results-divider{border:none;border-top:3px solid var(--black);margin:1rem 0;}
+.play-again-btn{
+  font-family:'Bangers',cursive;font-size:22px;letter-spacing:3px;
+  padding:13px 40px;background:var(--red);color:var(--white);
+  border:3px solid var(--black);box-shadow:5px 5px 0 var(--black);
+  cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;
+}
+.play-again-btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--black);}
+.exclaim-burst{
+  display:inline-block;font-family:'Bangers',cursive;font-size:13px;letter-spacing:1px;
+  color:var(--black);background:var(--yellow);border:2px solid var(--black);
+  padding:2px 10px;transform:rotate(-2deg);margin-top:10px;
+}
+@media(max-width:480px){
+  .comic-title{font-size:30px;}
+  .q-text{font-size:19px;}
+  .results-big{font-size:60px;}
+  .ans-btn{font-size:18px;}
+}
 </style>
 </head>
 <body>
 <div id="quiz-root">
 
-  <!-- Header -->
-  <div class="zine-header">
-    <div class="zine-vol">Vol. 1 &mdash; Digital Literacy Zine</div>
-    <div class="zine-title">IS YOUR PHONE<br>LISTENING TO YOU?</div>
-    <div><span class="zine-sub">a quiz zine</span></div>
-    <div class="zine-tagline">separate the myths from the real data tricks</div>
+  <div class="comic-header">
+    <div class="comic-title">IS MY PHONE<br><span>LISTENING TO ME?</span></div>
+    <div><span class="comic-sub">★ THE QUIZ ★</span></div>
   </div>
 
-  <!-- Intro Screen -->
-  <div class="intro-screen" id="intro-screen">
-    <svg width="64" height="76" viewBox="0 0 64 76" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1rem;color:#1a1a1a;">
-      <rect x="15" y="2" width="34" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/>
-      <rect x="19" y="7" width="26" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
-      <circle cx="32" cy="49" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-      <rect x="27" y="2" width="10" height="3.5" rx="1.75" fill="currentColor"/>
-      <text x="32" y="21" text-anchor="middle" font-family="Courier Prime, monospace" font-size="10" fill="currentColor">?!</text>
-      <line x1="15" y1="58" x2="1" y2="66" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="15" y1="58" x2="3" y2="74" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="49" y1="58" x2="63" y2="66" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="49" y1="58" x2="61" y2="74" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-    </svg>
-    <div class="intro-body">
-      Ever seen an ad for something you <strong>only talked about</strong> — never searched for? 
-      You're not alone. Millions of people are convinced their phone is eavesdropping.<br><br>
-      This quiz puts <strong>20 conspiracy theories</strong> and <strong>7 real data techniques</strong> in front of you, one at a time, in random order. 
-      Can you tell which is which?
-    </div>
-    <hr class="scratch-rule">
-    <div class="intro-body" style="margin-bottom:0;">
-      Answer <strong>True / False</strong> or <strong>Yes / No</strong> — then get the real explanation. 
-      Score points for every correct answer. Build a streak for extra pride.
-    </div>
-    <br>
-    <button class="start-btn" id="start-btn">Start the quiz &rarr;</button>
-    <div class="q-count-info">27 questions &mdash; randomized every time</div>
-  </div>
-
-  <!-- Game Area -->
-  <div class="game-area" id="game-area" style="display:none;">
-    <div class="score-bar">
-      <div>Score: <span class="score-val" id="score-display">0</span></div>
-      <div>Streak: <span id="streak-pips"></span></div>
-      <div id="q-counter">Q 1 / 27</div>
-    </div>
-
-    <div class="progress-line"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-
-    <div class="mascot-wrap" id="mascot-area">
-      <svg width="52" height="64" viewBox="0 0 52 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:#1a1a1a;">
-        <rect x="10" y="1" width="32" height="50" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/>
-        <rect x="14" y="5" width="24" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <circle cx="26" cy="42" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <rect x="22" y="1" width="8" height="3" rx="1.5" fill="currentColor"/>
-        <text id="mascot-eyes" x="26" y="17" text-anchor="middle" font-family="Courier Prime, monospace" font-size="9" fill="currentColor">?!</text>
-        <line x1="10" y1="51" x2="0" y2="58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="10" y1="51" x2="1" y2="63" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="42" y1="51" x2="52" y2="58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="42" y1="51" x2="51" y2="63" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- INTRO -->
+  <div class="intro-panel" id="intro-screen">
+    <div style="display:flex;align-items:flex-end;gap:14px;margin-bottom:1rem;">
+      <svg width="80" height="100" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <rect x="18" y="2" width="44" height="68" rx="7" fill="#FFFEF5" stroke="#0D0D0D" stroke-width="3.5"/>
+        <rect x="23" y="8" width="34" height="26" rx="3" fill="#3B7DD8" stroke="#0D0D0D" stroke-width="2"/>
+        <circle cx="40" cy="59" r="5" fill="none" stroke="#0D0D0D" stroke-width="2.5"/>
+        <rect x="34" y="2" width="12" height="5" rx="2.5" fill="#0D0D0D"/>
+        <text x="40" y="26" text-anchor="middle" font-family="Bangers,cursive" font-size="13" fill="#FFFEF5">?!</text>
+        <line x1="18" y1="70" x2="0" y2="84" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="18" y1="70" x2="2" y2="97" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="62" y1="70" x2="80" y2="84" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="62" y1="70" x2="78" y2="97" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
       </svg>
-      <span id="mascot-label">PhoneBot is watching</span>
+      <div style="flex:1;">
+        <div class="speech-bubble">Ever seen an ad for something you <em>only talked about?!</em><br>Think your phone is secretly listening to you?</div>
+      </div>
     </div>
+    <div class="intro-body">
+      This quiz throws <strong>20 conspiracy theories</strong> and <strong>7 real data techniques</strong> at you — totally randomized. Can you tell which is which?<br><br>
+      Answer <strong>True / False</strong> or <strong>Yes / No</strong> on each claim, then get the real explanation. Score points for every correct answer!
+    </div>
+    <button class="start-btn" id="start-btn">LET'S GO! →</button>
+    <div class="q-count-info">27 QUESTIONS — SHUFFLED EVERY TIME</div>
+  </div>
 
-    <div class="q-card" id="q-card">
+  <!-- GAME -->
+  <div id="game-area" style="display:none;">
+    <div class="score-bar">
+      <div>SCORE: <span class="score-val" id="score-display">0</span></div>
+      <div id="q-counter" style="font-size:17px;">Q 1 / 27</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="mascot-row">
+      <svg width="64" height="80" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <rect x="18" y="2" width="44" height="68" rx="7" fill="#FFFEF5" stroke="#0D0D0D" stroke-width="3.5"/>
+        <rect x="23" y="8" width="34" height="26" rx="3" fill="#3B7DD8" stroke="#0D0D0D" stroke-width="2"/>
+        <circle cx="40" cy="59" r="5" fill="none" stroke="#0D0D0D" stroke-width="2.5"/>
+        <rect x="34" y="2" width="12" height="5" rx="2.5" fill="#0D0D0D"/>
+        <text x="40" y="26" text-anchor="middle" font-family="Bangers,cursive" font-size="13" fill="#FFFEF5" id="mascot-eyes">??</text>
+        <line x1="18" y1="70" x2="0" y2="84" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="18" y1="70" x2="2" y2="97" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="62" y1="70" x2="80" y2="84" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="62" y1="70" x2="78" y2="97" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+      </svg>
+      <div style="flex:1;">
+        <div class="speech-bubble" id="mascot-bubble">Think carefully...</div>
+      </div>
+    </div>
+    <div class="q-panel">
       <div class="q-meta">
-        <div class="q-label">Question <span id="q-num">1</span></div>
-        <span class="q-type-badge" id="q-type-badge">true / false</span>
+        <span class="q-num-badge">QUESTION <span id="q-num">1</span></span>
+        <span class="q-type-badge" id="q-type-badge">TRUE / FALSE</span>
       </div>
       <div class="q-category" id="q-category">CONSPIRACY THEORY</div>
       <div class="q-text" id="q-text">Loading...</div>
@@ -499,324 +270,172 @@
         <div id="feedback-explain"></div>
       </div>
     </div>
-
-    <button class="next-btn" id="next-btn">Next question &rarr;</button>
+    <button class="next-btn" id="next-btn">NEXT QUESTION →</button>
   </div>
 
-  <!-- Results Screen -->
-  <div class="results-screen" id="results-screen">
-    <div class="zine-vol" style="margin-top:1rem;">QUIZ COMPLETE</div>
+  <!-- RESULTS -->
+  <div class="results-panel" id="results-screen">
+    <div style="font-family:'Bangers',cursive;font-size:14px;letter-spacing:3px;color:#555;margin-top:0.5rem;">FINAL SCORE</div>
     <div class="results-big" id="results-big">0/27</div>
-    <div class="results-label">correct answers</div>
+    <div class="results-label">CORRECT ANSWERS</div>
     <hr class="results-divider">
+    <div style="display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:1rem;">
+      <svg width="64" height="80" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="18" y="2" width="44" height="68" rx="7" fill="#FFFEF5" stroke="#0D0D0D" stroke-width="3.5"/>
+        <rect x="23" y="8" width="34" height="26" rx="3" fill="#3B7DD8" stroke="#0D0D0D" stroke-width="2"/>
+        <circle cx="40" cy="59" r="5" fill="none" stroke="#0D0D0D" stroke-width="2.5"/>
+        <rect x="34" y="2" width="12" height="5" rx="2.5" fill="#0D0D0D"/>
+        <text x="40" y="26" text-anchor="middle" font-family="Bangers,cursive" font-size="13" fill="#FFFEF5" id="result-eyes">:D</text>
+        <line x1="18" y1="70" x2="0" y2="84" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="18" y1="70" x2="2" y2="97" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="62" y1="70" x2="80" y2="84" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="62" y1="70" x2="78" y2="97" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="speech-bubble" id="result-bubble">GG!</div>
+      </div>
+    </div>
     <div class="results-verdict" id="results-verdict"></div>
     <div class="results-sub" id="results-sub"></div>
-    <button class="play-again-btn" id="play-again-btn">Play again &rarr;</button>
-    <div class="q-count-info" style="margin-top:0.5rem; padding-bottom:1.5rem;">Questions randomized each time</div>
+    <button class="play-again-btn" id="play-again-btn">PLAY AGAIN →</button>
+    <div><span class="exclaim-burst">QUESTIONS RANDOMIZED EACH TIME!</span></div>
   </div>
 
 </div>
-
 <script>
-const ALL_QUESTIONS = [
-
-  /* ── 20 CONSPIRACY THEORIES ── */
-  {
-    text: "Phone screens act as microphone diaphragms, vibrating with sound to secretly transmit audio via the charging port.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Screens are rigid, laminated structures — they cannot flex like a microphone diaphragm. The charging port also lacks the Analog-to-Digital Converters needed to process structural vibrations."
-  },
-  {
-    text: "Phones emit high-frequency tones that trigger household objects to record data and send it back.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Passive household objects — lamps, cups, furniture — have no electronic components that can respond to ultrasonic frequencies or transmit data. They are inert."
-  },
-  {
-    text: "Vibration motors in phones can be switched into 'input mode' to function as low-frequency microphones.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Haptic drivers are output-only components. They lack the high-fidelity sampling circuitry required to capture speech-range audio frequencies."
-  },
-  {
-    text: "Sudden battery drops are caused by hidden background audio-to-text processing for advertising purposes.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Battery drain is caused by display brightness, GPS, and app syncing. Real-time audio processing is actually a low-power DSP task by comparison — not a realistic culprit."
-  },
-  {
-    text: "TVs play silent ultrasonic codes that phones secretly 'hear' to link your TV viewing habits to your digital ad profile.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Modern iOS and Android versions gate microphone access. Apps cannot listen in the background without a visible mic-in-use indicator showing on screen."
-  },
-  {
-    text: "Phones use low-level electromagnetic frequencies to plant brand names into a user's subconscious.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Phones use non-ionizing RF bands that lack the power or precision to influence neural pathways or inject linguistic concepts. This is not physically possible."
-  },
-  {
-    text: "Phones maintain a 24-hour audio cache that only uploads when the device is charging.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "24 hours of raw audio requires gigabytes of storage and would cause a massive, easily-detected spike in data usage. No such transfers have ever been found by researchers."
-  },
-  {
-    text: "SIM cards contain microscopic hidden microphones that bypass operating system permissions.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "SIM cards follow strict ISO/IEC 7816 standards. They have no hardware traces for audio input and no physical space for a MEMS microphone."
-  },
-  {
-    text: "High-speed phone cameras can 'see' vibrations on glass surfaces and translate them into reconstructed speech.",
-    type: "yn", answer: false, category: "CONSPIRACY THEORY",
-    explain: "'Visual microphone' research requires 1,000+ fps. Standard phone cameras shoot at 30–60 fps — nowhere near fast enough to sample vibrations for speech reconstruction."
-  },
-  {
-    text: "CPU temperature fluctuations are a side effect of real-time voice decryption happening in the background.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "CPU heat is a byproduct of electrical resistance in normal processing. Thermal changes are far too slow to correlate with millisecond-level audio events."
-  },
-  {
-    text: "Deleted apps leave behind background processes designed to continue monitoring your environment.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Mobile operating systems use strict sandboxing. Once an app is uninstalled, all its process IDs and permissions are fully purged from the system registry."
-  },
-  {
-    text: "Phones can listen to nearby Bluetooth devices to build a 'social graph' of your interests and conversations.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "BLE is designed for data exchange and proximity detection. Intercepting encrypted audio from a remote device would require breaching global encryption standards."
-  },
-  {
-    text: "Gyroscopes in phones are sensitive enough to detect sound waves and convert them into usable audio files.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "MEMS gyroscopes are hardware-capped at around 200 Hz — far below the 8,000 Hz minimum required to reconstruct human speech."
-  },
-  {
-    text: "Algorithms analyse 'emotional frequencies' in a room to determine if a user is in a buying mood.",
-    type: "yn", answer: false, category: "CONSPIRACY THEORY",
-    explain: "There is no such thing as an 'emotional frequency' in physics. Advertising algorithms rely on deterministic data like search history, location, and purchase behaviour."
-  },
-  {
-    text: "LED flashlights pulse at nanosecond intervals to beam audio data to smart streetlights.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "LED drivers in phones cannot switch at nanosecond speeds. Such pulsing would also produce detectable electromagnetic interference visible to any standard RF scanner."
-  },
-  {
-    text: "Vapor chambers (liquid cooling) inside phones act as echo chambers that amplify distant whispers for internal sensors.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Vapor chambers are vacuum-sealed and filled with coolant fluid. They are designed for thermal conductivity and actually dampen sound rather than amplify it."
-  },
-  {
-    text: "Phones monitor CO₂ levels to estimate the number of people talking in a room.",
-    type: "yn", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Most smartphones lack CO₂ or O₂ sensors. Barometers and hygrometers — which some phones do have — cannot distinguish between human breath and weather changes."
-  },
-  {
-    text: "Airplane Mode is a facade — the device continues broadcasting audio via distress frequencies.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Airplane Mode is a genuine hardware-level kill switch for all radios, mandated by regulatory bodies like the FCC for aviation safety. It is not a software illusion."
-  },
-  {
-    text: "Haptic feedback timing is synchronised with ambient sound to secretly create audio-text records.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "Haptic events are localized to screen coordinates. They lack the temporal resolution or microphone access required to record ambient sound."
-  },
-  {
-    text: "Individual OLED pixels act as light-based sensors that detect sound-induced air pressure changes.",
-    type: "tf", answer: false, category: "CONSPIRACY THEORY",
-    explain: "OLEDs are light-emitting diodes — not photo-sensitive transistors. They lack the circuitry needed to convert air pressure into electrical signals."
-  },
-
-  /* ── 7 REAL FACTS / TECHNIQUES ── */
-  {
-    text: "Browser fingerprinting can identify you across the web even after you clear your cookies or use Incognito mode.",
-    type: "tf", answer: true, category: "REAL TECHNIQUE",
-    explain: "Sites snapshot your screen resolution, installed fonts, browser version, time zone, and hardware specs. Combined, these create a near-unique signature that survives cookie clearing."
-  },
-  {
-    text: "Data brokers legally buy and sell your personal information, connecting your behaviour across thousands of websites.",
-    type: "tf", answer: true, category: "REAL TECHNIQUE",
-    explain: "Data brokers aggregate information from apps, websites, and public records — then sell combined profiles to advertisers. This is real, widespread, and largely legal."
-  },
-  {
-    text: "Lookalike modelling means you can receive an ad for something your friend searched for — without ever searching for it yourself.",
-    type: "tf", answer: true, category: "REAL TECHNIQUE",
-    explain: "If your phone and a friend's were in the same location and they later searched for something, the algorithm may serve you the same ad. No microphone needed — proximity data is enough."
-  },
-  {
-    text: "Constant real-time audio recording would cause noticeable battery drain and high data usage — both easily detectable.",
-    type: "tf", answer: true, category: "REAL FACT",
-    explain: "This is one of the strongest arguments against phone eavesdropping. Audio streaming is power-hungry and creates data spikes that researchers, journalists, and regulators would detect."
-  },
-  {
-    text: "When an ad feels eerily accurate, it's more likely because advertisers knew what your social media contacts were searching — not what you said.",
-    type: "tf", answer: true, category: "REAL FACT",
-    explain: "Social graph data is incredibly powerful. Your friends' searches, combined with your shared location data, can make an ad feel psychic without a single audio byte."
-  },
-  {
-    text: "You can receive an ad for something you never searched for because of items you purchased or influencer accounts you follow.",
-    type: "tf", answer: true, category: "REAL FACT",
-    explain: "Buying thermal socks or following a travel influencer signals interest to algorithms — even without a direct search. Purchase history and social follows are rich targeting signals."
-  },
-  {
-    text: "Location data is one of the real methods advertisers use to infer that two people have spent time together.",
-    type: "tf", answer: true, category: "REAL FACT",
-    explain: "If two phones share GPS coordinates for an extended period, algorithms treat that as a social interaction — then use each person's browsing history to influence the other's ads."
-  }
+const ALL_QUESTIONS=[
+  {text:"Phone screens act as microphone diaphragms, vibrating with sound to secretly transmit audio via the charging port.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Screens are rigid, laminated structures — they cannot flex like a microphone diaphragm. The charging port also lacks the Analog-to-Digital Converters needed to process structural vibrations."},
+  {text:"Phones emit high-frequency tones that trigger household objects to record data and send it back.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Passive household objects — lamps, cups, furniture — have no electronic components that can respond to ultrasonic frequencies or transmit data. They are completely inert."},
+  {text:"Vibration motors in phones can be switched into 'input mode' to function as low-frequency microphones.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Haptic drivers are output-only components. They lack the high-fidelity sampling circuitry required to capture speech-range audio frequencies."},
+  {text:"Sudden battery drops are caused by hidden background audio-to-text processing for advertising.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Battery drain is caused by display brightness, GPS, and app syncing. Real-time audio processing is actually a low-power task — not a realistic culprit for sudden drain."},
+  {text:"TVs play silent ultrasonic codes that phones secretly 'hear' to link your viewing habits to your ad profile.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Modern iOS and Android gate microphone access. Apps cannot listen in the background without a visible mic-in-use indicator showing on screen."},
+  {text:"Phones use low-level electromagnetic frequencies to plant brand names into a user's subconscious.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Phones use non-ionizing RF bands that lack the power or precision to influence neural pathways or inject linguistic concepts. This is not physically possible."},
+  {text:"Phones maintain a 24-hour audio cache that only uploads when the device is charging.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"24 hours of raw audio requires gigabytes of storage and would cause a massive, easily-detected spike in data usage. No such transfers have ever been found by researchers."},
+  {text:"SIM cards contain microscopic hidden microphones that bypass operating system permissions.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"SIM cards follow strict ISO/IEC 7816 standards. They have no hardware traces for audio input and no physical space for a MEMS microphone."},
+  {text:"High-speed phone cameras can 'see' vibrations on glass surfaces and translate them into reconstructed speech.",type:"yn",answer:false,category:"CONSPIRACY THEORY",explain:"'Visual microphone' research requires 1,000+ fps. Standard phone cameras shoot at 30–60 fps — nowhere near fast enough to sample vibrations for speech reconstruction."},
+  {text:"CPU temperature fluctuations are a side effect of real-time voice decryption happening in the background.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"CPU heat is a byproduct of electrical resistance in normal processing. Thermal changes are far too slow to correlate with millisecond-level audio events."},
+  {text:"Deleted apps leave behind background processes designed to continue monitoring your environment.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Mobile operating systems use strict sandboxing. Once an app is uninstalled, all its process IDs and permissions are fully purged from the system registry."},
+  {text:"Phones can listen to nearby Bluetooth devices to build a 'social graph' of your interests and conversations.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"BLE is designed for data exchange and proximity detection. Intercepting encrypted audio from a remote device would require breaching global encryption standards."},
+  {text:"Gyroscopes in phones are sensitive enough to detect sound waves and convert them into usable audio files.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"MEMS gyroscopes are hardware-capped at around 200 Hz — far below the 8,000 Hz minimum required to reconstruct human speech."},
+  {text:"Algorithms analyse 'emotional frequencies' in a room to determine if a user is in a buying mood.",type:"yn",answer:false,category:"CONSPIRACY THEORY",explain:"There is no such thing as an 'emotional frequency' in physics. Advertising algorithms rely on deterministic data like search history, location, and purchase behaviour."},
+  {text:"LED flashlights in phones pulse at nanosecond intervals to beam audio data to smart streetlights.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"LED drivers in phones cannot switch at nanosecond speeds. Such pulsing would also produce detectable electromagnetic interference visible to any standard RF scanner."},
+  {text:"Vapor chambers inside phones act as echo chambers that amplify distant whispers for internal sensors.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Vapor chambers are vacuum-sealed and filled with coolant fluid. They are designed for thermal conductivity and actually dampen sound rather than amplify it."},
+  {text:"Phones monitor CO₂ levels to estimate the number of people talking in a room.",type:"yn",answer:false,category:"CONSPIRACY THEORY",explain:"Most smartphones lack CO₂ or O₂ sensors. Barometers and hygrometers cannot distinguish between human breath and atmospheric weather changes."},
+  {text:"Airplane Mode is a facade — the device continues broadcasting audio via distress frequencies.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Airplane Mode is a genuine hardware-level kill switch for all radios, mandated by regulatory bodies like the FCC for aviation safety. It is not a software illusion."},
+  {text:"Haptic feedback timing is synchronised with ambient sound to secretly create audio-text records.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"Haptic events are localized to screen coordinates. They lack the temporal resolution or microphone access required to record ambient sound."},
+  {text:"Individual OLED pixels act as light-based sensors that detect sound-induced air pressure changes.",type:"tf",answer:false,category:"CONSPIRACY THEORY",explain:"OLEDs are light-emitting diodes — not photo-sensitive transistors. They lack the circuitry needed to convert air pressure into electrical signals."},
+  {text:"Browser fingerprinting can identify you across the web even after you clear your cookies or use Incognito mode.",type:"tf",answer:true,category:"REAL TECHNIQUE",explain:"Sites snapshot your screen resolution, installed fonts, browser version, time zone, and hardware specs. Combined, these create a near-unique signature that survives cookie clearing."},
+  {text:"Data brokers legally buy and sell your personal information, connecting your behaviour across thousands of websites.",type:"tf",answer:true,category:"REAL TECHNIQUE",explain:"Data brokers aggregate information from apps, websites, and public records — then sell combined profiles to advertisers. This is real, widespread, and largely legal."},
+  {text:"Lookalike modelling means you can receive an ad for something your friend searched for — without searching for it yourself.",type:"tf",answer:true,category:"REAL TECHNIQUE",explain:"If your phone and a friend's were in the same location and they later searched for something, the algorithm may serve you the same ad. No microphone needed — proximity data is enough."},
+  {text:"Constant real-time audio recording would cause noticeable battery drain and high data usage — both easily detectable.",type:"tf",answer:true,category:"REAL FACT",explain:"Audio streaming is power-hungry and creates data spikes that researchers, journalists, and regulators would easily detect. No evidence of this has ever been found."},
+  {text:"When an ad feels eerily accurate, it's more likely because advertisers knew what your social contacts were searching — not what you said aloud.",type:"tf",answer:true,category:"REAL FACT",explain:"Social graph data is incredibly powerful. Your friends' searches, combined with your shared location data, can make an ad feel psychic without a single audio byte being captured."},
+  {text:"You can receive an ad for something you never searched for because of items you purchased or influencer accounts you follow.",type:"tf",answer:true,category:"REAL FACT",explain:"Buying thermal socks or following a travel influencer signals interest to algorithms — even without a direct search. Purchase history and social follows are rich targeting signals."},
+  {text:"Location data is one of the real methods advertisers use to infer that two people have spent time together.",type:"tf",answer:true,category:"REAL FACT",explain:"If two phones share GPS coordinates for an extended period, algorithms treat that as a social interaction — then use each person's browsing history to influence the other's ads."}
 ];
 
-const MASCOT = {
-  idle:    { label: "PhoneBot is watching...", eyes: "?!" },
-  correct: { label: "Correct! Nice one.",      eyes: ":)" },
-  wrong:   { label: "Not quite...",            eyes: ":(" },
-  think:   { label: "Think carefully...",      eyes: "??" }
+const MASCOT={
+  think:{eyes:"??",bubble:"Think carefully..."},
+  correct:{eyes:":D",bubble:"CORRECT! Nice one!"},
+  wrong:{eyes:":(",bubble:"Not quite..."},
+  idle:{eyes:"!",bubble:"Let's do this!"}
 };
 
-const MAX_STREAK = 5;
-let questions = [], current = 0, score = 0, streak = 0, answered = false;
+let questions=[],current=0,score=0,answered=false;
 
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function setMascot(state){
+  const s=MASCOT[state]||MASCOT.idle;
+  const el=document.getElementById('mascot-eyes');
+  const bl=document.getElementById('mascot-bubble');
+  if(el)el.textContent=s.eyes;
+  if(bl)bl.textContent=s.bubble;
 }
 
-function setMascot(state) {
-  const s = MASCOT[state] || MASCOT.idle;
-  document.getElementById('mascot-label').textContent = s.label;
-  document.getElementById('mascot-eyes').textContent = s.eyes;
-}
-
-function updatePips() {
-  const wrap = document.getElementById('streak-pips');
-  wrap.innerHTML = '';
-  for (let i = 0; i < MAX_STREAK; i++) {
-    const pip = document.createElement('span');
-    pip.className = 'streak-pip' + (i < streak ? ' lit' : '');
-    wrap.appendChild(pip);
-  }
-}
-
-function loadQuestion() {
-  answered = false;
-  const q = questions[current];
-  const total = questions.length;
-
-  document.getElementById('q-num').textContent = current + 1;
-  document.getElementById('q-counter').textContent = 'Q ' + (current + 1) + ' / ' + total;
-  document.getElementById('q-text').textContent = q.text;
-  document.getElementById('q-category').textContent = q.category;
-  document.getElementById('progress-fill').style.width = (current / total * 100) + '%';
-
-  const isYN = q.type === 'yn';
-  document.getElementById('q-type-badge').textContent = isYN ? 'yes / no' : 'true / false';
-
-  const btnRow = document.getElementById('btn-row');
-  btnRow.innerHTML = '';
-
-  const opts = isYN
-    ? [{ label: 'Yes', val: true }, { label: 'No', val: false }]
-    : [{ label: 'True', val: true }, { label: 'False', val: false }];
-
-  opts.forEach(o => {
-    const b = document.createElement('button');
-    b.className = 'ans-btn';
-    b.textContent = o.label;
-    b.addEventListener('click', () => handleAnswer(o.val));
+function loadQuestion(){
+  answered=false;
+  const q=questions[current];
+  const total=questions.length;
+  document.getElementById('q-num').textContent=current+1;
+  document.getElementById('q-counter').textContent='Q '+(current+1)+' / '+total;
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('q-category').textContent=q.category;
+  document.getElementById('progress-fill').style.width=(current/total*100)+'%';
+  const isYN=q.type==='yn';
+  document.getElementById('q-type-badge').textContent=isYN?'YES / NO':'TRUE / FALSE';
+  const btnRow=document.getElementById('btn-row');
+  btnRow.innerHTML='';
+  const opts=isYN?[{label:'YES',val:true},{label:'NO',val:false}]:[{label:'TRUE',val:true},{label:'FALSE',val:false}];
+  opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='ans-btn';b.textContent=o.label;
+    b.addEventListener('click',()=>handleAnswer(o.val));
     btnRow.appendChild(b);
   });
-
   document.getElementById('feedback-box').classList.remove('show');
   document.getElementById('next-btn').classList.remove('show');
   setMascot('think');
 }
 
-function handleAnswer(chosen) {
-  if (answered) return;
-  answered = true;
-
-  const q = questions[current];
-  const correct = chosen === q.answer;
-
-  document.querySelectorAll('.ans-btn').forEach(b => {
-    b.disabled = true;
-    const isCorrectBtn = (b.textContent === 'True' || b.textContent === 'Yes') === q.answer;
-    b.classList.add(isCorrectBtn ? 'correct' : 'wrong');
+function handleAnswer(chosen){
+  if(answered)return;
+  answered=true;
+  const q=questions[current];
+  const correct=chosen===q.answer;
+  document.querySelectorAll('.ans-btn').forEach(b=>{
+    b.disabled=true;
+    const isCorrectBtn=(b.textContent==='TRUE'||b.textContent==='YES')===q.answer;
+    b.classList.add(isCorrectBtn?'correct':'wrong');
   });
-
-  if (correct) {
-    score++;
-    streak = Math.min(streak + 1, MAX_STREAK);
-    setMascot('correct');
-  } else {
-    streak = 0;
-    setMascot('wrong');
-  }
-
-  document.getElementById('score-display').textContent = score;
-  updatePips();
-
-  const verdict = document.getElementById('feedback-verdict');
-  verdict.textContent = correct ? 'Correct!' : 'Not quite.';
-  verdict.className = 'feedback-verdict ' + (correct ? 'right' : 'wrong-v');
-  document.getElementById('feedback-explain').textContent = q.explain;
+  if(correct){score++;setMascot('correct');}
+  else{setMascot('wrong');}
+  document.getElementById('score-display').textContent=score;
+  const verdict=document.getElementById('feedback-verdict');
+  verdict.textContent=correct?'CORRECT! ✓':'WRONG! ✗';
+  verdict.className='feedback-verdict '+(correct?'right':'wrong-v');
+  document.getElementById('feedback-explain').textContent=q.explain;
   document.getElementById('feedback-box').classList.add('show');
   document.getElementById('next-btn').classList.add('show');
 }
 
-function nextQuestion() {
+function nextQuestion(){
   current++;
-  if (current >= questions.length) {
-    showResults();
-  } else {
-    loadQuestion();
-  }
+  if(current>=questions.length){showResults();}
+  else{loadQuestion();}
 }
 
-function showResults() {
-  document.getElementById('game-area').style.display = 'none';
-  const rs = document.getElementById('results-screen');
+function showResults(){
+  document.getElementById('game-area').style.display='none';
+  const rs=document.getElementById('results-screen');
   rs.classList.add('show');
-
-  const total = questions.length;
-  document.getElementById('results-big').textContent = score + '/' + total;
-
-  const pct = score / total;
-  let verdict, sub;
-
-  if (pct === 1) {
-    verdict = "Perfect score. You're a certified digital detective.";
-    sub = "You cut through every myth and nailed every real technique. Your phone is definitely not fooling you.";
-  } else if (pct >= 0.85) {
-    verdict = "Sharp mind. Almost flawless.";
-    sub = "You know your data brokers from your conspiracy theories. Just one or two myths slipped through — play again to close the gap.";
-  } else if (pct >= 0.65) {
-    verdict = "Not bad — but your phone might still have you a little fooled.";
-    sub = "You caught most of the facts, but a few myths snuck past. The real data tricks are sneakier than they look.";
-  } else if (pct >= 0.45) {
-    verdict = "Half right. The myths are convincing, aren't they?";
-    sub = "That's the point — they're designed to feel plausible. Play again and you'll start to see the patterns.";
-  } else {
-    verdict = "Your phone is NOT listening. But it's definitely still fooling you.";
-    sub = "Don't worry — that's exactly why this quiz exists. Play again and the real story will start to click.";
-  }
-
-  document.getElementById('results-verdict').textContent = verdict;
-  document.getElementById('results-sub').textContent = sub;
+  const total=questions.length;
+  document.getElementById('results-big').textContent=score+'/'+total;
+  const pct=score/total;
+  let verdict,sub,eyes,bubble;
+  if(pct===1){verdict="PERFECT SCORE! You're a certified digital detective!";sub="You cut through every myth and nailed every real technique. Your phone is definitely not fooling you.";eyes=":D";bubble="PERFECT!!";}
+  else if(pct>=0.85){verdict="Almost flawless! Sharp mind!";sub="You know your data brokers from your conspiracy theories. Just one or two myths slipped through.";eyes=":)";bubble="So close!!";}
+  else if(pct>=0.65){verdict="Not bad — but the myths still got you a little!";sub="You caught most of the facts, but a few myths snuck past. The real data tricks are sneakier than they look.";eyes=":|";bubble="Keep trying!";}
+  else if(pct>=0.45){verdict="Half right. The myths ARE pretty convincing...";sub="That's the point — they're designed to sound plausible. Play again and you'll spot the patterns.";eyes=":/";bubble="Play again!";}
+  else{verdict="Your phone is NOT listening. But it fooled you!";sub="Don't worry — that's exactly why this quiz exists. Play again and the real story will start to click.";eyes=":(";bubble="Try again!";}
+  document.getElementById('results-verdict').textContent=verdict;
+  document.getElementById('results-sub').textContent=sub;
+  document.getElementById('result-eyes').textContent=eyes;
+  document.getElementById('result-bubble').textContent=bubble;
 }
 
-function startGame() {
-  questions = shuffle(ALL_QUESTIONS);
-  current = 0; score = 0; streak = 0;
-  document.getElementById('score-display').textContent = '0';
-  document.getElementById('intro-screen').style.display = 'none';
-  document.getElementById('game-area').style.display = 'block';
+function startGame(){
+  questions=shuffle(ALL_QUESTIONS);
+  current=0;score=0;
+  document.getElementById('score-display').textContent='0';
+  document.getElementById('intro-screen').style.display='none';
+  document.getElementById('game-area').style.display='block';
   document.getElementById('results-screen').classList.remove('show');
-  updatePips();
   loadQuestion();
 }
 
-document.getElementById('start-btn').addEventListener('click', startGame);
-document.getElementById('next-btn').addEventListener('click', nextQuestion);
-document.getElementById('play-again-btn').addEventListener('click', () => {
+document.getElementById('start-btn').addEventListener('click',startGame);
+document.getElementById('next-btn').addEventListener('click',nextQuestion);
+document.getElementById('play-again-btn').addEventListener('click',()=>{
   document.getElementById('results-screen').classList.remove('show');
   startGame();
 });
