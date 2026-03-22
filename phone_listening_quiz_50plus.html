@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Is My Phone Listening to Me? — Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest:   #2D4A3E;
+    --lake:     #3A6B8A;
+    --birch:    #F5F0E8;
+    --bark:     #7A5C44;
+    --maple:    #C0392B;
+    --gold:     #C9A84C;
+    --mist:     #E8EDF2;
+    --ink:      #1A1A2E;
+    --sage:     #8BA888;
+    --paper:    #FBF8F3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background-color: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* === BACKGROUND LANDSCAPE === */
+  .bg-landscape {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .bg-landscape svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* === PAPER TEXTURE OVERLAY === */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* === MAIN WRAPPER === */
+  .wrapper {
+    position: relative;
+    z-index: 2;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* === MASTHEAD === */
+  .masthead {
+    text-align: center;
+    padding: 2.5rem 2rem 2rem;
+    background: linear-gradient(160deg, var(--forest) 0%, var(--lake) 100%);
+    border-radius: 4px 4px 0 0;
+    border-bottom: 4px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .masthead::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='white' opacity='0.08'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .maple-leaf {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .maple-leaf svg {
+    width: 32px;
+    height: 32px;
+    fill: var(--gold);
+    opacity: 0.9;
+  }
+
+  .masthead-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .masthead h1 {
+    font-family: 'Playfair Display', 'Times New Roman', serif;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.1;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    margin-bottom: 0.75rem;
+  }
+
+  .masthead h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .masthead-sub {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.82);
+    font-style: italic;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  /* === CARD === */
+  .card {
+    background: var(--birch);
+    border: 1px solid rgba(122,92,68,0.18);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 2.5rem 2.5rem;
+    box-shadow: 0 8px 40px rgba(42,58,42,0.12);
+  }
+
+  /* === INTRO SECTION === */
+  #intro-section {
+    text-align: center;
+  }
+
+  .intro-illustration {
+    margin: 0 auto 1.75rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .intro-lead {
+    font-size: 1.15rem;
+    line-height: 1.75;
+    color: #3a3a3a;
+    max-width: 540px;
+    margin: 0 auto 1rem;
+  }
+
+  .intro-lead strong {
+    color: var(--forest);
+    font-weight: 600;
+  }
+
+  .quiz-meta {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.75rem 0;
+    flex-wrap: wrap;
+  }
+
+  .quiz-meta-item {
+    text-align: center;
+  }
+
+  .quiz-meta-item .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--forest);
+    display: block;
+  }
+
+  .quiz-meta-item .label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bark);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid rgba(122,92,68,0.25);
+    margin: 1.5rem 0;
+  }
+
+  .start-btn {
+    display: inline-block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--forest);
+    border: none;
+    padding: 0.9rem 2.5rem;
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 4px 16px rgba(45,74,62,0.25);
+  }
+
+  .start-btn:hover {
+    background: var(--lake);
+    transform: translateY(-2px);
+  }
+
+  .start-btn:active { transform: translateY(0); }
+
+  .reassurance {
+    font-size: 0.85rem;
+    color: var(--bark);
+    margin-top: 1rem;
+    font-style: italic;
+  }
+
+  /* === QUIZ SECTION === */
+  #quiz-section { display: none; }
+
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(122,92,68,0.2);
+  }
+
+  .score-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--forest);
+  }
+
+  .score-display span {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .progress-text {
+    font-size: 0.85rem;
+    color: var(--bark);
+    letter-spacing: 0.05em;
+  }
+
+  .progress-bar-outer {
+    width: 100%;
+    height: 6px;
+    background: rgba(122,92,68,0.15);
+    border-radius: 3px;
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forest), var(--sage));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .question-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--bark);
+    margin-bottom: 0.4rem;
+  }
+
+  .claim-type-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.7rem;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+  }
+
+  .badge-conspiracy {
+    background: rgba(192,57,43,0.12);
+    color: var(--maple);
+    border: 1px solid rgba(192,57,43,0.3);
+  }
+
+  .badge-technique {
+    background: rgba(58,107,138,0.12);
+    color: var(--lake);
+    border: 1px solid rgba(58,107,138,0.3);
+  }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    font-weight: 700;
+    line-height: 1.45;
+    color: var(--ink);
+    margin-bottom: 2rem;
+  }
+
+  .answer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .answer-btn {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 1rem 1.5rem;
+    border: 2px solid rgba(122,92,68,0.3);
+    border-radius: 3px;
+    background: white;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all 0.18s;
+    letter-spacing: 0.03em;
+  }
+
+  .answer-btn:hover:not(:disabled) {
+    border-color: var(--forest);
+    background: rgba(45,74,62,0.06);
+    transform: translateY(-2px);
+  }
+
+  .answer-btn.correct {
+    background: rgba(45,74,62,0.1);
+    border-color: var(--forest);
+    color: var(--forest);
+  }
+
+  .answer-btn.incorrect {
+    background: rgba(192,57,43,0.08);
+    border-color: var(--maple);
+    color: var(--maple);
+  }
+
+  .answer-btn:disabled { cursor: default; }
+
+  /* === EXPLANATION BOX === */
+  .explanation-box {
+    display: none;
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: white;
+    border-left: 4px solid var(--gold);
+    border-radius: 0 3px 3px 0;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #3a3a3a;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .explanation-box .result-icon {
+    font-size: 1.3rem;
+    margin-bottom: 0.4rem;
+    display: block;
+  }
+
+  .explanation-box.correct-box { border-left-color: var(--forest); }
+  .explanation-box.incorrect-box { border-left-color: var(--maple); }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .next-btn {
+    display: block;
+    width: 100%;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--lake);
+    border: none;
+    padding: 0.9rem 2rem;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-top: 1.25rem;
+    letter-spacing: 0.05em;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .next-btn:hover { background: var(--forest); transform: translateY(-1px); }
+
+  /* === RESULTS SECTION === */
+  #results-section {
+    display: none;
+    text-align: center;
+  }
+
+  .results-header {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 900;
+    color: var(--forest);
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+
+  .results-sub {
+    font-style: italic;
+    color: var(--bark);
+    margin-bottom: 2rem;
+  }
+
+  .score-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--forest), var(--lake));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    box-shadow: 0 8px 32px rgba(45,74,62,0.25);
+  }
+
+  .score-circle .big-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .score-circle .out-of {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.1em;
+  }
+
+  .result-message {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    max-width: 480px;
+    margin: 0 auto 2rem;
+    color: #3a3a3a;
+  }
+
+  .badge-section {
+    display: none;
+    background: linear-gradient(135deg, var(--gold), #e8c46a);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    color: var(--ink);
+  }
+
+  .badge-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .badge-section p { font-size: 0.9rem; }
+
+  .badge-download-btn {
+    display: inline-block;
+    margin-top: 0.75rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--forest);
+    background: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 2px;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+  }
+
+  .badge-download-btn:hover { background: var(--birch); }
+
+  .play-again-btn {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--forest);
+    border: none;
+    padding: 0.9rem 2.5rem;
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.2s;
+    box-shadow: 0 4px 16px rgba(45,74,62,0.2);
+  }
+
+  .play-again-btn:hover { background: var(--lake); }
+
+  /* === FOOTER === */
+  .page-footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-size: 0.78rem;
+    color: var(--bark);
+    font-style: italic;
+    letter-spacing: 0.03em;
+  }
+
+  /* Decorative rule */
+  .ornament {
+    text-align: center;
+    color: var(--gold);
+    font-size: 1.2rem;
+    margin: 1.5rem 0;
+    letter-spacing: 0.3em;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 520px) {
+    .card { padding: 1.5rem 1.25rem; }
+    .answer-grid { grid-template-columns: 1fr; }
+    .quiz-meta { gap: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background Canadian landscape SVG -->
+<div class="bg-landscape">
+  <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <!-- Sky gradient -->
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#D6E8F5"/>
+        <stop offset="100%" stop-color="#EEF4F8"/>
+      </linearGradient>
+      <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7EB8D4" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#A8D0E2" stop-opacity="0.2"/>
+      </linearGradient>
+      <linearGradient id="mountainFar" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#9BB5C4"/>
+        <stop offset="100%" stop-color="#B8CCDA"/>
+      </linearGradient>
+      <linearGradient id="mountainNear" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3E6B52"/>
+        <stop offset="100%" stop-color="#2D4A3E"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Sky -->
+    <rect width="1400" height="900" fill="url(#skyGrad)"/>
+
+    <!-- Sun/moon glow -->
+    <circle cx="1100" cy="130" r="60" fill="#FFF8E7" opacity="0.5"/>
+    <circle cx="1100" cy="130" r="38" fill="#FFE97A" opacity="0.35"/>
+
+    <!-- Far mountains -->
+    <polygon points="0,480 120,310 240,390 360,280 480,370 600,250 720,350 840,240 960,330 1080,200 1200,310 1320,260 1400,320 1400,560 0,560" fill="url(#mountainFar)" opacity="0.55"/>
+
+    <!-- Snow caps -->
+    <polygon points="600,250 635,285 565,285" fill="white" opacity="0.6"/>
+    <polygon points="840,240 872,272 808,272" fill="white" opacity="0.6"/>
+    <polygon points="1080,200 1115,235 1045,235" fill="white" opacity="0.7"/>
+    <polygon points="1320,260 1348,288 1292,288" fill="white" opacity="0.5"/>
+
+    <!-- Near forest hills -->
+    <ellipse cx="0" cy="680" rx="300" ry="180" fill="url(#mountainNear)" opacity="0.7"/>
+    <ellipse cx="250" cy="700" rx="280" ry="160" fill="#2D4A3E" opacity="0.65"/>
+    <ellipse cx="1100" cy="710" rx="320" ry="170" fill="#2D4A3E" opacity="0.65"/>
+    <ellipse cx="1400" cy="690" rx="280" ry="160" fill="url(#mountainNear)" opacity="0.7"/>
+
+    <!-- Pine trees left cluster -->
+    <g opacity="0.75">
+      <polygon points="60,640 75,560 90,640" fill="#1A3028"/>
+      <polygon points="55,660 75,570 95,660" fill="#1A3028"/>
+      <rect x="72" y="660" width="6" height="25" fill="#5A3E28"/>
+
+      <polygon points="110,630 125,545 140,630" fill="#1E3830"/>
+      <polygon points="105,655 125,555 145,655" fill="#1E3830"/>
+      <rect x="122" y="655" width="6" height="25" fill="#5A3E28"/>
+
+      <polygon points="155,645 168,565 181,645" fill="#1A3028"/>
+      <polygon points="150,668 168,575 186,668" fill="#1A3028"/>
+      <rect x="165" y="668" width="6" height="22" fill="#5A3E28"/>
+    </g>
+
+    <!-- Pine trees right cluster -->
+    <g opacity="0.75">
+      <polygon points="1230,635 1245,555 1260,635" fill="#1A3028"/>
+      <polygon points="1225,658 1245,565 1265,658" fill="#1A3028"/>
+      <rect x="1242" y="658" width="6" height="25" fill="#5A3E28"/>
+
+      <polygon points="1280,625 1295,540 1310,625" fill="#1E3830"/>
+      <polygon points="1275,650 1295,550 1315,650" fill="#1E3830"/>
+      <rect x="1292" y="650" width="6" height="25" fill="#5A3E28"/>
+
+      <polygon points="1335,640 1350,558 1365,640" fill="#1A3028"/>
+      <polygon points="1330,665 1350,568 1370,665" fill="#1A3028"/>
+      <rect x="1347" y="665" width="6" height="22" fill="#5A3E28"/>
+    </g>
+
+    <!-- Lake reflection -->
+    <ellipse cx="700" cy="820" rx="550" ry="80" fill="url(#waterGrad)"/>
+    <!-- Reflection shimmer lines -->
+    <line x1="450" y1="810" x2="600" y2="815" stroke="white" stroke-width="1.5" opacity="0.3"/>
+    <line x1="700" y1="805" x2="870" y2="812" stroke="white" stroke-width="1.5" opacity="0.25"/>
+    <line x1="530" y1="828" x2="650" y2="832" stroke="white" stroke-width="1" opacity="0.2"/>
+
+    <!-- Loon silhouette on water -->
+    <g transform="translate(640, 798)" opacity="0.5">
+      <ellipse cx="0" cy="0" rx="22" ry="8" fill="#1A2B22"/>
+      <circle cx="20" cy="-5" r="6" fill="#1A2B22"/>
+      <!-- Loon neck -->
+      <path d="M14,-3 Q18,-10 22,-5" stroke="#1A2B22" stroke-width="3" fill="none"/>
+      <!-- Bill -->
+      <line x1="26" y1="-5" x2="34" y2="-6" stroke="#1A2B22" stroke-width="2"/>
+    </g>
+
+    <!-- Floating cloud wisps -->
+    <ellipse cx="250" cy="120" rx="90" ry="28" fill="white" opacity="0.45"/>
+    <ellipse cx="200" cy="115" rx="55" ry="22" fill="white" opacity="0.4"/>
+    <ellipse cx="310" cy="118" rx="50" ry="20" fill="white" opacity="0.35"/>
+
+    <ellipse cx="820" cy="90" rx="75" ry="22" fill="white" opacity="0.4"/>
+    <ellipse cx="770" cy="87" rx="45" ry="18" fill="white" opacity="0.35"/>
+    <ellipse cx="875" cy="92" rx="40" ry="16" fill="white" opacity="0.3"/>
+
+    <!-- Maple leaf accent top right -->
+    <text x="1340" y="75" font-size="48" fill="#C9A84C" opacity="0.18" font-family="serif">🍁</text>
+    <text x="30" y="100" font-size="36" fill="#C9A84C" opacity="0.15" font-family="serif">🍁</text>
+  </svg>
+</div>
+
+<div class="wrapper">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="maple-leaf">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50,5 L55,30 L80,25 L65,45 L85,50 L65,58 L72,80 L50,68 L28,80 L35,58 L15,50 L35,45 L20,25 L45,30 Z"/>
+      </svg>
+      <span style="font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);font-family:'Source Serif 4',serif;">A Canadian Digital Literacy Quiz</span>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50,5 L55,30 L80,25 L65,45 L85,50 L65,58 L72,80 L50,68 L28,80 L35,58 L15,50 L35,45 L20,25 L45,30 Z"/>
+      </svg>
+    </div>
+    <h1>Is My Phone <em>Listening</em> to Me?</h1>
+    <p class="masthead-sub">Separate the facts from the myths — and see what your smartphone really knows about you.</p>
+  </header>
+
+  <!-- CARD -->
+  <div class="card">
+
+    <!-- ===== INTRO ===== -->
+    <section id="intro-section">
+
+      <div class="intro-illustration">
+        <svg width="180" height="160" viewBox="0 0 180 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cozy armchair -->
+          <rect x="25" y="80" width="130" height="70" rx="8" fill="#8B6A4A" opacity="0.85"/>
+          <rect x="15" y="68" width="22" height="82" rx="6" fill="#7A5C40" opacity="0.9"/>
+          <rect x="143" y="68" width="22" height="82" rx="6" fill="#7A5C40" opacity="0.9"/>
+          <rect x="25" y="68" width="130" height="28" rx="6" fill="#9E7A56" opacity="0.9"/>
+          <!-- Seat cushion -->
+          <rect x="32" y="93" width="116" height="50" rx="5" fill="#C4A882" opacity="0.7"/>
+          <!-- Person sitting (simplified silhouette) -->
+          <!-- Body -->
+          <ellipse cx="90" cy="95" rx="28" ry="22" fill="#4A6FA5" opacity="0.85"/>
+          <!-- Head -->
+          <circle cx="90" cy="62" r="18" fill="#D4A878"/>
+          <!-- Hair (grey/white) -->
+          <path d="M72,55 Q90,38 108,55" fill="#A8A8A8" opacity="0.9"/>
+          <!-- Glasses -->
+          <circle cx="82" cy="64" r="6" fill="none" stroke="#555" stroke-width="1.8"/>
+          <circle cx="98" cy="64" r="6" fill="none" stroke="#555" stroke-width="1.8"/>
+          <line x1="88" y1="64" x2="92" y2="64" stroke="#555" stroke-width="1.8"/>
+          <line x1="76" y1="63" x2="71" y2="62" stroke="#555" stroke-width="1.5"/>
+          <line x1="104" y1="63" x2="109" y2="62" stroke="#555" stroke-width="1.5"/>
+          <!-- Arms holding phone -->
+          <path d="M64,90 Q55,105 62,118" stroke="#D4A878" stroke-width="8" fill="none" stroke-linecap="round"/>
+          <path d="M116,90 Q125,105 118,118" stroke="#D4A878" stroke-width="8" fill="none" stroke-linecap="round"/>
+          <!-- Phone -->
+          <rect x="72" y="110" width="36" height="26" rx="4" fill="#1A1A2E"/>
+          <rect x="75" y="113" width="30" height="19" rx="2" fill="#3A6B8A" opacity="0.8"/>
+          <!-- Question mark glow on phone screen -->
+          <text x="90" y="126" text-anchor="middle" fill="white" font-size="13" font-weight="bold" font-family="serif">?</text>
+          <!-- Thought bubble -->
+          <circle cx="118" cy="45" r="4" fill="#C9A84C" opacity="0.6"/>
+          <circle cx="127" cy="35" r="6" fill="#C9A84C" opacity="0.5"/>
+          <circle cx="138" cy="23" r="9" fill="#C9A84C" opacity="0.4"/>
+          <text x="138" y="27" text-anchor="middle" fill="#7A5C44" font-size="10" font-weight="bold" font-family="serif">?!</text>
+        </svg>
+      </div>
+
+      <p class="intro-lead">
+        Ever chatted about a new brand of tea — then spotted an ad for it that very evening? You're not alone. Many Canadians over 50 wonder whether their smartphones are secretly eavesdropping on private conversations. <strong>This quiz helps you find out what's myth and what's reality.</strong>
+      </p>
+
+      <div class="ornament">— ✦ —</div>
+
+      <div class="quiz-meta">
+        <div class="quiz-meta-item">
+          <span class="num">14</span>
+          <span class="label">Questions</span>
+        </div>
+        <div class="quiz-meta-item">
+          <span class="num">7 + 7</span>
+          <span class="label">Myths &amp; Real Techniques</span>
+        </div>
+        <div class="quiz-meta-item">
+          <span class="num">∞</span>
+          <span class="label">Shuffled Each Time</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <button class="start-btn" onclick="startQuiz()">Begin the Quiz →</button>
+      <p class="reassurance">No sign-in required. Your answers stay on your device.</p>
+
+    </section>
+
+    <!-- ===== QUIZ ===== -->
+    <section id="quiz-section">
+      <div class="score-bar">
+        <div class="score-display">Score: <span id="score-num">0</span></div>
+        <div class="progress-text" id="progress-text">Question 1 of 14</div>
+      </div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar"></div>
+      </div>
+
+      <div class="question-label">Read carefully and choose your answer</div>
+      <div id="claim-badge" class="claim-type-badge"></div>
+      <p class="question-text" id="question-text">Loading…</p>
+
+      <div class="answer-grid" id="answer-grid">
+        <button class="answer-btn" id="btn-true"  onclick="answer('true')">True</button>
+        <button class="answer-btn" id="btn-false" onclick="answer('false')">False</button>
+      </div>
+
+      <div class="explanation-box" id="explanation-box">
+        <span class="result-icon" id="result-icon"></span>
+        <span id="explanation-text"></span>
+      </div>
+
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+    </section>
+
+    <!-- ===== RESULTS ===== -->
+    <section id="results-section">
+      <h2 class="results-header" id="results-header">Well Done!</h2>
+      <p class="results-sub" id="results-sub">Here's how you did:</p>
+
+      <div class="score-circle">
+        <span class="big-num" id="final-score-big">0</span>
+        <span class="out-of" id="final-out-of">out of 14</span>
+      </div>
+
+      <p class="result-message" id="result-message"></p>
+
+      <div class="badge-section" id="badge-section">
+        <h3>⭐ You've Earned a Badge!</h3>
+        <p>You scored over 10 — you can spot digital myths from real data techniques. Download your Digital Detective badge!</p>
+        <button class="badge-download-btn" onclick="downloadBadge()">⬇ Download Badge (PNG)</button>
+      </div>
+
+      <div class="ornament">— ✦ —</div>
+
+      <button class="play-again-btn" onclick="resetQuiz()">Play Again →</button>
+    </section>
+
+  </div><!-- /card -->
+
+  <footer class="page-footer">
+    Rich's Games 4 Learning &nbsp;·&nbsp; Digital Literacy for Every Generation &nbsp;·&nbsp; Canada 🍁
+  </footer>
+</div><!-- /wrapper -->
+
+<script>
+// ===================== QUESTION DATA =====================
+const allQuestions = [
+  // --- 7 CONSPIRACY THEORIES (answer: false) ---
+  {
+    type: "conspiracy",
+    text: "Your smartphone's microphone is constantly streaming your conversations to advertising companies like Google and Meta.",
+    answer: "false",
+    explanation: "This is a popular myth. Continuously streaming audio would consume enormous battery power and data — both of which would be easily noticeable. Security researchers have repeatedly tested this claim and found no evidence of it. Advertisers don't need to listen to you; they already know a great deal from your browsing history, location, and app usage."
+  },
+  {
+    type: "conspiracy",
+    text: "Smartphone makers secretly activate cameras to photograph you in your home and sell those images to data brokers.",
+    answer: "false",
+    explanation: "No credible evidence supports this claim. Most modern smartphones show a visual or light indicator when the camera is active. While privacy is a real concern, covert mass photography has never been documented as an actual practice by any major manufacturer."
+  },
+  {
+    type: "conspiracy",
+    text: "Cellphone towers emit signals that can read your thoughts and beam targeted advertisements directly into your mind.",
+    answer: "false",
+    explanation: "This is pure science fiction. Cellphone towers transmit radio waves that carry phone calls and internet data — they have no ability to interact with human brain activity in any way."
+  },
+  {
+    type: "conspiracy",
+    text: "Listening to a song on Spotify once is enough for your phone to know your political views and share them with the government.",
+    answer: "false",
+    explanation: "Streaming a single song reveals almost nothing meaningful. While listening patterns over time may suggest general interests, the leap to political profiling from one song is not supported by any documented practice."
+  },
+  {
+    type: "conspiracy",
+    text: "Your phone turns off completely when you press the power button, making it impossible for anyone to track you.",
+    answer: "false",
+    explanation: "This one is a myth in two directions. Most phones don't fully power off in a deep sense — some components remain partially active. However, tracking while 'off' is extremely limited. For true peace of mind, remove the SIM card or use airplane mode."
+  },
+  {
+    type: "conspiracy",
+    text: "Using your phone in a tin-foil lined room perfectly blocks all data transmission and prevents any tracking.",
+    answer: "false",
+    explanation: "A DIY foil room is an unreliable Faraday cage. Professional shielding requires specific materials and sealed enclosures. A simpler, more reliable approach is enabling Airplane Mode or powering down your device."
+  },
+  {
+    type: "conspiracy",
+    text: "If you cover your phone's camera with tape, it completely prevents all forms of digital surveillance on your device.",
+    answer: "false",
+    explanation: "Covering the camera blocks visual surveillance through that camera — which is a reasonable precaution — but it does nothing to limit location tracking, microphone access, browsing data collection, or any other form of digital monitoring."
+  },
+
+  // --- 7 REAL TECHNIQUES (answer: true) ---
+  {
+    type: "technique",
+    text: "Advertisers can target you based on your physical location — for example, if you regularly visit a particular store or neighbourhood.",
+    answer: "true",
+    explanation: "This is real. Apps that have location permission can report your GPS coordinates. Advertisers buy this data to build profiles about your habits, interests, and income level based on where you go — even if you never search for anything related."
+  },
+  {
+    type: "technique",
+    text: "Your browser's history and cookies allow websites to track which products you looked at and show you ads for them on completely different websites.",
+    answer: "true",
+    explanation: "This is called cross-site tracking and it's very common. Third-party cookies and advertising networks allow your interest in a product on one site to follow you to news sites, social media, and anywhere else those ad networks operate."
+  },
+  {
+    type: "technique",
+    text: "Facebook and Instagram can use your contact list — if you gave them permission — to suggest ads for products your friends have shown interest in.",
+    answer: "true",
+    explanation: "This is real. When you grant an app access to your contacts, it can build a social graph connecting your interests with those of people you know. This is used to refine ad targeting for all users in the network."
+  },
+  {
+    type: "technique",
+    text: "Companies can identify you from your 'digital fingerprint' — the combination of your browser type, screen size, and other settings — even without cookies.",
+    answer: "true",
+    explanation: "Browser fingerprinting is a genuine tracking method that doesn't rely on cookies. Your device's unique combination of settings, plugins, time zone, screen resolution, and fonts creates a profile that's surprisingly distinct. Clearing cookies doesn't remove it."
+  },
+  {
+    type: "technique",
+    text: "Your smartphone can track your sleep patterns and sell that data to health insurance companies, even without a dedicated sleep-tracking app.",
+    answer: "true",
+    explanation: "This is possible. Accelerometers (motion sensors) in phones detect when you're still, and some apps infer sleep from this. Health data marketplaces exist, and depending on your province's privacy laws and your app agreements, this information may be shared or sold."
+  },
+  {
+    type: "technique",
+    text: "Google can build an advertising profile based on the content of your Gmail messages, even if you've never clicked an ad.",
+    answer: "true",
+    explanation: "Google has historically analysed email content to target ads, though it announced changes to this policy for Gmail consumer accounts in 2017. However, data from other Google services — search, Maps, YouTube — continues to feed advertising profiles comprehensively."
+  },
+  {
+    type: "technique",
+    text: "Retailers use ultrasonic tones — sounds inaudible to human ears — embedded in TV commercials to communicate with apps on your phone and track your viewing habits.",
+    answer: "true",
+    explanation: "This technology, sometimes called ultrasonic cross-device tracking, is real and has been documented by security researchers. Some apps with microphone access listen for these tones to confirm you watched an ad or visited a store. Canadian privacy regulators have raised concerns about it."
+  }
+];
+
+// ===================== QUIZ STATE =====================
+let questions = [];
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  questions = shuffle(allQuestions);
+  currentIndex = 0;
+  score = 0;
+  document.getElementById('score-num').textContent = '0';
+  document.getElementById('intro-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('quiz-section').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = questions[currentIndex];
+  const total = questions.length;
+
+  // Progress
+  document.getElementById('progress-text').textContent = `Question ${currentIndex + 1} of ${total}`;
+  document.getElementById('progress-bar').style.width = `${(currentIndex / total) * 100}%`;
+
+  // Badge
+  const badge = document.getElementById('claim-badge');
+  if (q.type === 'conspiracy') {
+    badge.textContent = 'Conspiracy Theory?';
+    badge.className = 'claim-type-badge badge-conspiracy';
+  } else {
+    badge.textContent = 'Real Technique?';
+    badge.className = 'claim-type-badge badge-technique';
+  }
+
+  document.getElementById('question-text').textContent = q.text;
+
+  // Reset buttons
+  const btnTrue  = document.getElementById('btn-true');
+  const btnFalse = document.getElementById('btn-false');
+  btnTrue.className  = 'answer-btn';
+  btnFalse.className = 'answer-btn';
+  btnTrue.disabled  = false;
+  btnFalse.disabled = false;
+
+  // Hide explanation & next
+  const expBox = document.getElementById('explanation-box');
+  expBox.style.display = 'none';
+  expBox.className = 'explanation-box';
+  document.getElementById('next-btn').style.display = 'none';
+}
+
+function answer(chosen) {
+  if (answered) return;
+  answered = true;
+
+  const q = questions[currentIndex];
+  const correct = chosen === q.answer;
+
+  if (correct) score++;
+  document.getElementById('score-num').textContent = score;
+
+  // Style buttons
+  const btnTrue  = document.getElementById('btn-true');
+  const btnFalse = document.getElementById('btn-false');
+  btnTrue.disabled  = true;
+  btnFalse.disabled = true;
+
+  if (correct) {
+    document.getElementById('btn-' + chosen).classList.add('correct');
+  } else {
+    document.getElementById('btn-' + chosen).classList.add('incorrect');
+    document.getElementById('btn-' + q.answer).classList.add('correct');
+  }
+
+  // Explanation
+  const expBox = document.getElementById('explanation-box');
+  expBox.style.display = 'block';
+  expBox.className = 'explanation-box ' + (correct ? 'correct-box' : 'incorrect-box');
+  document.getElementById('result-icon').textContent = correct ? '✔ Correct!' : '✘ Not quite.';
+  document.getElementById('explanation-text').textContent = q.explanation;
+
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'block';
+
+  const total = questions.length;
+  document.getElementById('final-score-big').textContent = score;
+  document.getElementById('final-out-of').textContent = `out of ${total}`;
+  document.getElementById('progress-bar').style.width = '100%';
+
+  let header, sub, message;
+  const pct = score / total;
+
+  if (pct >= 0.85) {
+    header  = 'Excellent Work!';
+    sub     = "You've got a sharp eye for digital myths.";
+    message = "You can clearly distinguish between unfounded fears and genuine data privacy concerns. That's a valuable skill — and one worth sharing with friends and family.";
+    document.getElementById('badge-section').style.display = 'block';
+  } else if (pct >= 0.65) {
+    header  = 'Well Done!';
+    sub     = 'A solid understanding of digital privacy.';
+    message = "You got most of it right. A few of these questions are genuinely tricky — the line between myth and reality in digital privacy isn't always obvious. Consider revisiting the explanations for any you missed.";
+    document.getElementById('badge-section').style.display = 'none';
+  } else if (pct >= 0.45) {
+    header  = 'Good Effort!';
+    sub     = "There's more to discover about how your phone works.";
+    message = 'Digital privacy is a complex topic, and misinformation is everywhere. Try the quiz again — the explanations for each question are there to help, and the questions shuffle every time.';
+    document.getElementById('badge-section').style.display = 'none';
+  } else {
+    header  = 'Keep Exploring!';
+    sub     = 'This is a good place to start learning.';
+    message = "Don't be discouraged — separating smartphone myths from genuine privacy concerns is genuinely difficult. Read through the explanations, share them with someone you trust, and try again!";
+    document.getElementById('badge-section').style.display = 'none';
+  }
+
+  document.getElementById('results-header').textContent = header;
+  document.getElementById('results-sub').textContent = sub;
+  document.getElementById('result-message').textContent = message;
+}
+
+function resetQuiz() {
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('progress-bar').style.width = '0%';
+  startQuiz();
+}
+
+function downloadBadge() {
+  // Generate a simple canvas badge
+  const canvas = document.createElement('canvas');
+  canvas.width  = 400;
+  canvas.height = 400;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  const grad = ctx.createRadialGradient(200,200,40,200,200,200);
+  grad.addColorStop(0, '#3A6B8A');
+  grad.addColorStop(1, '#2D4A3E');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(200,200,195,0,Math.PI*2);
+  ctx.fill();
+
+  // Gold ring
+  ctx.strokeStyle = '#C9A84C';
+  ctx.lineWidth   = 8;
+  ctx.beginPath();
+  ctx.arc(200,200,185,0,Math.PI*2);
+  ctx.stroke();
+
+  // Inner ring
+  ctx.strokeStyle = 'rgba(201,168,76,0.4)';
+  ctx.lineWidth   = 2;
+  ctx.beginPath();
+  ctx.arc(200,200,170,0,Math.PI*2);
+  ctx.stroke();
+
+  // Star/leaf icon
+  ctx.fillStyle = '#C9A84C';
+  ctx.font = 'bold 70px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🍁', 200, 155);
+
+  // Title text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 26px "Playfair Display", Georgia, serif';
+  ctx.fillText('DIGITAL DETECTIVE', 200, 215);
+
+  ctx.font = '16px "Source Serif 4", Georgia, serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.fillText('Privacy Quiz Champion', 200, 245);
+
+  ctx.font = '13px serif';
+  ctx.fillStyle = '#C9A84C';
+  ctx.fillText("Rich's Games 4 Learning · Canada", 200, 310);
+
+  // Score
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.beginPath();
+  ctx.arc(200,290,30,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 22px "Playfair Display",Georgia,serif';
+  ctx.fillText(score + '/' + questions.length, 200, 298);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = 'digital-detective-badge.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+</script>
+</body>
+</html>
