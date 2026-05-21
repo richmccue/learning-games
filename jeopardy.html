@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Classroom Jeopardy - The Future of Education</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Coast Salish / Pacific Northwest palette */
+    --ink: #0b1d2a;
+    --deep-sea: #14364a;
+    --sea: #1f5a73;
+    --cedar: #8b3a1f;
+    --cedar-light: #c45a2c;
+    --bone: #f3ead7;
+    --bone-soft: #e8dcc1;
+    --moss: #4a6b3a;
+    --salmon: #d97a5a;
+    --gold: #d4a017;
+    --mist: rgba(243, 234, 215, 0.08);
+
+    --shadow-deep: 0 10px 30px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+    --shadow-card: 0 4px 14px rgba(11, 29, 42, 0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Inter Tight', sans-serif;
+    background: var(--ink);
+    color: var(--bone);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(31, 90, 115, 0.35) 0%, transparent 50%),
+      radial-gradient(circle at 80% 90%, rgba(139, 58, 31, 0.25) 0%, transparent 55%),
+      linear-gradient(180deg, #0b1d2a 0%, #081621 100%);
+  }
+
+  /* === BOARD SCREEN - sized to fit 13" MacBook Air (1440x900) without scrolling === */
+  #board-screen.active {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 16px 20px;
+    overflow: hidden;
+  }
+
+  /* Decorative formline border element */
+  .formline-divider {
+    height: 14px;
+    background-image:
+      radial-gradient(circle at 10px 7px, var(--cedar) 4px, transparent 5px),
+      radial-gradient(circle at 30px 7px, var(--gold) 4px, transparent 5px),
+      radial-gradient(circle at 50px 7px, var(--cedar) 4px, transparent 5px);
+    background-size: 60px 14px;
+    background-repeat: repeat-x;
+    opacity: 0.55;
+    margin: 12px 0;
+  }
+
+  .display { font-family: 'Cormorant Garamond', serif; font-weight: 700; letter-spacing: -0.01em; }
+
+  /* === SCREEN BASE === */
+  .screen { display: none; min-height: 100vh; padding: 32px; }
+  .screen.active { display: block; }
+
+  /* === SETUP SCREEN === */
+  #setup-screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  .setup-card {
+    background: linear-gradient(180deg, #102a3a 0%, #0b1d2a 100%);
+    border: 1px solid rgba(212, 160, 23, 0.25);
+    border-radius: 4px;
+    padding: 48px 56px;
+    max-width: 640px;
+    width: 100%;
+    box-shadow: var(--shadow-deep);
+    position: relative;
+  }
+  .setup-card::before {
+    content: "";
+    position: absolute; inset: 8px;
+    border: 1px solid rgba(212, 160, 23, 0.12);
+    pointer-events: none;
+    border-radius: 2px;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  h1.title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 64px;
+    line-height: 0.95;
+    margin: 14px 0 4px;
+    color: var(--bone);
+  }
+  h1.title em { color: var(--cedar-light); font-style: italic; }
+
+  .subtitle { color: var(--bone-soft); opacity: 0.75; margin-bottom: 28px; font-size: 15px; }
+
+  .field-label {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 11px;
+    color: var(--bone-soft);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .team-count-row { display: flex; gap: 8px; margin-bottom: 24px; }
+  .team-count-btn {
+    flex: 1;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid rgba(243, 234, 215, 0.25);
+    color: var(--bone);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    border-radius: 2px;
+  }
+  .team-count-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .team-count-btn.selected {
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+  }
+
+  .team-inputs { display: grid; gap: 12px; margin-bottom: 28px; }
+
+  .team-input-row { display: flex; align-items: center; gap: 12px; }
+  .team-swatch {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgba(243, 234, 215, 0.3);
+  }
+  .team-input {
+    flex: 1;
+    background: rgba(11, 29, 42, 0.6);
+    border: 1px solid rgba(243, 234, 215, 0.2);
+    color: var(--bone);
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 15px;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+  .team-input:focus { outline: none; border-color: var(--gold); }
+
+  .start-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--cedar);
+    border: none;
+    color: var(--bone);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 2px;
+  }
+  .start-btn:hover { background: var(--cedar-light); transform: translateY(-1px); box-shadow: var(--shadow-card); }
+
+  /* === BOARD SCREEN === */
+  .board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(212, 160, 23, 0.2);
+    flex-shrink: 0;
+  }
+  .board-title-block .eyebrow { display: block; margin-bottom: 2px; font-size: 10px; }
+  .board-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; line-height: 1; }
+  .board-title em { color: var(--cedar-light); font-style: italic; }
+
+  .header-controls { display: flex; gap: 8px; }
+  .ghost-btn {
+    background: transparent;
+    border: 1px solid rgba(243, 234, 215, 0.3);
+    color: var(--bone);
+    padding: 7px 14px;
+    font-family: inherit;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .ghost-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .ghost-btn.primary { background: var(--cedar); border-color: var(--cedar); }
+  .ghost-btn.primary:hover { background: var(--cedar-light); border-color: var(--cedar-light); color: var(--bone); }
+
+  /* The board grid - flexes to fill remaining vertical space */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto repeat(5, 1fr);
+    gap: 6px;
+    flex: 1;
+    min-height: 0;
+    margin-bottom: 10px;
+  }
+
+  .category-cell {
+    background: linear-gradient(180deg, var(--deep-sea) 0%, var(--ink) 100%);
+    color: var(--bone);
+    padding: 10px 10px;
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-top: 3px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+  }
+
+  .clue-cell {
+    background: linear-gradient(180deg, var(--sea) 0%, var(--deep-sea) 100%);
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px;
+    font-weight: 700;
+    text-align: center;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(212, 160, 23, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+  .clue-cell:hover:not(.used) {
+    background: linear-gradient(180deg, #2a6e8a 0%, #1a4a63 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+  }
+  .clue-cell.used {
+    background: rgba(11, 29, 42, 0.4);
+    color: transparent;
+    cursor: default;
+    border-color: rgba(243, 234, 215, 0.05);
+  }
+
+  /* Scoreboard - fixed compact height at bottom */
+  .scoreboard {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(4, 1fr);
+    flex-shrink: 0;
+  }
+  .team-card {
+    background: linear-gradient(180deg, rgba(31, 90, 115, 0.4) 0%, rgba(11, 29, 42, 0.6) 100%);
+    border: 1px solid rgba(243, 234, 215, 0.15);
+    border-radius: 3px;
+    padding: 10px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .team-card::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--team-color, var(--gold));
+  }
+  .team-name {
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--bone-soft);
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+  .team-score {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .team-score.negative { color: var(--salmon); }
+
+  /* === MODAL === */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 22, 33, 0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: linear-gradient(180deg, var(--deep-sea) 0%, var(--ink) 100%);
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    padding: 32px 44px;
+    max-width: 820px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    text-align: center;
+    box-shadow: var(--shadow-deep);
+    position: relative;
+  }
+
+  .modal-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .modal-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    color: var(--cedar-light);
+    line-height: 1;
+    margin-bottom: 20px;
+  }
+  .modal-clue {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    line-height: 1.3;
+    color: var(--bone);
+    margin: 18px 0 28px;
+    font-weight: 600;
+  }
+  .modal-response {
+    background: rgba(212, 160, 23, 0.08);
+    border: 1px solid rgba(212, 160, 23, 0.3);
+    padding: 20px 28px;
+    margin: 24px 0;
+    border-radius: 2px;
+    display: none;
+  }
+  .modal-response.shown { display: block; }
+  .modal-response-label {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 11px;
+    color: var(--gold);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .modal-response-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    color: var(--bone);
+    font-style: italic;
+  }
+
+  .reveal-btn {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 14px 32px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .reveal-btn:hover { background: #e8b423; transform: translateY(-1px); }
+
+  .award-section {
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(243, 234, 215, 0.15);
+  }
+  .award-prompt {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 12px;
+    color: var(--bone-soft);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .award-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    margin-bottom: 14px;
+  }
+  .award-team-btn {
+    background: rgba(31, 90, 115, 0.5);
+    border: 1px solid rgba(243, 234, 215, 0.25);
+    color: var(--bone);
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    text-align: left;
+    transition: all 0.2s;
+    position: relative;
+    padding-left: 20px;
+  }
+  .award-team-btn::before {
+    content: "";
+    position: absolute;
+    left: 8px; top: 50%;
+    transform: translateY(-50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--team-color);
+  }
+  .award-team-btn:hover { background: var(--moss); border-color: var(--moss); }
+
+  .award-mode { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .mode-toggle {
+    background: transparent;
+    border: 1px solid rgba(243, 234, 215, 0.25);
+    color: var(--bone-soft);
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .mode-toggle.active {
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+  }
+
+  .no-points-btn {
+    background: transparent;
+    border: 1px solid rgba(243, 234, 215, 0.3);
+    color: var(--bone-soft);
+    padding: 12px 24px;
+    font-family: inherit;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-top: 10px;
+  }
+  .no-points-btn:hover { color: var(--bone); border-color: var(--bone); }
+
+  /* Daily Double */
+  .dd-banner {
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    background: var(--cedar);
+    color: var(--bone);
+    padding: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .dd-modal { padding-top: 70px; }
+
+  .wager-section { margin: 20px 0; }
+  .wager-team-select {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    margin: 14px 0;
+  }
+  .wager-team-btn {
+    background: rgba(31, 90, 115, 0.4);
+    border: 1px solid rgba(243, 234, 215, 0.25);
+    color: var(--bone);
+    padding: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    position: relative;
+    padding-left: 22px;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .wager-team-btn::before {
+    content: "";
+    position: absolute;
+    left: 10px; top: 50%;
+    transform: translateY(-50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--team-color);
+  }
+  .wager-team-btn.selected { background: var(--moss); border-color: var(--gold); }
+
+  .wager-input {
+    background: rgba(11, 29, 42, 0.7);
+    border: 1px solid rgba(212, 160, 23, 0.4);
+    color: var(--gold);
+    padding: 14px 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 2px;
+    width: 200px;
+  }
+  .wager-input:focus { outline: none; border-color: var(--gold); }
+  .wager-help { font-size: 12px; color: var(--bone-soft); opacity: 0.7; margin-top: 6px; }
+
+  /* Final Jeopardy */
+  .fj-screen { padding: 48px; }
+  .fj-card {
+    max-width: 900px;
+    margin: 0 auto;
+    background: linear-gradient(180deg, #102a3a 0%, #0b1d2a 100%);
+    border: 1px solid var(--gold);
+    padding: 56px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-deep);
+  }
+
+  .fj-wagers { display: grid; gap: 16px; margin: 24px 0; }
+  .fj-wager-row {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: rgba(31, 90, 115, 0.25);
+    border-radius: 2px;
+    border-left: 3px solid var(--team-color);
+  }
+  .fj-team-info { display: flex; flex-direction: column; }
+  .fj-team-name { font-weight: 600; font-size: 16px; }
+  .fj-team-score { font-size: 12px; color: var(--bone-soft); }
+  .fj-wager-input {
+    background: rgba(11, 29, 42, 0.7);
+    border: 1px solid rgba(212, 160, 23, 0.3);
+    color: var(--gold);
+    padding: 10px 14px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 2px;
+    width: 100%;
+  }
+  .fj-wager-input:focus { outline: none; border-color: var(--gold); }
+  .fj-wager-input:disabled { opacity: 0.4; }
+
+  .fj-results { display: grid; gap: 10px; margin: 20px 0; }
+  .fj-result-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(11, 29, 42, 0.4);
+    border-left: 3px solid var(--team-color);
+    border-radius: 2px;
+  }
+  .fj-result-btns { display: flex; gap: 6px; }
+  .fj-correct-btn, .fj-wrong-btn {
+    background: transparent;
+    border: 1px solid rgba(243, 234, 215, 0.3);
+    color: var(--bone);
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .fj-correct-btn.active { background: var(--moss); border-color: var(--moss); }
+  .fj-wrong-btn.active { background: var(--cedar); border-color: var(--cedar); }
+
+  /* Winner screen */
+  .winner-screen { display: none; align-items: center; justify-content: center; min-height: 100vh; padding: 48px; }
+  .winner-screen.active { display: flex; }
+  .winner-card {
+    text-align: center;
+    max-width: 700px;
+  }
+  .winner-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    font-size: 14px;
+    color: var(--gold);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .winner-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 96px;
+    line-height: 1;
+    color: var(--cedar-light);
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+  .winner-score {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    color: var(--gold);
+    margin-bottom: 40px;
+  }
+  .final-standings { display: grid; gap: 10px; margin-bottom: 40px; }
+  .final-standings .team-card { text-align: left; }
+
+  /* Util */
+  .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  @media (max-width: 800px) {
+    .board { grid-template-columns: repeat(2, 1fr); }
+    .category-cell { font-size: 15px; min-height: 80px; padding: 12px 8px; }
+    .clue-cell { font-size: 26px; min-height: 80px; padding: 18px 6px; }
+    .setup-card, .modal, .fj-card { padding: 32px 24px; }
+    h1.title { font-size: 44px; }
+    .modal-clue { font-size: 22px; }
+    .modal-value { font-size: 40px; }
+    .board-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .winner-name { font-size: 62px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SETUP SCREEN ============ -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-card">
+    <div class="eyebrow">Classroom Jeopardy</div>
+    <h1 class="title">The Future of <em>Education</em></h1>
+    <div class="formline-divider"></div>
+    <p class="subtitle">A team game on the factory model, automation, and what learning could be.</p>
+
+    <label class="field-label">How many teams?</label>
+    <div class="team-count-row" id="team-count-row">
+      <button class="team-count-btn" data-count="2">2</button>
+      <button class="team-count-btn" data-count="3">3</button>
+      <button class="team-count-btn selected" data-count="4">4</button>
+    </div>
+
+    <label class="field-label">Team Names</label>
+    <div class="team-inputs" id="team-inputs"></div>
+
+    <button class="start-btn" id="start-game-btn">Begin the Round</button>
+  </div>
+</div>
+
+<!-- ============ BOARD SCREEN ============ -->
+<div id="board-screen" class="screen">
+  <div class="board-header">
+    <div class="board-title-block">
+      <span class="eyebrow">Round One</span>
+      <div class="board-title">The Future of <em>Education</em></div>
+    </div>
+    <div class="header-controls">
+      <button class="ghost-btn" id="restart-btn">Restart</button>
+      <button class="ghost-btn primary" id="final-jeopardy-btn">Final Jeopardy</button>
+    </div>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="scoreboard" id="scoreboard"></div>
+</div>
+
+<!-- ============ CLUE MODAL ============ -->
+<div class="modal-overlay" id="clue-modal">
+  <div class="modal" id="clue-modal-content">
+    <div id="dd-banner-slot"></div>
+    <div class="modal-eyebrow" id="modal-category"></div>
+    <div class="modal-value" id="modal-value"></div>
+
+    <!-- Daily Double wager UI -->
+    <div id="dd-wager-ui" style="display:none;">
+      <div class="award-prompt">Daily Double — which team found it?</div>
+      <div class="wager-team-select" id="dd-team-select"></div>
+      <div class="wager-section">
+        <div class="award-prompt">Enter wager</div>
+        <input type="number" class="wager-input" id="dd-wager-input" min="0" placeholder="0" />
+        <div class="wager-help" id="dd-wager-help"></div>
+      </div>
+      <button class="reveal-btn" id="dd-confirm-btn">Reveal Clue</button>
+    </div>
+
+    <!-- Standard clue UI -->
+    <div id="standard-clue-ui">
+      <div class="modal-clue" id="modal-clue"></div>
+
+      <div class="modal-response" id="modal-response">
+        <div class="modal-response-label">Correct Response</div>
+        <div class="modal-response-text" id="modal-response-text"></div>
+      </div>
+
+      <button class="reveal-btn" id="reveal-response-btn">Reveal Correct Response</button>
+
+      <div class="award-section" id="award-section" style="display:none;">
+        <div class="award-prompt">Award points to:</div>
+        <div class="award-grid" id="award-grid"></div>
+        <button class="no-points-btn" id="no-points-btn">No team answered correctly</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FINAL JEOPARDY SCREEN ============ -->
+<div id="fj-wager-screen" class="screen">
+  <div class="fj-card">
+    <div class="eyebrow">Final Jeopardy — Wagers</div>
+    <h1 class="title" style="font-size:48px; margin-top: 10px;">The <em>Category</em></h1>
+    <div class="formline-divider"></div>
+
+    <div class="modal-eyebrow" id="fj-category-display">Category: ___</div>
+    <p class="subtitle">Each team secretly wagers any amount up to their current score. Teams with zero or negative scores cannot wager.</p>
+
+    <div class="fj-wagers" id="fj-wagers"></div>
+
+    <div class="row">
+      <button class="ghost-btn primary" id="fj-reveal-clue-btn">Lock Wagers &amp; Reveal Clue</button>
+    </div>
+  </div>
+</div>
+
+<div id="fj-clue-screen" class="screen">
+  <div class="fj-card">
+    <div class="eyebrow">Final Jeopardy</div>
+    <div class="modal-eyebrow" id="fj-category-display-2"></div>
+    <div class="modal-clue" id="fj-clue-text" style="margin-top: 20px;"></div>
+
+    <div class="modal-response" id="fj-response" style="margin: 30px auto; max-width: 600px;">
+      <div class="modal-response-label">Correct Response</div>
+      <div class="modal-response-text" id="fj-response-text"></div>
+    </div>
+
+    <div class="row" id="fj-reveal-row">
+      <button class="reveal-btn" id="fj-reveal-response-btn">Reveal Correct Response</button>
+    </div>
+
+    <div id="fj-judging" style="display:none;">
+      <div class="award-prompt" style="margin-top: 30px;">Mark each team's answer</div>
+      <div class="fj-results" id="fj-results"></div>
+      <button class="ghost-btn primary" id="fj-finalize-btn">Finalize Scores</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ WINNER SCREEN ============ -->
+<div id="winner-screen" class="winner-screen">
+  <div class="winner-card">
+    <div class="winner-eyebrow">Champion</div>
+    <div class="winner-name" id="winner-name">—</div>
+    <div class="winner-score" id="winner-score">$0</div>
+    <div class="final-standings" id="final-standings"></div>
+    <button class="start-btn" style="max-width: 300px; margin: 0 auto;" id="play-again-btn">Play Again</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GAME DATA
+// ============================================================
+const CATEGORIES = [
+  {
+    name: "The Factory Model of Education",
+    clues: [
+      { value: 200, clue: "In 1843, an educator from Massachusetts visited this country on his honeymoon and was inspired by their model of dividing instruction by age and subject matter.", response: "What is Prussia?" },
+      { value: 400, clue: "This Massachusetts educator brought Prussian educational ideas back to the U.S., capturing the attention of the fathers of the Industrial Revolution.", response: "Who is Horace Mann?" },
+      { value: 600, clue: "This group, formed in 1892 by ten university heads, was tasked with creating a standard set of subjects that every high school student should know.", response: "What is the Committee of Ten?" },
+      { value: 800, clue: "High schools traditionally organize the day into these, a device that resembles a factory culture rather than an educational principle.", response: "What are 40 or 50-minute blocks (or bells)?" },
+      { value: 1000, clue: "Fifty years ago, a high school dropout could get an average job with this company, the biggest employer in Baltimore at the time.", response: "What is the Bethlehem Steel Company?" }
+    ]
+  },
+  {
+    name: "The Age of Automation",
+    clues: [
+      { value: 200, clue: "In 1997, this world chess champion was narrowly defeated by an IBM supercomputer called Deep Blue.", response: "Who is Gary Kasparov?" },
+      { value: 400, clue: "This IBM supercomputer was built to play a game show, eventually defeating a human champion who had previously won 73 times in a row.", response: "What is Watson?" },
+      { value: 600, clue: "This company's algorithm generated a perfectly clean corporate earnings jobs report on the Forbes website without any human involvement.", response: "What is Narrative Science?" },
+      { value: 800, clue: "According to an MIT economist, this percentage of recent college graduates either can't find a job or are working jobs they could have gotten without a degree.", response: "What is 53%?" },
+      { value: 1000, clue: "This individual predicted that computers will double their ability every two years, an idea that explains why technology is replacing jobs faster than expected.", response: "Who is Gordon Moore?" }
+    ]
+  },
+  {
+    name: "High Tech High",
+    clues: [
+      { value: 200, clue: "To attend High Tech High, kids from specific zip codes are selected through this process, resulting in a demographic makeup that duplicates other local schools.", response: "What is a lottery?" },
+      { value: 400, clue: "Before designing High Tech High from scratch, Larry Rosenstock dropped out of law school and taught this hands-on subject to inner-city kids in Boston.", response: "What is carpentry?" },
+      { value: 600, clue: "Freshmen studying ancient Greece adapted this classic Euripides play, setting it in modern-day Pakistan.", response: "What is Trojan Women?" },
+      { value: 800, clue: "In their theater production, the students incorporated the story of this courageous real-life figure who stood up to the Taliban.", response: "Who is Malala?" },
+      { value: 1000, clue: "To illustrate theories on why civilizations rise and fall, one freshman class was tasked with building a mechanical representation using these items cut with a laser.", response: "What are gears (or linkages)?" }
+    ]
+  },
+  {
+    name: "Beyond the Standardized Test",
+    clues: [
+      { value: 200, clue: "At High Tech High, a teacher's performance and a student's learning aren't judged by a multiple-choice test, but rather by this public event held every term.", response: "What is an exhibition?" },
+      { value: 400, clue: "Project-based learning helps build these non-cognitive traits, which include critical thinking, collaboration, time management, and the ability to persevere.", response: "What are soft skills?" },
+      { value: 600, clue: "At this exclusive boarding school, returning students retook their science finals after just three months, and the average grade plummeted from a B plus to an F.", response: "What is Lawrenceville Academy?" },
+      { value: 800, clue: "According to cognitive science research, 90% of this specific type of knowledge - things you memorize, spit back on a test, and never use again - simply disappears.", response: "What is inert knowledge?" },
+      { value: 1000, clue: "Because the AP US History curriculum is a 32-week sprint covering over 520 years, teachers often spend less than a single class period on this foundational American topic.", response: "What is the Constitution?" }
+    ]
+  }
+];
+
+// Final Jeopardy clue (synthesized from the same themes)
+const FINAL_JEOPARDY = {
+  category: "Re-Imagining School",
+  clue: "This San Diego charter school, founded by Larry Rosenstock, replaces standardized tests with public exhibitions and uses project-based learning to build soft skills.",
+  response: "What is High Tech High?"
+};
+
+// Team colors from the PNW palette
+const TEAM_COLORS = [
+  { name: "Cedar",  color: "#c45a2c" },
+  { name: "Sea",    color: "#1f5a73" },
+  { name: "Moss",   color: "#4a6b3a" },
+  { name: "Gold",   color: "#d4a017" }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  teams: [],
+  numTeams: 4,
+  board: [],          // array of {categoryIdx, clueIdx, used, isDailyDouble}
+  dailyDoubleKey: null, // "catIdx-clueIdx"
+  currentClue: null,
+  ddTeamId: null,
+  ddWager: 0,
+  fjWagers: {},
+  fjResults: {}
+};
+
+// ============================================================
+// SETUP SCREEN
+// ============================================================
+function renderTeamInputs(count) {
+  const wrap = document.getElementById('team-inputs');
+  wrap.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const tc = TEAM_COLORS[i];
+    const row = document.createElement('div');
+    row.className = 'team-input-row';
+    row.innerHTML = `
+      <div class="team-swatch" style="background:${tc.color}"></div>
+      <input type="text" class="team-input" placeholder="Team ${i + 1} name" data-idx="${i}" value="The ${tc.name} Team" />
+    `;
+    wrap.appendChild(row);
+  }
+}
+
+document.getElementById('team-count-row').addEventListener('click', (e) => {
+  const btn = e.target.closest('.team-count-btn');
+  if (!btn) return;
+  document.querySelectorAll('.team-count-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.numTeams = parseInt(btn.dataset.count, 10);
+  renderTeamInputs(state.numTeams);
+});
+
+document.getElementById('start-game-btn').addEventListener('click', () => {
+  const inputs = document.querySelectorAll('.team-input');
+  state.teams = Array.from(inputs).map((inp, i) => ({
+    id: i,
+    name: inp.value.trim() || `Team ${i + 1}`,
+    score: 0,
+    color: TEAM_COLORS[i].color
+  }));
+  initializeBoard();
+  showScreen('board-screen');
+  renderBoard();
+  renderScoreboard();
+});
+
+renderTeamInputs(state.numTeams);
+
+// ============================================================
+// BOARD
+// ============================================================
+function initializeBoard() {
+  // Mark one random clue (from $400-$1000 typically) as Daily Double
+  const catIdx = Math.floor(Math.random() * CATEGORIES.length);
+  const clueIdx = 1 + Math.floor(Math.random() * (CATEGORIES[catIdx].clues.length - 1));
+  state.dailyDoubleKey = `${catIdx}-${clueIdx}`;
+  state.usedClues = new Set();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen, .winner-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  // Category row
+  CATEGORIES.forEach(cat => {
+    const cell = document.createElement('div');
+    cell.className = 'category-cell';
+    cell.textContent = cat.name;
+    board.appendChild(cell);
+  });
+
+  // Clue rows - 5 rows of clues, displayed column-major (so add row by row)
+  for (let row = 0; row < 5; row++) {
+    CATEGORIES.forEach((cat, catIdx) => {
+      const clue = cat.clues[row];
+      const key = `${catIdx}-${row}`;
+      const cell = document.createElement('div');
+      cell.className = 'clue-cell';
+      if (state.usedClues.has(key)) {
+        cell.classList.add('used');
+        cell.textContent = '';
+      } else {
+        cell.textContent = `$${clue.value}`;
+        cell.dataset.cat = catIdx;
+        cell.dataset.row = row;
+        cell.addEventListener('click', () => openClue(catIdx, row));
+      }
+      board.appendChild(cell);
+    });
+  }
+}
+
+function renderScoreboard() {
+  const sb = document.getElementById('scoreboard');
+  sb.innerHTML = '';
+  sb.style.gridTemplateColumns = `repeat(${state.teams.length}, 1fr)`;
+  state.teams.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    card.style.setProperty('--team-color', t.color);
+    const scoreClass = t.score < 0 ? 'team-score negative' : 'team-score';
+    const sign = t.score < 0 ? '-$' : '$';
+    card.innerHTML = `
+      <div class="team-name">${escapeHtml(t.name)}</div>
+      <div class="${scoreClass}">${sign}${Math.abs(t.score).toLocaleString()}</div>
+    `;
+    sb.appendChild(card);
+  });
+}
+
+// ============================================================
+// CLUE MODAL
+// ============================================================
+function openClue(catIdx, clueIdx) {
+  const cat = CATEGORIES[catIdx];
+  const clue = cat.clues[clueIdx];
+  const key = `${catIdx}-${clueIdx}`;
+  const isDD = state.dailyDoubleKey === key;
+
+  state.currentClue = { catIdx, clueIdx, clue, key, isDD };
+  state.ddTeamId = null;
+  state.ddWager = 0;
+
+  document.getElementById('modal-category').textContent = cat.name;
+  document.getElementById('modal-value').textContent = `$${clue.value}`;
+  document.getElementById('modal-clue').textContent = clue.clue;
+  document.getElementById('modal-response-text').textContent = clue.response;
+  document.getElementById('modal-response').classList.remove('shown');
+  document.getElementById('reveal-response-btn').style.display = '';
+  document.getElementById('award-section').style.display = 'none';
+
+  // Daily Double UI
+  const ddSlot = document.getElementById('dd-banner-slot');
+  const ddUI = document.getElementById('dd-wager-ui');
+  const standardUI = document.getElementById('standard-clue-ui');
+
+  if (isDD) {
+    ddSlot.innerHTML = '<div class="dd-banner">★ Daily Double ★</div>';
+    document.getElementById('clue-modal-content').classList.add('dd-modal');
+    ddUI.style.display = 'block';
+    standardUI.style.display = 'none';
+    setupDDTeamSelect();
+  } else {
+    ddSlot.innerHTML = '';
+    document.getElementById('clue-modal-content').classList.remove('dd-modal');
+    ddUI.style.display = 'none';
+    standardUI.style.display = 'block';
+  }
+
+  document.getElementById('clue-modal').classList.add('active');
+}
+
+function setupDDTeamSelect() {
+  const wrap = document.getElementById('dd-team-select');
+  wrap.innerHTML = '';
+  state.teams.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'wager-team-btn';
+    btn.style.setProperty('--team-color', t.color);
+    btn.dataset.id = t.id;
+    btn.textContent = t.name;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#dd-team-select .wager-team-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.ddTeamId = t.id;
+      updateDDWagerHelp();
+    });
+    wrap.appendChild(btn);
+  });
+  document.getElementById('dd-wager-input').value = '';
+  updateDDWagerHelp();
+}
+
+function updateDDWagerHelp() {
+  const help = document.getElementById('dd-wager-help');
+  if (state.ddTeamId === null) {
+    help.textContent = 'Pick a team to set wager limits.';
+    return;
+  }
+  const team = state.teams.find(t => t.id === state.ddTeamId);
+  const value = state.currentClue.clue.value;
+  // Standard Jeopardy DD rule: max wager = max(team score, clue value)
+  const max = Math.max(team.score, value);
+  help.textContent = `${team.name} can wager any amount from $0 up to $${max.toLocaleString()}.`;
+}
+
+document.getElementById('dd-confirm-btn').addEventListener('click', () => {
+  if (state.ddTeamId === null) {
+    alert('Pick which team found the Daily Double.');
+    return;
+  }
+  const team = state.teams.find(t => t.id === state.ddTeamId);
+  const value = state.currentClue.clue.value;
+  const max = Math.max(team.score, value);
+  const wager = parseInt(document.getElementById('dd-wager-input').value, 10);
+  if (isNaN(wager) || wager < 0) {
+    alert('Enter a wager of at least $0.');
+    return;
+  }
+  if (wager > max) {
+    alert(`Wager cannot exceed $${max.toLocaleString()}.`);
+    return;
+  }
+  state.ddWager = wager;
+
+  // Switch to standard clue UI but with restricted award (only the wagering team)
+  document.getElementById('dd-wager-ui').style.display = 'none';
+  document.getElementById('standard-clue-ui').style.display = 'block';
+  document.getElementById('modal-value').textContent = `Wager: $${wager.toLocaleString()}`;
+});
+
+document.getElementById('reveal-response-btn').addEventListener('click', () => {
+  document.getElementById('modal-response').classList.add('shown');
+  document.getElementById('reveal-response-btn').style.display = 'none';
+  renderAwardSection();
+});
+
+function renderAwardSection() {
+  const section = document.getElementById('award-section');
+  const grid = document.getElementById('award-grid');
+  section.style.display = 'block';
+  grid.innerHTML = '';
+
+  const isDD = state.currentClue.isDD;
+  const value = isDD ? state.ddWager : state.currentClue.clue.value;
+
+  // For Daily Double, only the wagering team gets the buttons
+  const teamsToShow = isDD
+    ? state.teams.filter(t => t.id === state.ddTeamId)
+    : state.teams;
+
+  // For DD we show "correct/wrong" instead of award
+  if (isDD) {
+    const team = teamsToShow[0];
+    const correctBtn = document.createElement('button');
+    correctBtn.className = 'award-team-btn';
+    correctBtn.style.setProperty('--team-color', team.color);
+    correctBtn.innerHTML = `${escapeHtml(team.name)} — Correct (+$${value.toLocaleString()})`;
+    correctBtn.addEventListener('click', () => awardPoints(team.id, value));
+    grid.appendChild(correctBtn);
+
+    const wrongBtn = document.createElement('button');
+    wrongBtn.className = 'award-team-btn';
+    wrongBtn.style.setProperty('--team-color', team.color);
+    wrongBtn.innerHTML = `${escapeHtml(team.name)} — Incorrect (-$${value.toLocaleString()})`;
+    wrongBtn.addEventListener('click', () => awardPoints(team.id, -value));
+    grid.appendChild(wrongBtn);
+
+    return;
+  }
+
+  // Standard mode: top label toggles between "award" and "deduct"
+  document.querySelector('#award-section .award-prompt').textContent =
+    'Award the clue value or deduct for a wrong answer:';
+
+  teamsToShow.forEach(team => {
+    const correctBtn = document.createElement('button');
+    correctBtn.className = 'award-team-btn';
+    correctBtn.style.setProperty('--team-color', team.color);
+    correctBtn.innerHTML = `${escapeHtml(team.name)} <span style="opacity:0.7; font-weight:400;"> — Correct (+$${value})</span>`;
+    correctBtn.addEventListener('click', () => awardPoints(team.id, value));
+    grid.appendChild(correctBtn);
+  });
+
+  // Wrong-answer row
+  const wrongHeader = document.createElement('div');
+  wrongHeader.style.gridColumn = '1 / -1';
+  wrongHeader.style.marginTop = '10px';
+  wrongHeader.style.paddingTop = '14px';
+  wrongHeader.style.borderTop = '1px solid rgba(243,234,215,0.12)';
+  wrongHeader.innerHTML = '<div class="award-prompt" style="margin-bottom:10px;">Deduct from a team that answered incorrectly:</div>';
+  grid.appendChild(wrongHeader);
+
+  teamsToShow.forEach(team => {
+    const wrongBtn = document.createElement('button');
+    wrongBtn.className = 'award-team-btn';
+    wrongBtn.style.setProperty('--team-color', team.color);
+    wrongBtn.style.opacity = '0.85';
+    wrongBtn.innerHTML = `${escapeHtml(team.name)} <span style="opacity:0.7; font-weight:400;"> — Wrong (-$${value})</span>`;
+    wrongBtn.addEventListener('click', () => awardPoints(team.id, -value));
+    grid.appendChild(wrongBtn);
+  });
+}
+
+function awardPoints(teamId, amount) {
+  const team = state.teams.find(t => t.id === teamId);
+  team.score += amount;
+  state.usedClues.add(state.currentClue.key);
+  closeClueModal();
+  renderBoard();
+  renderScoreboard();
+}
+
+document.getElementById('no-points-btn').addEventListener('click', () => {
+  state.usedClues.add(state.currentClue.key);
+  closeClueModal();
+  renderBoard();
+});
+
+function closeClueModal() {
+  document.getElementById('clue-modal').classList.remove('active');
+  state.currentClue = null;
+}
+
+// ============================================================
+// FINAL JEOPARDY
+// ============================================================
+document.getElementById('final-jeopardy-btn').addEventListener('click', startFinalJeopardy);
+
+function startFinalJeopardy() {
+  document.getElementById('fj-category-display').textContent = `Category: ${FINAL_JEOPARDY.category}`;
+  document.getElementById('fj-category-display-2').textContent = `Category: ${FINAL_JEOPARDY.category}`;
+  document.getElementById('fj-clue-text').textContent = FINAL_JEOPARDY.clue;
+  document.getElementById('fj-response-text').textContent = FINAL_JEOPARDY.response;
+
+  const wagers = document.getElementById('fj-wagers');
+  wagers.innerHTML = '';
+  state.fjWagers = {};
+
+  state.teams.forEach(t => {
+    const canWager = t.score > 0;
+    const row = document.createElement('div');
+    row.className = 'fj-wager-row';
+    row.style.setProperty('--team-color', t.color);
+    const sign = t.score < 0 ? '-$' : '$';
+    row.innerHTML = `
+      <div class="fj-team-info">
+        <span class="fj-team-name">${escapeHtml(t.name)}</span>
+        <span class="fj-team-score">Current score: ${sign}${Math.abs(t.score).toLocaleString()} ${canWager ? `· max wager $${t.score.toLocaleString()}` : '· cannot wager'}</span>
+      </div>
+      <input type="number" class="fj-wager-input" data-id="${t.id}" min="0" max="${Math.max(t.score, 0)}"
+             placeholder="0" ${canWager ? '' : 'disabled'} />
+    `;
+    wagers.appendChild(row);
+  });
+
+  showScreen('fj-wager-screen');
+}
+
+document.getElementById('fj-reveal-clue-btn').addEventListener('click', () => {
+  // Capture wagers
+  let valid = true;
+  document.querySelectorAll('.fj-wager-input').forEach(inp => {
+    const id = parseInt(inp.dataset.id, 10);
+    const team = state.teams.find(t => t.id === id);
+    const max = Math.max(team.score, 0);
+    let wager = parseInt(inp.value, 10);
+    if (isNaN(wager)) wager = 0;
+    if (wager < 0 || wager > max) {
+      alert(`${team.name}: wager must be between $0 and $${max.toLocaleString()}.`);
+      valid = false;
+    }
+    state.fjWagers[id] = wager;
+  });
+  if (!valid) return;
+
+  // Show the clue screen
+  document.getElementById('fj-response').classList.remove('shown');
+  document.getElementById('fj-reveal-row').style.display = '';
+  document.getElementById('fj-judging').style.display = 'none';
+  showScreen('fj-clue-screen');
+});
+
+document.getElementById('fj-reveal-response-btn').addEventListener('click', () => {
+  document.getElementById('fj-response').classList.add('shown');
+  document.getElementById('fj-reveal-row').style.display = 'none';
+
+  // Render judging rows
+  const results = document.getElementById('fj-results');
+  results.innerHTML = '';
+  state.fjResults = {};
+
+  state.teams.forEach(t => {
+    const wager = state.fjWagers[t.id] || 0;
+    const row = document.createElement('div');
+    row.className = 'fj-result-row';
+    row.style.setProperty('--team-color', t.color);
+    row.innerHTML = `
+      <div>
+        <strong>${escapeHtml(t.name)}</strong>
+        <div style="font-size:12px; color:var(--bone-soft); opacity:0.7;">Wager: $${wager.toLocaleString()}</div>
+      </div>
+      <div style="font-size:12px; color:var(--bone-soft);">Result:</div>
+      <div class="fj-result-btns">
+        <button class="fj-correct-btn" data-id="${t.id}" data-result="correct">Correct</button>
+        <button class="fj-wrong-btn" data-id="${t.id}" data-result="wrong">Wrong</button>
+      </div>
+    `;
+    results.appendChild(row);
+  });
+
+  results.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.id, 10);
+    const result = btn.dataset.result;
+    state.fjResults[id] = result;
+    // Toggle visual state in the row
+    const row = btn.closest('.fj-result-row');
+    row.querySelectorAll('.fj-correct-btn, .fj-wrong-btn').forEach(b => {
+      b.classList.toggle('active', b === btn);
+    });
+  });
+
+  document.getElementById('fj-judging').style.display = 'block';
+});
+
+document.getElementById('fj-finalize-btn').addEventListener('click', () => {
+  // For any team with a wager > 0 but no judgment, default to wrong
+  state.teams.forEach(t => {
+    const wager = state.fjWagers[t.id] || 0;
+    if (wager === 0) return;
+    const result = state.fjResults[t.id];
+    if (result === 'correct') t.score += wager;
+    else t.score -= wager; // wrong or unjudged
+  });
+  showWinner();
+});
+
+// ============================================================
+// WINNER SCREEN
+// ============================================================
+function showWinner() {
+  const sorted = [...state.teams].sort((a, b) => b.score - a.score);
+  const winner = sorted[0];
+  document.getElementById('winner-name').textContent = winner.name;
+  const sign = winner.score < 0 ? '-$' : '$';
+  document.getElementById('winner-score').textContent = `${sign}${Math.abs(winner.score).toLocaleString()}`;
+
+  const standings = document.getElementById('final-standings');
+  standings.innerHTML = '';
+  sorted.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    card.style.setProperty('--team-color', t.color);
+    const s = t.score < 0 ? '-$' : '$';
+    const scoreClass = t.score < 0 ? 'team-score negative' : 'team-score';
+    card.innerHTML = `
+      <div class="team-name">${i + 1}. ${escapeHtml(t.name)}</div>
+      <div class="${scoreClass}" style="font-size:28px;">${s}${Math.abs(t.score).toLocaleString()}</div>
+    `;
+    standings.appendChild(card);
+  });
+
+  showScreen('winner-screen');
+}
+
+document.getElementById('play-again-btn').addEventListener('click', resetAll);
+document.getElementById('restart-btn').addEventListener('click', () => {
+  if (confirm('Restart the game and clear all scores?')) resetAll();
+});
+
+function resetAll() {
+  state = {
+    teams: [],
+    numTeams: 4,
+    board: [],
+    dailyDoubleKey: null,
+    currentClue: null,
+    ddTeamId: null,
+    ddWager: 0,
+    fjWagers: {},
+    fjResults: {},
+    usedClues: new Set()
+  };
+  // Reset setup UI
+  document.querySelectorAll('.team-count-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.count === '4');
+  });
+  renderTeamInputs(state.numTeams);
+  showScreen('setup-screen');
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+</script>
+
+</body>
+</html>
