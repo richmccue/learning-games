@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Salish Sea Guardian - A Restoration Adventure</title>
+<style>
+  @font-face {
+    font-family: 'PixelFont';
+    src: local('Courier New');
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #0d2b26;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    touch-action: none;
+  }
+  #gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #gameCanvas {
+    background: #7ec8e3;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    max-width: 100%;
+    max-height: 100%;
+    border: 3px solid #2b3a24;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  }
+  #hud {
+    position: absolute;
+    top: 8px; left: 8px; right: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+    font-size: 13px;
+    color: #f4ead5;
+    text-shadow: 1px 1px 0 #2b3a24, -1px -1px 0 #2b3a24, 1px -1px 0 #2b3a24, -1px 1px 0 #2b3a24;
+    z-index: 5;
+  }
+  #hudLeft, #hudRight { display: flex; flex-direction: column; gap: 4px; }
+  .meterBar {
+    width: 160px; height: 14px;
+    background: rgba(20,30,20,0.6);
+    border: 2px solid #2b3a24;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .meterFill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a7c3f, #8fce5f);
+    transition: width 0.2s, background 0.3s;
+  }
+  .chargeFill {
+    height: 100%;
+    background: linear-gradient(90deg, #e3b23c, #ffe98a);
+    transition: width 0.15s;
+  }
+  #screenOverlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    background: rgba(10,20,15,0.88);
+    color: #f4ead5;
+    text-align: center;
+    z-index: 20;
+    padding: 20px;
+  }
+  #screenOverlay h1 { font-size: clamp(20px, 4vw, 34px); margin: 0 0 10px; color: #a8dd7a; letter-spacing: 1px; }
+  #screenOverlay h2 { font-size: clamp(16px, 3vw, 22px); margin: 4px 0; color: #ffe98a; }
+  #screenOverlay p { font-size: clamp(11px, 2vw, 15px); max-width: 560px; line-height: 1.5; }
+  .gBtn {
+    font-family: 'Courier New', monospace;
+    background: #3d6b34;
+    color: #f4ead5;
+    border: 3px solid #a8dd7a;
+    padding: 10px 22px;
+    font-size: 15px;
+    margin: 8px 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    pointer-events: all;
+  }
+  .gBtn:active { background: #2b4d24; }
+  .levelGrid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; pointer-events: all; }
+  .levelCard {
+    width: 130px; padding: 10px; background: rgba(60,90,50,0.6);
+    border: 2px solid #a8dd7a; border-radius: 6px; cursor: pointer; pointer-events: all;
+  }
+  .levelCard.locked { opacity: 0.4; cursor: not-allowed; }
+  .levelCard h3 { margin: 2px 0; font-size: 13px; color: #ffe98a; }
+  .levelCard p { margin: 0; font-size: 10px; }
+  .howToScroll {
+    max-height: 78vh;
+    overflow-y: auto;
+    padding: 0 6px;
+  }
+  .iconSection { margin-top: 10px; text-align: left; max-width: 620px; }
+  .iconSection h3 { color: #ffe98a; font-size: 14px; margin: 14px 0 6px; }
+  .iconGrid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .iconCard {
+    width: 118px; background: rgba(60,90,50,0.5);
+    border: 2px solid #a8dd7a; border-radius: 6px;
+    padding: 6px; text-align: center;
+  }
+  .iconCard canvas { background: rgba(0,0,0,0.15); border-radius: 4px; }
+  .iconCard .iconLabel { font-size: 11px; color: #ffe98a; margin-top: 2px; }
+  .iconCard .iconDesc { font-size: 9.5px; color: #f4ead5; line-height: 1.3; }
+  #touchControls {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: none;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 14px;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .touchBtn {
+    width: 62px; height: 62px;
+    border-radius: 50%;
+    background: rgba(244,234,213,0.25);
+    border: 2px solid rgba(244,234,213,0.6);
+    color: #f4ead5;
+    font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: all;
+    margin: 4px;
+  }
+  .touchBtn:active, .touchBtn.active { background: rgba(168,221,122,0.5); }
+  #dpad { display: flex; gap: 6px; pointer-events: all; }
+  #actionBtns { display: flex; gap: 6px; pointer-events: all; }
+  #pauseBtn {
+    position: absolute; top: 8px; right: 8px; z-index: 15;
+    background: rgba(20,30,20,0.6); color: #f4ead5; border: 2px solid #a8dd7a;
+    border-radius: 4px; font-size: 11px; padding: 4px 8px; cursor: pointer; pointer-events: all;
+  }
+  #toast {
+    position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+    background: rgba(20,30,20,0.85); color: #ffe98a;
+    padding: 6px 14px; border-radius: 4px; font-size: 12px;
+    border: 1px solid #a8dd7a; z-index: 8; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="960" height="520"></canvas>
+  <div id="hud" class="hidden">
+    <div id="hudLeft">
+      <div>BIODIVERSITY INDEX</div>
+      <div class="meterBar"><div class="meterFill" id="bioFill" style="width:60%"></div></div>
+      <div id="itemsCollected">Seeds: 0/0 &nbsp; Trash: 0/0</div>
+    </div>
+    <div id="hudRight" style="align-items:flex-end;">
+      <div id="livesDisplay">Lives: ♥♥♥</div>
+      <div id="ammoDisplay">Compost: 0</div>
+      <div class="meterBar" id="chargeBarWrap" style="display:none;"><div class="chargeFill" id="chargeFill" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div id="toast"></div>
+  <button id="pauseBtn" class="hidden">II</button>
+  <div id="touchControls">
+    <div id="dpad">
+      <button class="touchBtn" id="btnLeft">◀</button>
+      <button class="touchBtn" id="btnRight">▶</button>
+    </div>
+    <div id="actionBtns">
+      <button class="touchBtn" id="btnAction">⟲</button>
+      <button class="touchBtn" id="btnThrow">●</button>
+      <button class="touchBtn" id="btnJump">▲</button>
+    </div>
+  </div>
+  <div id="screenOverlay">
+    <h1>🌲 Salish Sea Guardian 🌊</h1>
+    <p>Help a young forest guardian restore five wounded corners of the Salish Sea coast &mdash; capture invasive species, neutralize pollution, revive dying trees, and bring the Biodiversity Index back to life.</p>
+    <button class="gBtn" id="startBtn">Begin Restoration</button>
+    <button class="gBtn" id="howToBtn">How To Play</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+// ---------- CANVAS SETUP ----------
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const TILE = 40;
+const VIEW_W = canvas.width;
+const VIEW_H = canvas.height;
+const ROWS = 13;
+
+// ---------- SAVE DATA ----------
+const SAVE_KEY = 'salishSeaGuardianSave_v1';
+function loadSave(){
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return { unlocked: 1, bestBio: [0,0,0,0,0], totalSeeds: 0, totalTrash: 0 };
+}
+function saveSave(){
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){}
+}
+let save = loadSave();
+
+// ---------- TILE LEGEND ----------
+// '.' empty  '#' ground  'B' crumble platform  '@' start  'F' flag
+// 'S' seed   'T' trash   'C' compost ammo   'M' mycelium powerup  'K' kinetic boots powerup
+// 'D' dying tree (interact)  '?' hidden seed (needs mycelium)  'X' hazard (needs pellet)
+// 'I' invasive spawn (patrols row)  '^' sun/wind charge zone  '~' polluted water (decorative solid)
+// 'L' extra life
+
+function row(str){ return str.split(''); }
+
+// ---------- LEVEL DATA ----------
+const LEVELS = [
+{
+  name: "Tidepool Shore", biome:'beach', enemyName:'Green Crab', hazardName:'Oil Sheen',
+  bgSky:['#7ec8e3','#bfe6f0'], skyline:'beach',
+  map: [
+"..........................................................................",
+"..........................................................................",
+"..........................................................S..............",
+"..................S..............L.......................###............",
+".............S....##.......T.........S.............T....................",
+"........T....##.......C........###########....C..........................",
+".@......##...........#####.......X.....X.....#####...........F..........",
+"########....I..#################.....I........#####.###########.........",
+"###################################################.###########.........",
+"###################################################.###########.........",
+"###################################################.###########.........",
+"###################################################.###########.........",
+"###################################################.###########.........",
+  ]
+},
+{
+  name: "Coastal Rainforest Edge", biome:'forest', enemyName:'English Ivy Crawler', hazardName:'Runoff Puddle',
+  bgSky:['#3f6b4a','#7fae7a'], skyline:'forest',
+  map: [
+"..........................................................................",
+"..............................D..................D.......................",
+".......M...........?...........................................F........",
+"....................##########...............S.............###..........",
+".@...S.......T.........................I..........T............#........",
+"..##.....#####..............#####...........#####........###....#.......",
+"..##..I..#####....X.....C....#####....D......#####...S....###....#......",
+"..##.....#####...................#####.......#####........###.....#.....",
+"########.#####.###################.###########.#####.####.###......#####",
+"###########################################################.############",
+"###########################################################.############",
+"###########################################################.############",
+"###########################################################.############",
+  ]
+},
+{
+  name: "Estuary Salt Marsh", biome:'marsh', enemyName:'Reed Canary Grass', hazardName:'Agricultural Sludge',
+  bgSky:['#5b7a8c','#a9c9cf'], skyline:'marsh',
+  map: [
+"..........................................................................",
+"...........................................................S..............",
+"...................S...............L......................................",
+".@.....T..~~~~~~....##....T.....~~~~~~~~....S.......###########..........",
+"....C....~~~~~~..I..##........X.~~~~~~~~..C.........#####......F.........",
+"########~~~~~~~######~~~~~~~~~~~~~~~~~~~~~~~~~~####.#####.####..........",
+"########~~~~~~~######~I~~~~~~~~~~~~~X~~~~~~~~~####.#####.####..........",
+"########~~~~~~~######~~~~~~~~~~~~~~~~~~~~~~~~~####.#####.####..........",
+"###########################################################.############",
+"###########################################################.############",
+"###########################################################.############",
+"###########################################################.############",
+"###########################################################.############",
+  ]
+},
+{
+  name: "Mountain Salmon Stream", biome:'mountain', enemyName:'Invasive Bullfrog', hazardName:'Logging Debris',
+  bgSky:['#5c6b8c','#c3cde0'], skyline:'mountain',
+  map: [
+"..........................................................................",
+"..............K...........................................................",
+"........^^^^..............D.......^^^^^^..................F..............",
+".@....###########....S.................######........S..###########.....",
+"......###########..I......T........C....######...I..T....###########....",
+"..S...###########........X##############......###...................B...",
+"......###########.......###########............###..........###.....B...",
+"......########################......########....########.....###........",
+"..............................######................########............",
+"###################################################.############.........",
+"###################################################.############.........",
+"###################################################.############.........",
+"###################################################.############.........",
+  ]
+},
+{
+  name: "Urban Creek Restoration", biome:'urban', enemyName:'Litter Golem', hazardName:'Stormwater Pollution',
+  bgSky:['#7a7a6b','#c9c3a8'], skyline:'urban',
+  map: [
+"..........................................................................",
+"...........................................................S..............",
+"..M..................D..........K..............L..........................",
+".@....T.....~~~~~~....S....X.......~~~~~~~~.......?.................F....",
+"....C.....I~~~~~~........###....X..~~~~~~~~..C.....I......###....########",
+"..###....~~~~~~~..####...###.........~~~~~~~~....######...###...........",
+"..###..X.~~~~~~~..####.......########.~~~~~~~~.I.######...###....########",
+"..###....~~~~~~~..####.......########..........######...............#####",
+"..#####################.......########.####################........#####",
+"##############################################################...########",
+"##############################################################...########",
+"##############################################################...########",
+"##############################################################...########",
+  ]
+},
+];
+
+// pad rows to equal length with '.'
+LEVELS.forEach(lvl => {
+  const w = Math.max(...lvl.map.map(r=>r.length));
+  lvl.map = lvl.map.map(r => r.padEnd(w,'.').split(''));
+  lvl.width = w;
+});
+
+// ---------- COLOR PALETTES PER BIOME ----------
+const PALETTES = {
+  beach:  { ground:'#8a7a54', groundTop:'#c9b57a', accent:'#5b8a6b', water:'#3a6b7a', waterClean:'#5fb0c9' },
+  forest: { ground:'#4a3b2a', groundTop:'#3f6b34', accent:'#2b4d24', water:'#3a6b7a', waterClean:'#5fb0c9' },
+  marsh:  { ground:'#5a4a34', groundTop:'#7a8a4a', accent:'#4a6b3a', water:'#5a6b3a', waterClean:'#6fae9a' },
+  mountain:{ ground:'#5a5a5a', groundTop:'#7a8a6a', accent:'#8a9aae', water:'#4a6b7a', waterClean:'#7fd0e0' },
+  urban:  { ground:'#4a4a48', groundTop:'#6a6a5a', accent:'#8a7a4a', water:'#4a4a3a', waterClean:'#5a9a8a' },
+};
+
+// ---------- GAME STATE ----------
+let state = 'menu'; // menu, howto, levelselect, playing, paused, levelcomplete, gameover, ecocollapse, win
+let currentLevelIdx = 0;
+let level = null;
+let grid = null;
+let camX = 0;
+let keys = {};
+let touchState = { left:false, right:false, jump:false, throwPellet:false, action:false };
+let frameCount = 0;
+let toastTimer = 0;
+
+let player, enemies, projectiles, particles, totalSeeds, totalTrash, collectedSeeds, collectedTrash;
+let bioIndex = 60, lives = 3, ammo = 3, kineticCharge = 0, invulnTimer = 0;
+let hasMycelium = false, hasBoots = false;
+let flagPos = null;
+let cameraShake = 0;
+let levelEndTimer = 0;
+let musicCtx = null;
+
+// ---------- AUDIO (simple chiptune via WebAudio) ----------
+function initAudio(){
+  if (musicCtx) return;
+  try { musicCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+}
+function blip(freq, dur, type, vol){
+  if (!musicCtx) return;
+  const o = musicCtx.createOscillator();
+  const g = musicCtx.createGain();
+  o.type = type || 'square';
+  o.frequency.value = freq;
+  g.gain.value = (vol!==undefined?vol:0.08);
+  o.connect(g); g.connect(musicCtx.destination);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(0.0001, musicCtx.currentTime + dur);
+  o.stop(musicCtx.currentTime + dur);
+}
+function sfxCollect(){ blip(660,0.12,'square',0.07); blip(880,0.1,'square',0.05); }
+function sfxTrash(){ blip(300,0.1,'triangle',0.08); }
+function sfxJump(){ blip(440,0.08,'square',0.05); }
+function sfxHurt(){ blip(140,0.25,'sawtooth',0.09); }
+function sfxCapture(){ blip(520,0.08,'square',0.06); blip(700,0.08,'square',0.06); blip(920,0.12,'square',0.06); }
+function sfxNeutralize(){ blip(220,0.15,'sine',0.09); blip(440,0.15,'sine',0.06); }
+function sfxRevive(){ blip(392,0.1,'sine',0.06); blip(494,0.1,'sine',0.06); blip(587,0.1,'sine',0.06); blip(784,0.2,'sine',0.07); }
+function sfxPowerup(){ blip(523,0.1,'square',0.07); blip(659,0.1,'square',0.07); blip(784,0.1,'square',0.07); blip(1047,0.2,'square',0.08); }
+function sfxThrow(){ blip(300,0.08,'square',0.05); }
+function sfxComplete(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>blip(f,0.25,'square',0.08), i*120)); }
+function sfxFail(){ [400,350,300,220].forEach((f,i)=>setTimeout(()=>blip(f,0.3,'sawtooth',0.08), i*140)); }
+
+// ---------- HELPERS ----------
+function tileAt(c,r){
+  if (r<0||r>=grid.length||c<0||c>=grid[0].length) return '#';
+  return grid[r][c];
+}
+function setTile(c,r,val){
+  if (r<0||r>=grid.length||c<0||c>=grid[0].length) return;
+  grid[r][c] = val;
+}
+function isSolid(ch){
+  return ch==='#' || ch==='B' || ch==='~';
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  toastTimer = 110;
+}
+
+// ---------- ENTITIES ----------
+function makePlayer(startC, startR){
+  return {
+    x: startC*TILE, y: startR*TILE,
+    w: 26, h: 34,
+    vx:0, vy:0,
+    facing: 1,
+    onGround:false,
+    animTimer:0,
+    animFrame:0,
+    state:'idle', // idle, run, jump
+  };
+}
+
+function scanLevel(){
+  enemies = [];
+  projectiles = [];
+  particles = [];
+  totalSeeds=0; totalTrash=0; collectedSeeds=0; collectedTrash=0;
+  let startC=1, startR=6;
+  for (let r=0;r<grid.length;r++){
+    for (let c=0;c<grid[r].length;c++){
+      const ch = grid[r][c];
+      if (ch==='@'){ startC=c; startR=r; grid[r][c]='.'; }
+      else if (ch==='S' || ch==='?') totalSeeds++;
+      else if (ch==='T') totalTrash++;
+      else if (ch==='F') flagPos = {c,r};
+      else if (ch==='I'){
+        // patrol bounds: a few tiles either side of the spawn point
+        enemies.push({ c0:Math.max(0,c-3), c1:c+3, x:c*TILE, y:r*TILE+(TILE-26), w:30, h:26, dir:1, speed:0.7+Math.random()*0.3, row:r, alive:true, animTimer:0 });
+        grid[r][c] = '.';
+      }
+    }
+  }
+  player = makePlayer(startC, startR);
+  bioIndex = 60;
+  lives = 3;
+  ammo = 3;
+  kineticCharge = 0;
+  hasMycelium = false;
+  hasBoots = false;
+  invulnTimer = 0;
+  camX = 0;
+  cameraShake = 0;
+  levelEndTimer = 0;
+}
+
+function startLevel(idx){
+  currentLevelIdx = idx;
+  level = LEVELS[idx];
+  grid = level.map.map(r=>r.slice());
+  scanLevel();
+  state = 'playing';
+  document.getElementById('hud').classList.remove('hidden');
+  document.getElementById('pauseBtn').classList.remove('hidden');
+  document.getElementById('screenOverlay').classList.add('hidden');
+  document.getElementById('chargeBarWrap').style.display = (idx>=3) ? 'block' : 'none';
+  showToast(level.name + " — restore the " + level.enemyName + "'s habitat");
+}
+
+// ---------- PHYSICS / COLLISION ----------
+const GRAVITY = 0.7;
+const MAX_FALL = 16;
+const MOVE_SPEED = 4.2;
+const JUMP_VEL = -13.5;
+const SUPER_JUMP_VEL = -18.5;
+
+function rectsOverlap(ax,ay,aw,ah,bx,by,bw,bh){
+  return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by;
+}
+
+function tileSolidAtPixel(px,py){
+  const c = Math.floor(px/TILE), r = Math.floor(py/TILE);
+  if (r<0) return false;
+  if (r>=grid.length) return true;
+  if (c<0||c>=grid[0].length) return true;
+  return isSolid(grid[r][c]);
+}
+
+function moveAndCollide(ent, dx, dy){
+  // horizontal
+  ent.x += dx;
+  if (dx !== 0){
+    const dir = dx>0?1:-1;
+    const checkX = dir>0 ? ent.x+ent.w : ent.x;
+    const top = ent.y+2, bot = ent.y+ent.h-2;
+    for (let py=top; py<=bot; py+=Math.max(1,(bot-top)/2)){
+      if (tileSolidAtPixel(checkX, py)){
+        if (dir>0) ent.x = Math.floor(checkX/TILE)*TILE - ent.w - 0.01;
+        else ent.x = (Math.floor(checkX/TILE)+1)*TILE + 0.01;
+        dx = 0;
+        break;
+      }
+    }
+  }
+  // vertical
+  ent.y += dy;
+  ent.onGround = false;
+  if (dy !== 0){
+    const dir = dy>0?1:-1;
+    const checkY = dir>0 ? ent.y+ent.h : ent.y;
+    const left = ent.x+2, right = ent.x+ent.w-2;
+    for (let px=left; px<=right; px+=Math.max(1,(right-left)/2)){
+      if (tileSolidAtPixel(px, checkY)){
+        if (dir>0){ ent.y = Math.floor(checkY/TILE)*TILE - ent.h - 0.01; ent.onGround = true; ent.vy = 0; }
+        else { ent.y = (Math.floor(checkY/TILE)+1)*TILE + 0.01; ent.vy = 0; }
+        break;
+      }
+    }
+  }
+}
+
+// ---------- UPDATE ----------
+function updatePlayer(){
+  const left = keys['ArrowLeft']||keys['KeyA']||touchState.left;
+  const right = keys['ArrowRight']||keys['KeyD']||touchState.right;
+  const jumpPressed = keys['jumpPressed']||false;
+
+  player.vx = 0;
+  if (left){ player.vx = -MOVE_SPEED; player.facing=-1; player.state='run'; }
+  else if (right){ player.vx = MOVE_SPEED; player.facing=1; player.state='run'; }
+  else player.state = player.onGround ? 'idle' : player.state;
+
+  if (!player.onGround) player.state='jump';
+
+  player.vy += GRAVITY;
+  if (player.vy > MAX_FALL) player.vy = MAX_FALL;
+
+  if (jumpPressed && player.onGround){
+    if (hasBoots && kineticCharge >= 100){
+      player.vy = SUPER_JUMP_VEL;
+      kineticCharge = 0;
+      spawnParticles(player.x+player.w/2, player.y+player.h, '#ffe98a', 14);
+      sfxJump(); blip(880,0.15,'square',0.08);
+      showToast("Kinetic boost!");
+    } else {
+      player.vy = JUMP_VEL;
+      sfxJump();
+    }
+    keys['jumpPressed'] = false;
+  }
+
+  moveAndCollide(player, player.vx, 0);
+  moveAndCollide(player, 0, player.vy);
+
+  if (player.y > grid.length*TILE + 100){
+    loseLife();
+  }
+
+  // tile interactions under/around player
+  handleTileInteractions();
+
+  // charge zone
+  const pc = Math.floor((player.x+player.w/2)/TILE);
+  const pr = Math.floor((player.y+player.h/2)/TILE);
+  if (hasBoots && tileAt(pc,pr)==='^'){
+    kineticCharge = Math.min(100, kineticCharge+2.2);
+  }
+
+  player.animTimer++;
+  camX = Math.max(0, Math.min(player.x - VIEW_W/2, grid[0].length*TILE - VIEW_W));
+}
+
+function handleTileInteractions(){
+  const cx = Math.floor((player.x+player.w/2)/TILE);
+  const cyTop = Math.floor((player.y)/TILE);
+  const cyMid = Math.floor((player.y+player.h/2)/TILE);
+  const cyBot = Math.floor((player.y+player.h-1)/TILE);
+  const cellsToCheck = [[cx,cyTop],[cx,cyMid],[cx,cyBot]];
+
+  for (const [c,r] of cellsToCheck){
+    const ch = tileAt(c,r);
+    if (ch==='S'){
+      setTile(c,r,'.'); collectedSeeds++; addBio(2); sfxCollect(); spawnParticles(c*TILE+20,r*TILE+20,'#8fce5f',8);
+    } else if (ch==='T'){
+      setTile(c,r,'.'); collectedTrash++; addBio(2); sfxTrash(); spawnParticles(c*TILE+20,r*TILE+20,'#c9b57a',8);
+    } else if (ch==='C'){
+      setTile(c,r,'.'); ammo = Math.min(6, ammo+2); sfxCollect(); showToast("Compost pellets +2");
+    } else if (ch==='L'){
+      setTile(c,r,'.'); lives = Math.min(5, lives+1); sfxPowerup(); showToast("Extra life!");
+    } else if (ch==='M'){
+      setTile(c,r,'.'); hasMycelium = true; sfxPowerup(); showToast("Mycelium Network Suit acquired! Hidden roots revealed.");
+    } else if (ch==='K'){
+      setTile(c,r,'.'); hasBoots = true; sfxPowerup(); showToast("Kinetic Boots acquired! Charge in sunny/wind zones.");
+    } else if (ch==='?'){
+      if (hasMycelium){ setTile(c,r,'.'); collectedSeeds++; addBio(3); sfxCollect(); spawnParticles(c*TILE+20,r*TILE+20,'#c9ff9f',10); }
+    } else if (ch==='X'){
+      if (invulnTimer<=0){
+        addBio(-10); invulnTimer=60; sfxHurt(); cameraShake=10;
+        spawnParticles(c*TILE+20,r*TILE+20,'#5a3a2a',6);
+      }
+    }
+  }
+
+  // dying tree interaction (action button), check adjacent cells too
+  if (touchState.action || keys['KeyE']){
+    for (let dc=-1; dc<=1; dc++){
+      for (let dr=-1; dr<=1; dr++){
+        if (tileAt(cx+dc, cyMid+dr)==='D' && hasMycelium){
+          setTile(cx+dc, cyMid+dr, '.');
+          addBio(8); sfxRevive();
+          spawnParticles((cx+dc)*TILE+20,(cyMid+dr)*TILE+20,'#8fce5f',16);
+          showToast("Tree revived! +8 Biodiversity");
+        }
+      }
+    }
+    keys['KeyE']=false; touchState.action=false;
+  }
+}
+
+function addBio(amt){
+  bioIndex = Math.max(0, Math.min(100, bioIndex+amt));
+}
+
+function loseLife(){
+  lives--;
+  invulnTimer = 90;
+  sfxHurt(); cameraShake=16;
+  if (lives<=0){
+    state = 'gameover';
+    sfxFail();
+    showEndScreen('gameover');
+  } else {
+    // respawn at level start
+    const s = LEVELS[currentLevelIdx];
+    let sc=1, sr=6;
+    for (let r=0;r<s.map.length;r++) for (let c=0;c<s.map[r].length;c++) if (s.map[r][c]==='@'){sc=c;sr=r;}
+    player.x = sc*TILE; player.y = sr*TILE; player.vx=0; player.vy=0;
+  }
+}
+
+function updateEnemies(){
+  for (const en of enemies){
+    if (!en.alive) continue;
+    en.x += en.dir*en.speed;
+    if (en.x < en.c0*TILE) { en.x=en.c0*TILE; en.dir=1; }
+    if (en.x > en.c1*TILE) { en.x=en.c1*TILE; en.dir=-1; }
+    en.animTimer++;
+
+    if (rectsOverlap(player.x,player.y,player.w,player.h, en.x,en.y,en.w,en.h)){
+      const playerBottom = player.y+player.h;
+      const stomping = player.vy>1 && playerBottom - en.y < 18;
+      if (stomping){
+        en.alive = false;
+        player.vy = -8;
+        addBio(5); sfxCapture();
+        spawnParticles(en.x+15,en.y+10,'#c9b57a',14);
+        showToast(level.enemyName+" contained for relocation! +5");
+      } else if (invulnTimer<=0){
+        loseLife();
+        addBio(-5);
+      }
+    }
+  }
+  enemies = enemies.filter(e=>e.alive);
+}
+
+function updateProjectiles(){
+  for (const p of projectiles){
+    p.x += p.vx;
+    p.life--;
+    const c = Math.floor((p.x)/TILE), r = Math.floor((p.y)/TILE);
+    if (tileAt(c,r)==='X'){
+      setTile(c,r,'.');
+      addBio(6); sfxNeutralize();
+      spawnParticles(c*TILE+20,r*TILE+20,'#5fb0c9',16);
+      p.life=0;
+      showToast(level.hazardName+" neutralized! +6");
+    }
+    if (tileSolidAtPixel(p.x,p.y)) p.life=0;
+  }
+  projectiles = projectiles.filter(p=>p.life>0);
+}
+
+function spawnParticles(x,y,color,count){
+  for (let i=0;i<count;i++){
+    particles.push({
+      x, y, vx:(Math.random()-0.5)*4, vy:(Math.random()-1.6)*3,
+      life:30+Math.random()*20, color, size:2+Math.random()*3
+    });
+  }
+}
+function updateParticles(){
+  for (const p of particles){
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life--;
+  }
+  particles = particles.filter(p=>p.life>0);
+}
+
+function throwPellet(){
+  if (ammo<=0) return;
+  ammo--;
+  projectiles.push({ x:player.x+player.w/2, y:player.y+player.h/2, vx: player.facing*9, life:40 });
+  sfxThrow();
+}
+
+function updateBioDecay(){
+  let decayRate = 0.009;
+  if (bioIndex < 30) decayRate = 0.025;
+  bioIndex -= decayRate;
+  if (bioIndex < 0) bioIndex = 0;
+
+  // environment degradation: crumble 'B' tiles when bio is critical
+  if (bioIndex < 25 && frameCount % 90 === 0){
+    for (let r=0;r<grid.length;r++){
+      for (let c=0;c<grid[r].length;c++){
+        if (grid[r][c]==='B' && Math.random()<0.15){
+          grid[r][c] = '.';
+        }
+      }
+    }
+  }
+  if (bioIndex <= 0){
+    state = 'ecocollapse';
+    sfxFail();
+    showEndScreen('ecocollapse');
+  }
+}
+
+function checkLevelComplete(){
+  if (!flagPos) return;
+  const fx = flagPos.c*TILE, fy = flagPos.r*TILE;
+  if (rectsOverlap(player.x,player.y,player.w,player.h, fx-10, 0, 60, grid.length*TILE)){
+    state = 'levelcomplete';
+    sfxComplete();
+    const pct = Math.round(((collectedSeeds+collectedTrash) / Math.max(1,(totalSeeds+totalTrash)))*100);
+    save.unlocked = Math.max(save.unlocked, currentLevelIdx+2);
+    save.bestBio[currentLevelIdx] = Math.max(save.bestBio[currentLevelIdx]||0, Math.round(bioIndex));
+    save.totalSeeds += collectedSeeds;
+    save.totalTrash += collectedTrash;
+    saveSave();
+    showEndScreen('levelcomplete', pct);
+  }
+}
+
+// ---------- MAIN UPDATE LOOP ----------
+function update(){
+  if (state !== 'playing') return;
+  frameCount++;
+  if (invulnTimer>0) invulnTimer--;
+  if (cameraShake>0) cameraShake--;
+  if (toastTimer>0){ toastTimer--; if (toastTimer<=0) document.getElementById('toast').classList.remove('show'); }
+
+  updatePlayer();
+  updateEnemies();
+  updateProjectiles();
+  updateParticles();
+  updateBioDecay();
+  checkLevelComplete();
+  updateHUD();
+}
+
+function updateHUD(){
+  document.getElementById('bioFill').style.width = bioIndex+'%';
+  const fill = document.getElementById('bioFill');
+  if (bioIndex<25) fill.style.background = 'linear-gradient(90deg,#8a3a2a,#c96a3a)';
+  else if (bioIndex<55) fill.style.background = 'linear-gradient(90deg,#a8963c,#e3d16a)';
+  else fill.style.background = 'linear-gradient(90deg,#4a7c3f,#8fce5f)';
+  document.getElementById('itemsCollected').textContent = `Seeds: ${collectedSeeds}/${totalSeeds}   Trash: ${collectedTrash}/${totalTrash}`;
+  document.getElementById('livesDisplay').textContent = 'Lives: ' + '♥'.repeat(Math.max(0,lives));
+  document.getElementById('ammoDisplay').textContent = 'Compost: ' + ammo;
+  if (hasBoots){
+    document.getElementById('chargeBarWrap').style.display='block';
+    document.getElementById('chargeFill').style.width = kineticCharge+'%';
+  }
+}
+
+// ---------- RENDERING ----------
+function drawBackground(){
+  const pal = PALETTES[level.biome];
+  const grad = ctx.createLinearGradient(0,0,0,VIEW_H);
+  grad.addColorStop(0, level.bgSky[0]);
+  grad.addColorStop(1, level.bgSky[1]);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,VIEW_W,VIEW_H);
+
+  // degraded overlay tint
+  if (bioIndex < 55){
+    const t = 1 - (bioIndex/55);
+    ctx.fillStyle = `rgba(60,40,20,${0.35*t})`;
+    ctx.fillRect(0,0,VIEW_W,VIEW_H);
+  }
+
+  // parallax hills
+  ctx.save();
+  const parX = -camX*0.3;
+  ctx.fillStyle = pal.accent;
+  ctx.globalAlpha = 0.5;
+  for (let i=-1;i<8;i++){
+    const bx = (i*260)+ (parX%260);
+    ctx.beginPath();
+    ctx.ellipse(bx, VIEW_H-40, 180, 90, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // sun
+  ctx.fillStyle = '#fff4c9';
+  ctx.beginPath();
+  ctx.arc(VIEW_W-90, 70, 34, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawTile(ch, sx, sy){
+  const pal = PALETTES[level.biome];
+  if (ch==='#'){
+    ctx.fillStyle = pal.ground;
+    ctx.fillRect(sx,sy,TILE,TILE);
+    ctx.fillStyle = pal.groundTop;
+    ctx.fillRect(sx,sy,TILE,8);
+  } else if (ch==='B'){
+    ctx.fillStyle = '#8a6a4a';
+    ctx.fillRect(sx,sy,TILE,TILE);
+    ctx.strokeStyle = '#4a3020';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(sx+8,sy); ctx.lineTo(sx+18,sy+16); ctx.lineTo(sx+8,sy+TILE);
+    ctx.moveTo(sx+28,sy); ctx.lineTo(sx+20,sy+20); ctx.lineTo(sx+32,sy+TILE);
+    ctx.stroke();
+  } else if (ch==='~'){
+    const cleanPct = totalTrash>0 ? collectedTrash/totalTrash : 1;
+    ctx.fillStyle = pal.ground;
+    ctx.fillRect(sx,sy,TILE,TILE);
+    const c1 = pal.water, c2 = pal.waterClean;
+    ctx.fillStyle = lerpColor(c1,c2,cleanPct);
+    ctx.globalAlpha = 0.75;
+    ctx.fillRect(sx,sy,TILE,TILE);
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    const wob = Math.sin((frameCount*0.05)+sx*0.05)*3;
+    ctx.beginPath(); ctx.moveTo(sx,sy+10+wob); ctx.lineTo(sx+TILE,sy+8+wob); ctx.stroke();
+  } else if (ch==='X'){
+    ctx.fillStyle = '#5a3a2a';
+    ctx.fillRect(sx,sy,TILE,TILE);
+    ctx.fillStyle = '#2a3a1a';
+    ctx.beginPath();
+    ctx.ellipse(sx+20,sy+20,16,10,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#7a5a2a';
+    for (let i=0;i<3;i++){
+      const bx = sx+8+i*10 + Math.sin(frameCount*0.08+i)*2;
+      ctx.beginPath(); ctx.arc(bx, sy+18-Math.abs(Math.sin(frameCount*0.1+i))*6, 3,0,Math.PI*2); ctx.fill();
+    }
+  } else if (ch==='D'){
+    drawTree(sx,sy,false);
+  } else if (ch==='^'){
+    ctx.fillStyle = 'rgba(255,233,138,0.18)';
+    ctx.fillRect(sx,sy,TILE,TILE);
+    ctx.strokeStyle = 'rgba(255,233,138,0.5)';
+    for (let i=0;i<3;i++){
+      const off = (frameCount*0.6+i*14)%TILE;
+      ctx.beginPath(); ctx.moveTo(sx+off,sy+TILE); ctx.lineTo(sx+off-6,sy); ctx.stroke();
+    }
+  } else if (ch==='S'){
+    drawSeed(sx,sy);
+  } else if (ch==='?'){
+    if (hasMycelium){
+      ctx.save();
+      ctx.globalAlpha = 0.6+Math.sin(frameCount*0.1)*0.3;
+      drawSeed(sx,sy,'#c9ff9f');
+      ctx.restore();
+    }
+  } else if (ch==='T'){
+    drawTrash(sx,sy);
+  } else if (ch==='C'){
+    ctx.fillStyle='#7a5a3a';
+    ctx.beginPath(); ctx.arc(sx+20,sy+22,10,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#3a5a2a';
+    ctx.beginPath(); ctx.arc(sx+16,sy+16,4,0,Math.PI*2); ctx.fill();
+  } else if (ch==='L'){
+    ctx.fillStyle='#e34a4a';
+    const bob = Math.sin(frameCount*0.1)*3;
+    ctx.font='20px monospace';
+    ctx.fillText('♥', sx+10, sy+28+bob);
+  } else if (ch==='M'){
+    ctx.save();
+    ctx.translate(sx+20,sy+20+Math.sin(frameCount*0.08)*3);
+    ctx.fillStyle='#c9a3ff';
+    ctx.beginPath(); ctx.arc(0,0,13,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#f0e0ff'; ctx.lineWidth=1.5;
+    for (let i=0;i<5;i++){
+      const ang = i*(Math.PI*2/5);
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(ang)*13, Math.sin(ang)*13); ctx.stroke();
+    }
+    ctx.restore();
+  } else if (ch==='K'){
+    ctx.save();
+    ctx.translate(sx+20,sy+20+Math.sin(frameCount*0.08)*3);
+    ctx.fillStyle='#ffcf6a';
+    ctx.fillRect(-13,-8,26,20);
+    ctx.fillStyle='#a86a2a';
+    ctx.fillRect(-13,8,26,7);
+    ctx.restore();
+  } else if (ch==='F'){
+    drawFlag(sx,sy);
+  }
+}
+
+function lerpColor(a,b,t){
+  const pa = hexToRgb(a), pb = hexToRgb(b);
+  const r = Math.round(pa.r+(pb.r-pa.r)*t);
+  const g = Math.round(pa.g+(pb.g-pa.g)*t);
+  const bl = Math.round(pa.b+(pb.b-pa.b)*t);
+  return `rgb(${r},${g},${bl})`;
+}
+function hexToRgb(hex){
+  hex = hex.replace('#','');
+  return { r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16) };
+}
+
+function drawTree(sx,sy,alive){
+  ctx.fillStyle = alive? '#6a4a2a' : '#3a2a1a';
+  ctx.fillRect(sx+16,sy+16,8,24);
+  ctx.fillStyle = alive ? '#5a9a4a' : '#4a4a3a';
+  ctx.beginPath();
+  ctx.arc(sx+20,sy+8,16,0,Math.PI*2);
+  ctx.fill();
+  if (!alive){
+    ctx.strokeStyle='#8a2a2a'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(sx+10,sy+2); ctx.lineTo(sx+30,sy+14); ctx.stroke();
+  }
+}
+function drawSeed(sx,sy,color){
+  ctx.fillStyle = color || '#a8dd7a';
+  const bob = Math.sin(frameCount*0.08+sx)*3;
+  ctx.beginPath(); ctx.arc(sx+20,sy+20+bob,8,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#5a9a3a';
+  ctx.beginPath(); ctx.ellipse(sx+20,sy+12+bob,3,6,0,0,Math.PI*2); ctx.fill();
+}
+function drawTrash(sx,sy){
+  ctx.fillStyle = '#c9c9c9';
+  ctx.save();
+  ctx.translate(sx+20,sy+20);
+  ctx.rotate(Math.sin(frameCount*0.05)*0.2);
+  ctx.fillRect(-10,-8,20,16);
+  ctx.fillStyle='#8a8a8a';
+  ctx.fillRect(-10,-8,20,4);
+  ctx.restore();
+}
+function drawFlag(sx,sy){
+  ctx.fillStyle = '#7a5a3a';
+  ctx.fillRect(sx+18,sy-60,4,TILE+60);
+  ctx.fillStyle = '#8fce5f';
+  ctx.beginPath();
+  ctx.moveTo(sx+22,sy-58);
+  ctx.lineTo(sx+50,sy-48+Math.sin(frameCount*0.1)*3);
+  ctx.lineTo(sx+22,sy-38);
+  ctx.fill();
+}
+
+function drawEnemy(en){
+  const sx = en.x - camX, sy = en.y;
+  if (sx < -50 || sx > VIEW_W+50) return;
+  ctx.save();
+  ctx.translate(sx+15, sy+13);
+  const bob = Math.sin(en.animTimer*0.2)*2;
+  ctx.translate(0,bob);
+  let color = '#c96a3a';
+  if (level.biome==='forest') color = '#5a8a3a';
+  if (level.biome==='marsh') color = '#9a8a4a';
+  if (level.biome==='mountain') color = '#3a6a4a';
+  if (level.biome==='urban') color = '#7a7a6a';
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.ellipse(0,0,15,11,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#2a2a2a';
+  ctx.beginPath(); ctx.arc(-5*en.dir,-3,2.5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(5*en.dir,-3,2.5,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle = color; ctx.lineWidth=3;
+  const legOff = Math.sin(en.animTimer*0.3)*4;
+  ctx.beginPath(); ctx.moveTo(-8,8); ctx.lineTo(-8+legOff,15); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(8,8); ctx.lineTo(8-legOff,15); ctx.stroke();
+  ctx.restore();
+}
+
+function drawPlayer(){
+  const sx = player.x - camX, sy = player.y;
+  if (invulnTimer>0 && Math.floor(invulnTimer/4)%2===0) return;
+  ctx.save();
+  ctx.translate(sx+player.w/2, sy);
+  ctx.scale(player.facing,1);
+  const legSwing = player.state==='run' ? Math.sin(player.animTimer*0.4)*8 : 0;
+  // legs
+  ctx.strokeStyle = '#1e3a1e'; ctx.lineWidth=5; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-4,26); ctx.lineTo(-4+legSwing*0.4,34); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(4,26); ctx.lineTo(4-legSwing*0.4,34); ctx.stroke();
+  // body (green gi)
+  ctx.fillStyle = '#2f7d32';
+  ctx.fillRect(-9,10,18,18);
+  // belt
+  ctx.fillStyle = '#8a5a2a';
+  ctx.fillRect(-9,22,18,4);
+  // arms
+  ctx.strokeStyle = '#2f7d32'; ctx.lineWidth=5;
+  const armSwing = player.state==='run' ? Math.sin(player.animTimer*0.4+Math.PI)*6 : (player.state==='jump'? -6:0);
+  ctx.beginPath(); ctx.moveTo(-9,14); ctx.lineTo(-14,14+armSwing*0.3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(9,14); ctx.lineTo(14,14-armSwing*0.3); ctx.stroke();
+  // head with ninja mask
+  ctx.fillStyle = '#e8b98a';
+  ctx.beginPath(); ctx.arc(0,2,10,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#245c27';
+  ctx.beginPath(); ctx.arc(0,-2,10,Math.PI*1.05,Math.PI*1.95); ctx.fill();
+  ctx.fillRect(-10,-2,20,6);
+  // headband tails
+  ctx.fillStyle = '#c94a3a';
+  ctx.beginPath();
+  ctx.moveTo(9,-1); ctx.lineTo(17,-4+Math.sin(player.animTimer*0.2)*2); ctx.lineTo(15,3); ctx.fill();
+  // eyes
+  ctx.fillStyle='#1a1a1a';
+  ctx.beginPath(); ctx.arc(4,2,1.6,0,Math.PI*2); ctx.fill();
+  // mycelium aura
+  if (hasMycelium){
+    ctx.strokeStyle = 'rgba(201,163,255,0.5)';
+    ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(0,15,26+Math.sin(frameCount*0.1)*2,0,Math.PI*2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawProjectiles(){
+  for (const p of projectiles){
+    const sx = p.x-camX, sy = p.y;
+    ctx.fillStyle = '#8fce5f';
+    ctx.beginPath(); ctx.arc(sx,sy,6,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#5a9a3a';
+    ctx.beginPath(); ctx.arc(sx,sy,3,0,Math.PI*2); ctx.fill();
+  }
+}
+function drawParticles(){
+  for (const p of particles){
+    const sx = p.x-camX, sy=p.y;
+    ctx.globalAlpha = Math.max(0,p.life/40);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(sx,sy,p.size,p.size);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function render(){
+  ctx.clearRect(0,0,VIEW_W,VIEW_H);
+  if (state==='menu' || state==='howto' || state==='levelselect'){
+    ctx.fillStyle = '#1c3a2e';
+    ctx.fillRect(0,0,VIEW_W,VIEW_H);
+    return;
+  }
+  if (!level) return;
+  ctx.save();
+  let shakeX=0, shakeY=0;
+  if (cameraShake>0){ shakeX = (Math.random()-0.5)*cameraShake; shakeY=(Math.random()-0.5)*cameraShake; }
+  ctx.translate(shakeX,shakeY);
+  drawBackground();
+
+  const startCol = Math.max(0, Math.floor(camX/TILE)-1);
+  const endCol = Math.min(grid[0].length, Math.ceil((camX+VIEW_W)/TILE)+1);
+  for (let r=0;r<grid.length;r++){
+    for (let c=startCol;c<endCol;c++){
+      const ch = grid[r][c];
+      if (ch==='.') continue;
+      drawTile(ch, c*TILE-camX, r*TILE);
+    }
+  }
+  for (const en of enemies) drawEnemy(en);
+  drawPlayer();
+  drawProjectiles();
+  drawParticles();
+  ctx.restore();
+}
+
+// ---------- HOW-TO ICON RENDERER ----------
+function renderIcon(targetCtx, type){
+  const cx=28, cy=28;
+  targetCtx.clearRect(0,0,56,56);
+  switch(type){
+    case 'seed':
+      targetCtx.fillStyle='#a8dd7a'; targetCtx.beginPath(); targetCtx.arc(cx,cy+5,11,0,Math.PI*2); targetCtx.fill();
+      targetCtx.fillStyle='#5a9a3a'; targetCtx.beginPath(); targetCtx.ellipse(cx,cy-8,4,8,0,0,Math.PI*2); targetCtx.fill();
+      break;
+    case 'hiddenSeed':
+      targetCtx.globalAlpha=0.9;
+      targetCtx.fillStyle='#c9ff9f'; targetCtx.beginPath(); targetCtx.arc(cx,cy+5,11,0,Math.PI*2); targetCtx.fill();
+      targetCtx.globalAlpha=1;
+      targetCtx.strokeStyle='#c9a3ff'; targetCtx.lineWidth=2; targetCtx.beginPath(); targetCtx.arc(cx,cy+5,18,0,Math.PI*2); targetCtx.stroke();
+      break;
+    case 'trash':
+      targetCtx.save(); targetCtx.translate(cx,cy); targetCtx.rotate(-0.15);
+      targetCtx.fillStyle='#c9c9c9'; targetCtx.fillRect(-14,-12,28,24);
+      targetCtx.fillStyle='#8a8a8a'; targetCtx.fillRect(-14,-12,28,5);
+      targetCtx.restore();
+      break;
+    case 'compost':
+      targetCtx.fillStyle='#7a5a3a'; targetCtx.beginPath(); targetCtx.arc(cx,cy,14,0,Math.PI*2); targetCtx.fill();
+      targetCtx.fillStyle='#3a5a2a'; targetCtx.beginPath(); targetCtx.arc(cx-4,cy-4,5,0,Math.PI*2); targetCtx.fill();
+      break;
+    case 'life':
+      targetCtx.fillStyle='#e34a4a'; targetCtx.font='32px monospace';
+      targetCtx.textAlign='center'; targetCtx.textBaseline='middle';
+      targetCtx.fillText('♥', cx, cy+3);
+      targetCtx.textAlign='start'; targetCtx.textBaseline='alphabetic';
+      break;
+    case 'mycelium':
+      targetCtx.fillStyle='#c9a3ff'; targetCtx.beginPath(); targetCtx.arc(cx,cy,16,0,Math.PI*2); targetCtx.fill();
+      targetCtx.strokeStyle='#f0e0ff'; targetCtx.lineWidth=2;
+      for (let i=0;i<5;i++){ const ang=i*(Math.PI*2/5); targetCtx.beginPath(); targetCtx.moveTo(cx,cy); targetCtx.lineTo(cx+Math.cos(ang)*16, cy+Math.sin(ang)*16); targetCtx.stroke(); }
+      break;
+    case 'boots':
+      targetCtx.fillStyle='#ffcf6a'; targetCtx.fillRect(cx-16,cy-12,32,24);
+      targetCtx.fillStyle='#a86a2a'; targetCtx.fillRect(cx-16,cy+9,32,9);
+      break;
+    case 'hazard':
+      targetCtx.fillStyle='#5a3a2a'; targetCtx.fillRect(cx-19,cy-19,38,38);
+      targetCtx.fillStyle='#2a3a1a'; targetCtx.beginPath(); targetCtx.ellipse(cx,cy,16,11,0,0,Math.PI*2); targetCtx.fill();
+      targetCtx.fillStyle='#7a5a2a';
+      for (let i=0;i<3;i++){ targetCtx.beginPath(); targetCtx.arc(cx-11+i*11, cy-9, 3,0,Math.PI*2); targetCtx.fill(); }
+      break;
+    case 'tree':
+      targetCtx.fillStyle='#3a2a1a'; targetCtx.fillRect(cx-4,cy,8,20);
+      targetCtx.fillStyle='#4a4a3a'; targetCtx.beginPath(); targetCtx.arc(cx,cy-9,17,0,Math.PI*2); targetCtx.fill();
+      targetCtx.strokeStyle='#8a2a2a'; targetCtx.lineWidth=1.5; targetCtx.beginPath(); targetCtx.moveTo(cx-11,cy-17); targetCtx.lineTo(cx+11,cy-1); targetCtx.stroke();
+      break;
+    case 'invasive':
+      targetCtx.fillStyle='#c96a3a'; targetCtx.beginPath(); targetCtx.ellipse(cx,cy,18,14,0,0,Math.PI*2); targetCtx.fill();
+      targetCtx.fillStyle='#2a2a2a'; targetCtx.beginPath(); targetCtx.arc(cx-6,cy-4,3,0,Math.PI*2); targetCtx.fill();
+      targetCtx.beginPath(); targetCtx.arc(cx+6,cy-4,3,0,Math.PI*2); targetCtx.fill();
+      targetCtx.strokeStyle='#c96a3a'; targetCtx.lineWidth=3;
+      targetCtx.beginPath(); targetCtx.moveTo(cx-9,cy+11); targetCtx.lineTo(cx-9,cy+18); targetCtx.stroke();
+      targetCtx.beginPath(); targetCtx.moveTo(cx+9,cy+11); targetCtx.lineTo(cx+9,cy+18); targetCtx.stroke();
+      break;
+    case 'flag':
+      targetCtx.fillStyle='#7a5a3a'; targetCtx.fillRect(cx-13,cy-19,4,38);
+      targetCtx.fillStyle='#8fce5f'; targetCtx.beginPath(); targetCtx.moveTo(cx-9,cy-17); targetCtx.lineTo(cx+17,cy-8); targetCtx.lineTo(cx-9,cy+1); targetCtx.fill();
+      break;
+  }
+}
+function drawAllHowToIcons(){
+  document.querySelectorAll('.iconCard canvas').forEach(cv=>{
+    renderIcon(cv.getContext('2d'), cv.dataset.icon);
+  });
+}
+
+// ---------- END SCREENS ----------
+function showEndScreen(kind, pct){
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('pauseBtn').classList.add('hidden');
+  const overlay = document.getElementById('screenOverlay');
+  overlay.classList.remove('hidden');
+  overlay.innerHTML = '';
+  if (kind==='levelcomplete'){
+    const nextLocked = currentLevelIdx+1 >= LEVELS.length;
+    overlay.innerHTML = `
+      <h1>🌱 Habitat Restored!</h1>
+      <h2>${level.name}</h2>
+      <p>Final Biodiversity Index: ${Math.round(bioIndex)}%<br>Cleanup completion: ${pct}%</p>
+      <div>
+        ${nextLocked ? '<button class="gBtn" id="toMenuBtn">Return to Map</button>' : '<button class="gBtn" id="nextBtn">Next Habitat</button>'}
+        <button class="gBtn" id="replayBtn">Replay Level</button>
+      </div>
+    `;
+    if (!nextLocked) document.getElementById('nextBtn').onclick = ()=>startLevel(currentLevelIdx+1);
+    const toMenu = document.getElementById('toMenuBtn');
+    if (toMenu) toMenu.onclick = showLevelSelect;
+    document.getElementById('replayBtn').onclick = ()=>startLevel(currentLevelIdx);
+  } else if (kind==='gameover'){
+    overlay.innerHTML = `
+      <h1>💔 Out of Lives</h1>
+      <p>The guardian needs to rest and try again. The habitat is counting on you.</p>
+      <button class="gBtn" id="retryBtn">Try Again</button>
+      <button class="gBtn" id="toMenuBtn2">Level Map</button>
+    `;
+    document.getElementById('retryBtn').onclick = ()=>startLevel(currentLevelIdx);
+    document.getElementById('toMenuBtn2').onclick = showLevelSelect;
+  } else if (kind==='ecocollapse'){
+    overlay.innerHTML = `
+      <h1>🌫️ Ecosystem Collapsed</h1>
+      <p>The Biodiversity Index reached zero and the habitat deteriorated too far. Collect seeds and trash, capture invasive species, and neutralize pollution to keep the ecosystem healthy!</p>
+      <button class="gBtn" id="retryBtn2">Try Again</button>
+      <button class="gBtn" id="toMenuBtn3">Level Map</button>
+    `;
+    document.getElementById('retryBtn2').onclick = ()=>startLevel(currentLevelIdx);
+    document.getElementById('toMenuBtn3').onclick = showLevelSelect;
+  }
+}
+
+function showLevelSelect(){
+  state = 'levelselect';
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('pauseBtn').classList.add('hidden');
+  const overlay = document.getElementById('screenOverlay');
+  overlay.classList.remove('hidden');
+  let cards = '';
+  LEVELS.forEach((lvl,i)=>{
+    const locked = i+1 > save.unlocked;
+    const best = save.bestBio[i] ? `Best: ${save.bestBio[i]}%` : '';
+    cards += `<div class="levelCard ${locked?'locked':''}" data-idx="${i}">
+      <h3>${i+1}. ${lvl.name}</h3>
+      <p>${lvl.enemyName}</p>
+      <p>${locked? '🔒 Locked' : best}</p>
+    </div>`;
+  });
+  overlay.innerHTML = `<h1>Choose a Habitat</h1><div class="levelGrid">${cards}</div>
+  <button class="gBtn" id="backToTitle" style="margin-top:14px;">Back to Title</button>`;
+  document.querySelectorAll('.levelCard').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      if (card.classList.contains('locked')) return;
+      initAudio();
+      startLevel(parseInt(card.dataset.idx));
+    });
+  });
+  document.getElementById('backToTitle').onclick = showTitle;
+}
+
+function showTitle(){
+  state = 'menu';
+  const overlay = document.getElementById('screenOverlay');
+  overlay.classList.remove('hidden');
+  overlay.innerHTML = `
+    <h1>🌲 Salish Sea Guardian 🌊</h1>
+    <p>Help a young forest guardian restore five wounded corners of the Salish Sea coast &mdash; capture invasive species, neutralize pollution, revive dying trees, and bring the Biodiversity Index back to life.</p>
+    <button class="gBtn" id="startBtn">Begin Restoration</button>
+    <button class="gBtn" id="howToBtn">How To Play</button>
+  `;
+  document.getElementById('startBtn').onclick = ()=>{ initAudio(); showLevelSelect(); };
+  document.getElementById('howToBtn').onclick = showHowTo;
+}
+
+function showHowTo(){
+  state = 'howto';
+  const overlay = document.getElementById('screenOverlay');
+  overlay.innerHTML = `
+    <h1>How to Play</h1>
+    <div class="howToScroll">
+    <p style="text-align:left; max-width:620px;">
+    <b>Move:</b> Arrow keys / A-D, or the on-screen D-pad.<br>
+    <b>Jump:</b> Space / Up-arrow / W, or the ▲ button.<br>
+    <b>Throw compost pellet:</b> F key or ● button.<br>
+    <b>Interact:</b> E key or ⟲ button, for anything near you.<br><br>
+    <b>The Biodiversity Index</b> slowly decays over time &mdash; if it hits zero, the ecosystem collapses and the level restarts. Everything below helps keep it healthy.
+    </p>
+
+    <div class="iconSection">
+      <h3>🌱 Collect These</h3>
+      <div class="iconGrid">
+        <div class="iconCard"><canvas width="56" height="56" data-icon="seed"></canvas>
+          <div class="iconLabel">Native Seed</div><div class="iconDesc">Walk into it. Grows plants &amp; raises Biodiversity.</div></div>
+        <div class="iconCard"><canvas width="56" height="56" data-icon="hiddenSeed"></canvas>
+          <div class="iconLabel">Hidden Seed</div><div class="iconDesc">Only visible once you have the Mycelium Suit.</div></div>
+        <div class="iconCard"><canvas width="56" height="56" data-icon="trash"></canvas>
+          <div class="iconLabel">Trash</div><div class="iconDesc">Walk into it. Clears polluted water &amp; raises Biodiversity.</div></div>
+        <div class="iconCard"><canvas width="56" height="56" data-icon="compost"></canvas>
+          <div class="iconLabel">Compost Pellet</div><div class="iconDesc">Refills your pellet ammo for neutralizing hazards.</div></div>
+        <div class="iconCard"><canvas width="56" height="56" data-icon="life"></canvas>
+          <div class="iconLabel">Extra Life</div><div class="iconDesc">Gives you one more heart.</div></div>
+      </div>
+    </div>
+
+    <div class="iconSection">
+      <h3>🍄 Use These Tools</h3>
+      <div class="iconGrid">
+        <div class="iconCard"><canvas width="56" height="56" data-icon="mycelium"></canvas>
+          <div class="iconLabel">Mycelium Suit</div><div class="iconDesc">Reveals hidden seeds. Press interact near a dying tree to revive it.</div></div>
+        <div class="iconCard"><canvas width="56" height="56" data-icon="tree"></canvas>
+          <div class="iconLabel">Dying Tree</div><div class="iconDesc">Stand nearby and press interact (needs Mycelium Suit) to revive it for +Biodiversity.</div></div>
+        <div class="iconCard"><canvas width="56" height="56" data-icon="boots"></canvas>
+          <div class="iconLabel">Kinetic Boots</div><div class="iconDesc">Stand in glowing sun/wind zones to charge, then jump for a huge boost.</div></div>
+      </div>
+    </div>
+
+    <div class="iconSection">
+      <h3>⚠️ Manage, Don't Destroy</h3>
+      <div class="iconGrid">
+        <div class="iconCard"><canvas width="56" height="56" data-icon="invasive"></canvas>
+          <div class="iconLabel">Invasive Species</div><div class="iconDesc">Jump on top to safely contain it for relocation. Touching its side costs a life.</div></div>
+        <div class="iconCard"><canvas width="56" height="56" data-icon="hazard"></canvas>
+          <div class="iconLabel">Pollution Hazard</div><div class="iconDesc">Throw a compost pellet at it to neutralize it. Touching it hurts your Biodiversity.</div></div>
+      </div>
+    </div>
+
+    <div class="iconSection">
+      <h3>🏁 Reach This</h3>
+      <div class="iconGrid">
+        <div class="iconCard"><canvas width="56" height="56" data-icon="flag"></canvas>
+          <div class="iconLabel">Restoration Flag</div><div class="iconDesc">Reach it to complete the level.</div></div>
+      </div>
+    </div>
+    </div>
+    <button class="gBtn" id="backBtn">Back</button>
+  `;
+  drawAllHowToIcons();
+  document.getElementById('backBtn').onclick = showTitle;
+}
+
+// ---------- INPUT ----------
+window.addEventListener('keydown', (e)=>{
+  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+  keys[e.code] = true;
+  if ((e.code==='Space' || e.code==='ArrowUp' || e.code==='KeyW') && !keys['jumpHeld']){
+    keys['jumpPressed'] = true;
+    keys['jumpHeld'] = true;
+  }
+  if (e.code==='KeyF'){ if (state==='playing') throwPellet(); }
+});
+window.addEventListener('keyup', (e)=>{
+  keys[e.code] = false;
+  if (e.code==='Space' || e.code==='ArrowUp' || e.code==='KeyW') keys['jumpHeld']=false;
+});
+
+function bindTouchBtn(id, onDown, onUp){
+  const el = document.getElementById(id);
+  const down = (ev)=>{ ev.preventDefault(); el.classList.add('active'); onDown(); };
+  const up = (ev)=>{ ev.preventDefault(); el.classList.remove('active'); if (onUp) onUp(); };
+  el.addEventListener('touchstart', down, {passive:false});
+  el.addEventListener('touchend', up, {passive:false});
+  el.addEventListener('mousedown', down);
+  el.addEventListener('mouseup', up);
+  el.addEventListener('mouseleave', up);
+}
+bindTouchBtn('btnLeft', ()=>touchState.left=true, ()=>touchState.left=false);
+bindTouchBtn('btnRight', ()=>touchState.right=true, ()=>touchState.right=false);
+bindTouchBtn('btnJump', ()=>{ keys['jumpPressed']=true; }, ()=>{});
+bindTouchBtn('btnThrow', ()=>{ if (state==='playing') throwPellet(); }, ()=>{});
+bindTouchBtn('btnAction', ()=>{ touchState.action=true; }, ()=>{ touchState.action=false; });
+
+document.getElementById('pauseBtn').addEventListener('click', ()=>{
+  if (state==='playing'){ state='paused'; showPauseOverlay(); }
+  else if (state==='paused'){ state='playing'; document.getElementById('screenOverlay').classList.add('hidden'); }
+});
+function showPauseOverlay(){
+  const overlay = document.getElementById('screenOverlay');
+  overlay.classList.remove('hidden');
+  overlay.innerHTML = `<h1>Paused</h1>
+    <button class="gBtn" id="resumeBtn">Resume</button>
+    <button class="gBtn" id="quitBtn">Quit to Map</button>`;
+  document.getElementById('resumeBtn').onclick = ()=>{ state='playing'; overlay.classList.add('hidden'); };
+  document.getElementById('quitBtn').onclick = ()=>{ document.getElementById('hud').classList.add('hidden'); document.getElementById('pauseBtn').classList.add('hidden'); showLevelSelect(); };
+}
+
+document.getElementById('startBtn').onclick = ()=>{ initAudio(); showLevelSelect(); };
+document.getElementById('howToBtn').onclick = showHowTo;
+
+// show touch controls on touch devices
+if ('ontouchstart' in window || navigator.maxTouchPoints>0){
+  document.getElementById('touchControls').style.display = 'flex';
+}
+
+// ---------- RESIZE ----------
+function resize(){
+  const container = document.getElementById('gameContainer');
+  const scaleW = container.clientWidth / VIEW_W;
+  const scaleH = container.clientHeight / VIEW_H;
+  const scale = Math.min(scaleW, scaleH);
+  canvas.style.width = (VIEW_W*scale)+'px';
+  canvas.style.height = (VIEW_H*scale)+'px';
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ---------- MAIN LOOP ----------
+function loop(){
+  update();
+  render();
+  requestAnimationFrame(loop);
+}
+loop();
+
+})();
+</script>
+</body>
+</html>
