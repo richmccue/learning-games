@@ -58,7 +58,7 @@
     padding:8px 14px;
     background:linear-gradient(to bottom, rgba(7,59,58,0.82), rgba(7,59,58,0.0));
     color:var(--cream);
-    font-size:clamp(11px, 2.1vw, 15px);
+    font-size:clamp(11px, calc(15px * var(--game-scale, 1)), 15px);
     z-index:5;
   }
   #hud.hidden{ display:none; }
@@ -115,22 +115,22 @@
     overflow-y:auto;
   }
   h1.game-title{
-    font-size:clamp(28px, 6vw, 46px);
+    font-size:clamp(24px, calc(46px * var(--game-scale, 1)), 46px);
     margin:0 0 4px 0;
     color:var(--coral);
     text-shadow:2px 2px 0 rgba(0,0,0,0.15);
   }
   .subtitle{
-    font-size:clamp(14px, 3vw, 18px);
+    font-size:clamp(13px, calc(18px * var(--game-scale, 1)), 18px);
     margin:0 0 14px 0;
     color:var(--cream);
     opacity:0.95;
     letter-spacing:1px;
   }
-  .blurb{ font-size:clamp(12px, 2.4vw, 14.5px); max-width:480px; margin:0 auto 18px auto; opacity:0.95; }
+  .blurb{ font-size:clamp(11.5px, calc(14.5px * var(--game-scale, 1)), 14.5px); max-width:480px; margin:0 auto 18px auto; opacity:0.95; }
   .btn{
     font-family:inherit;
-    font-size:clamp(14px, 3vw, 17px);
+    font-size:clamp(13px, calc(17px * var(--game-scale, 1)), 17px);
     font-weight:700;
     color:#fff;
     background:var(--coral);
@@ -149,7 +149,7 @@
   }
   .btn.secondary:active{ box-shadow:0 1px 0 #063a37; }
   h2.panel-title{ margin-top:0; color:var(--ocean-deep); }
-  .howto-section{ text-align:left; font-size:clamp(12.5px,2.3vw,14.5px); margin-bottom:12px; }
+  .howto-section{ text-align:left; font-size:clamp(12px, calc(14.5px * var(--game-scale, 1)), 14.5px); margin-bottom:12px; }
   .howto-section h3{ margin:10px 0 4px 0; color:var(--coral-dark); font-size:1.05em; }
   .key{
     display:inline-block; background:var(--ink); color:#fff;
@@ -163,31 +163,69 @@
     position:absolute;
     left:0; right:0; bottom:0;
     display:flex; justify-content:space-between; align-items:flex-end;
-    padding:0 16px 16px 16px;
+    padding:0 max(10px, calc(16px * var(--game-scale, 1))) max(10px, calc(16px * var(--game-scale, 1))) max(10px, calc(16px * var(--game-scale, 1)));
     pointer-events:none;
     z-index:20;
   }
   #touch-controls.hidden{ display:none; }
-  .touch-left, .touch-right{ display:flex; gap:14px; pointer-events:auto; }
+  .touch-left, .touch-right{ display:flex; gap:max(8px, calc(14px * var(--game-scale, 1))); pointer-events:auto; }
   .touch-btn{
-    width:76px; height:76px;
+    width:clamp(50px, calc(76px * var(--game-scale, 1)), 84px);
+    height:clamp(50px, calc(76px * var(--game-scale, 1)), 84px);
     border-radius:50%;
     border:2px solid rgba(255,255,255,0.55);
     background:rgba(7,59,58,0.55);
     color:#fff;
-    font-size:30px;
+    font-size:clamp(22px, calc(30px * var(--game-scale, 1)), 32px);
     display:flex; align-items:center; justify-content:center;
     touch-action:none;
   }
   .touch-btn:active{ background:rgba(255,111,89,0.75); }
-  .jump-btn{ width:92px; height:92px; font-size:34px; }
+  .jump-btn{
+    width:clamp(60px, calc(92px * var(--game-scale, 1)), 100px);
+    height:clamp(60px, calc(92px * var(--game-scale, 1)), 100px);
+    font-size:clamp(26px, calc(34px * var(--game-scale, 1)), 36px);
+  }
 
   @media (hover:hover) and (pointer:fine){
     #touch-controls{ display:none; }
   }
+
+  /* ---------- Rotate-to-landscape prompt (phones in portrait) ---------- */
+  #rotate-prompt{
+    display:none;
+    position:fixed; inset:0;
+    z-index:9999;
+    background:var(--ink);
+    color:var(--cream);
+    flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding:24px;
+  }
+  #rotate-prompt .rotate-icon{
+    font-size:52px;
+    margin-bottom:14px;
+    animation:rotate-hint 1.8s ease-in-out infinite;
+    display:inline-block;
+  }
+  @keyframes rotate-hint{
+    0%,100%{ transform:rotate(0deg); }
+    50%{ transform:rotate(-90deg); }
+  }
+  #rotate-prompt p{ max-width:320px; font-size:16px; opacity:0.95; }
+  @media (orientation:portrait) and (max-width:700px) and (pointer:coarse){
+    #rotate-prompt{ display:flex; }
+    #game-wrapper{ display:none; }
+  }
 </style>
 </head>
 <body>
+
+<div id="rotate-prompt">
+  <span class="rotate-icon">&#128241;</span>
+  <p>Turn your device sideways. Eco Sally plays best in landscape!</p>
+</div>
 
 <div id="game-wrapper">
   <canvas id="game-canvas" width="960" height="540"></canvas>
@@ -298,6 +336,17 @@
 var canvas = document.getElementById('game-canvas');
 var ctx = canvas.getContext('2d');
 var W = canvas.width, H = canvas.height;
+
+var gameWrapperEl = document.getElementById('game-wrapper');
+function updateGameScale(){
+  var rect = gameWrapperEl.getBoundingClientRect();
+  if (rect.width > 0){
+    document.documentElement.style.setProperty('--game-scale', (rect.width / 960).toFixed(4));
+  }
+}
+window.addEventListener('resize', updateGameScale);
+window.addEventListener('orientationchange', function(){ setTimeout(updateGameScale, 60); });
+updateGameScale();
 
 var GRAVITY = 2000;
 var MOVE_SPEED = 240;
