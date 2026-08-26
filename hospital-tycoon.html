@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ward &amp; Budget: A Hospital Year</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wall:#EDF2F4; --panel:#FFFFFF; --ink:#12303A; --ink-2:#4A6570; --line:#D5DFE4;
+    --scrub:#1B8A8A; --scrub-deep:#136767; --scrub-tint:#DDF1F0;
+    --amber:#D9931A; --amber-tint:#FBF0D9; --red:#C6423B; --red-tint:#F9E1DF;
+    --monitor:#0B1E22; --monitor-grid:#153036; --trace:#3EE38F; --trace-dim:#1F7A52;
+    --disp:"Bricolage Grotesque",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --r:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--wall);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+  button{font:inherit;cursor:pointer}
+  button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+  h1,h2,h3{font-family:var(--disp);margin:0;line-height:1.1}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+
+  /* Masthead */
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:22px 24px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  header h1{font-size:clamp(22px,3vw,32px);font-weight:800;letter-spacing:-.01em}
+  header h1 span{color:var(--scrub)}
+  .weekbox{text-align:right}
+  .weekbox .big{font-family:var(--disp);font-size:clamp(28px,4vw,44px);font-weight:800;line-height:1}
+  .weekbox .big small{font-size:.45em;color:var(--ink-2);font-weight:500}
+  .yearbar{height:6px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden;width:180px;margin-left:auto}
+  .yearbar i{display:block;height:100%;background:var(--scrub);width:0%;transition:width .4s}
+
+  /* Grid */
+  main{display:grid;grid-template-columns:300px minmax(0,1fr) 320px;gap:16px;padding:16px 24px 40px;max-width:1440px;margin:0 auto}
+  @media (max-width:1100px){main{grid-template-columns:280px minmax(0,1fr)} .col-right{grid-column:1/-1}}
+  @media (max-width:760px){main{grid-template-columns:1fr;padding:12px} header{padding:14px 12px} .yearbar{width:120px}}
+  @media (max-width:420px){
+    .btnrow{flex-wrap:wrap}
+    .btnrow .btn:nth-child(3){flex-basis:100%}
+  }
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+  .card + .card{margin-top:16px}
+  .card h2{font-size:17px;font-weight:700;margin-bottom:10px}
+
+  /* Controls */
+  .resource{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .resource:first-of-type{border-top:0}
+  .resource .name{font-weight:600}
+  .resource .count{font-family:var(--disp);font-size:26px;font-weight:700;text-align:right;line-height:1}
+  .resource .meta{grid-column:1/-1;font-size:12.5px;color:var(--ink-2)}
+  .resource .meta b{color:var(--ink)}
+  .btnrow{grid-column:1/-1;display:flex;gap:6px}
+  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:500;flex:1;transition:background .15s,border-color .15s}
+  .btn:hover:not(:disabled){border-color:var(--scrub);background:var(--scrub-tint)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.primary{background:var(--scrub);border-color:var(--scrub);color:#fff;font-family:var(--disp);font-weight:700;font-size:16px;padding:12px;width:100%}
+  .btn.primary:hover:not(:disabled){background:var(--scrub-deep);border-color:var(--scrub-deep)}
+  .btn.cut{color:var(--red)}
+  .btn.cut:hover:not(:disabled){border-color:var(--red);background:var(--red-tint)}
+  .pending{font-family:var(--mono);font-size:12px;color:var(--amber);grid-column:1/-1}
+
+  /* Monitor */
+  .monitor{background:var(--monitor);border-radius:var(--r);padding:16px 16px 12px;color:#D7EEE4;position:relative;overflow:hidden}
+  .monitor .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .monitor .label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:#8FB7A8;text-transform:uppercase}
+  .monitor .sat{font-family:var(--disp);font-size:clamp(44px,6vw,72px);font-weight:800;line-height:1;color:var(--trace);letter-spacing:-.02em}
+  .monitor .sat small{font-size:.32em;font-weight:500;color:#8FB7A8;margin-left:6px;letter-spacing:0}
+  .monitor .verdict{font-family:var(--disp);font-size:18px;font-weight:700;color:#fff;max-width:320px;text-align:right}
+  .monitor .verdict p{margin:4px 0 0;font-family:var(--body);font-size:13px;font-weight:400;color:#B8D6CB}
+  #trace{width:100%;height:150px;display:block;margin-top:10px}
+  .blip{position:absolute;top:14px;right:16px;width:10px;height:10px;border-radius:50%;background:var(--trace);box-shadow:0 0 12px var(--trace);animation:blip 1.6s infinite}
+  @keyframes blip{0%,20%{opacity:1}50%{opacity:.25}100%{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.blip{animation:none}}
+
+  /* Vitals */
+  .vitals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  @media (max-width:560px){.vitals{grid-template-columns:1fr}}
+  .vital{background:#10292E;border-radius:8px;padding:10px 12px}
+  .vital .label{margin-bottom:6px}
+  .vital .val{font-family:var(--mono);font-size:22px;color:#fff}
+  .vital .val small{font-size:12px;color:#8FB7A8}
+  .bar{height:6px;border-radius:3px;background:#1D3A41;margin-top:8px;overflow:hidden;position:relative}
+  .bar i{display:block;height:100%;width:0;background:var(--trace);transition:width .5s}
+  .bar.warn i{background:var(--amber)} .bar.bad i{background:var(--red)}
+  .bar::after{content:"";position:absolute;top:-2px;bottom:-2px;left:var(--safe,100%);width:2px;background:#fff;opacity:.6}
+  .vital .note{font-size:12px;color:#B8D6CB;margin-top:6px}
+
+  /* Week summary */
+  .arrivals{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .stat{min-width:110px}
+  .stat .eyebrow{margin-bottom:2px}
+  .stat .n{font-family:var(--disp);font-size:24px;font-weight:700;line-height:1}
+  .stat .n small{font-size:12px;color:var(--ink-2);font-family:var(--body);font-weight:400}
+
+  /* Events */
+  .event{border-left:4px solid var(--amber);background:var(--amber-tint);border-radius:6px;padding:8px 10px;margin-top:8px;font-size:13.5px}
+  .event.now{border-color:var(--red);background:var(--red-tint)}
+  .event b{font-family:var(--disp)}
+
+  /* Ledger */
+  .ledger{font-family:var(--mono);font-size:13px;width:100%;border-collapse:collapse}
+  .ledger td{padding:4px 0;border-top:1px dashed var(--line)}
+  .ledger tr:first-child td{border-top:0}
+  .ledger td:last-child{text-align:right}
+  .ledger .neg{color:var(--red)} .ledger .pos{color:var(--scrub-deep)}
+  .ledger .total td{border-top:2px solid var(--ink);font-weight:500;padding-top:6px}
+  .balance{font-family:var(--disp);font-size:30px;font-weight:800;line-height:1;margin:4px 0 8px}
+  .balance.neg{color:var(--red)}
+  .oversight{background:var(--red-tint);border-radius:6px;padding:8px 10px;font-size:13px;margin-top:8px;color:#7A2621}
+
+  /* Chief */
+  .chief{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start}
+  .chief .avatar{width:44px;height:44px;border-radius:50%;background:var(--scrub-tint);border:2px solid var(--scrub);display:grid;place-items:center;font-size:22px}
+  .chief .bubble{background:var(--scrub-tint);border-radius:10px;padding:10px 12px;font-size:13.5px;position:relative}
+  .chief .bubble::before{content:"";position:absolute;left:-6px;top:14px;border:6px solid transparent;border-right-color:var(--scrub-tint);border-left:0}
+  .chief .who{font-family:var(--mono);font-size:11px;color:var(--scrub-deep);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+  #chiefCard.flash{animation:cardFlash 1.8s ease}
+  @keyframes cardFlash{0%{box-shadow:0 0 0 3px var(--scrub)}100%{box-shadow:0 0 0 0 transparent}}
+
+  /* Chief toast */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,18px);width:min(420px,calc(100% - 32px));background:var(--panel);border:1px solid var(--scrub);border-radius:12px;padding:14px 16px;box-shadow:0 12px 34px rgba(11,30,34,.28);display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:start;z-index:15;opacity:0;pointer-events:none;transition:opacity .28s ease,transform .28s ease}
+  .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  .toast .avatar{width:40px;height:40px;border-radius:50%;background:var(--scrub-tint);border:2px solid var(--scrub);display:grid;place-items:center;font-size:19px}
+  .toast .who{font-family:var(--mono);font-size:10.5px;color:var(--scrub-deep);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+  .toast .msg{font-size:13.5px;line-height:1.4}
+  .toast .close{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;padding:2px 4px;border-radius:6px}
+  .toast .close:hover{background:var(--wall);color:var(--ink)}
+  @media (prefers-reduced-motion:reduce){ .toast{transition:opacity .28s ease} .toast.show{transform:translate(-50%,0)} #chiefCard.flash{animation:none} }
+  @media (max-width:560px){ .toast{bottom:14px} }
+
+  /* Log */
+  .log{max-height:260px;overflow:auto;font-size:13px;padding-right:4px}
+  .log p{margin:0 0 6px;padding-left:44px;position:relative}
+  .log p span{position:absolute;left:0;font-family:var(--mono);font-size:11px;color:var(--ink-2);top:2px}
+
+  /* Explainer */
+  details{border-top:1px solid var(--line);padding:10px 0}
+  details:last-child{border-bottom:1px solid var(--line)}
+  summary{cursor:pointer;font-weight:600;font-family:var(--disp);font-size:15px}
+  details p{margin:8px 0 0;font-size:14px;color:var(--ink-2)}
+  .fine{font-size:12.5px;color:var(--ink-2);margin-top:14px}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(11,30,34,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+  .overlay.open{display:flex}
+  .modal{background:var(--panel);border-radius:14px;max-width:560px;width:100%;padding:24px;max-height:92vh;overflow:auto}
+  .modal h2{font-size:26px;font-weight:800;margin-bottom:6px}
+  .modal .eyebrow{margin-bottom:8px}
+  .modal p{margin:0 0 12px}
+  .choices{display:grid;gap:10px;margin-top:14px}
+  .choice{text-align:left;border:2px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel)}
+  .choice:hover{border-color:var(--scrub);background:var(--scrub-tint)}
+  .choice b{display:block;font-family:var(--disp);font-size:16px;margin-bottom:2px}
+  .choice span{font-size:13px;color:var(--ink-2)}
+  .presets{display:grid;gap:10px;margin-top:12px}
+  .report{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+  .report div{background:var(--wall);border-radius:8px;padding:10px}
+  .report .n{font-family:var(--disp);font-size:24px;font-weight:800}
+  .report .eyebrow{font-size:10.5px}
+  .style{background:var(--scrub-tint);border-radius:8px;padding:12px;font-family:var(--disp);font-weight:700;font-size:17px;margin-bottom:14px}
+
+  /* Compact mode: laptop-height screens (e.g. 13" MacBook Air). Everything above
+     "How this hospital works" should fit without scrolling; that section may run
+     off the bottom of the screen. Placed last so it wins the cascade over the
+     base rules above at equal specificity. */
+  @media (max-height:920px){
+    main{padding:10px 24px 20px;gap:14px}
+    header{padding:12px 24px 8px}
+    header h1{font-size:22px}
+    header div[style]{margin-top:2px !important}
+    .weekbox .big{font-size:26px}
+    .yearbar{margin-top:3px}
+    .card{padding:11px}
+    .card + .card{margin-top:11px}
+    .card h2{font-size:14.5px;margin-bottom:6px}
+    .resource{padding:6px 0}
+    .resource .count{font-size:20px}
+    .resource .meta{font-size:11.5px;line-height:1.3}
+    .btnrow{margin-top:2px}
+    .btn{padding:5px 8px;font-size:12px}
+    .btn.primary{padding:9px;font-size:14px}
+    .pending{font-size:11px}
+    #events{max-height:100px;overflow-y:auto}
+    .event{padding:6px 8px;font-size:12px;margin-top:6px}
+    .monitor{padding:11px 12px 9px}
+    .monitor .sat{font-size:38px}
+    .monitor .verdict{font-size:14.5px}
+    .monitor .verdict p{font-size:11.5px}
+    #trace{height:88px;margin-top:6px}
+    .vitals{gap:7px;margin-top:8px}
+    .vital{padding:7px 9px}
+    .vital .val{font-size:17px}
+    .vital .note{font-size:11px;margin-top:4px}
+    .bar{margin-top:5px}
+    .arrivals{margin-top:8px;padding-top:8px;gap:10px}
+    .stat .n{font-size:19px}
+    .log{max-height:120px;font-size:12px}
+    details{padding:6px 0}
+    summary{font-size:13.5px}
+    .balance{font-size:23px;margin:2px 0 5px}
+    .ledger{font-size:12px}
+    .oversight{padding:6px 8px;font-size:12px;margin-top:6px}
+    .chief{gap:8px}
+    .chief .avatar{width:34px;height:34px;font-size:16px}
+    .chief .bubble{padding:8px 10px;font-size:12px;max-height:195px;overflow-y:auto}
+    .monitor .verdict{padding-right:16px}
+    .blip{top:16px;right:12px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="eyebrow">A hospital management game</div>
+    <h1>Ward <span>&amp;</span> Budget</h1>
+    <div style="font-size:13px;color:var(--ink-2);margin-top:4px">Run one hospital for one year. Keep the public happy.</div>
+  </div>
+  <div class="weekbox">
+    <div class="big">Week <span id="week">1</span><small> / 52</small></div>
+    <div class="yearbar"><i id="yearfill"></i></div>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: controls -->
+  <section class="col-left">
+    <div class="card">
+      <h2>Your resources</h2>
+
+      <div class="resource">
+        <div class="name">Healthcare workers</div>
+        <div class="count" id="staffN">25</div>
+        <div class="meta">Each safely looks after about 4 patients. Wages <b id="wageTotal"></b>/week. New hires take 4 weeks to onboard.</div>
+        <div class="btnrow">
+          <button class="btn" id="hire1">Hire 1</button>
+          <button class="btn" id="hire5">Hire 5</button>
+          <button class="btn cut" id="cut1">Let 1 go</button>
+        </div>
+        <div class="pending" id="staffPending"></div>
+      </div>
+
+      <div class="resource">
+        <div class="name">Beds</div>
+        <div class="count" id="bedsN">45</div>
+        <div class="meta">Comfortable up to 85% full. Upkeep <b id="bedUpkeep"></b>/week. A new bed takes 3 weeks to open.</div>
+        <div class="btnrow">
+          <button class="btn" id="bed5">Build 5</button>
+          <button class="btn" id="bed10">Build 10</button>
+          <button class="btn cut" id="bedCut5">Close 5</button>
+        </div>
+        <div class="pending" id="bedPending"></div>
+      </div>
+
+      <div class="resource">
+        <div class="name">Emergency room bays</div>
+        <div class="count" id="erN">25</div>
+        <div class="meta">Patients the ER can treat at once. Upkeep <b id="erUpkeep"></b>/week. A new bay takes 8 weeks to build.</div>
+        <div class="btnrow">
+          <button class="btn" id="er2">Build 2</button>
+          <button class="btn" id="er5">Build 5</button>
+        </div>
+        <div class="pending" id="erPending"></div>
+      </div>
+
+      <div style="margin-top:14px">
+        <button class="btn primary" id="next">Run week 1 ▶</button>
+        <div style="font-size:12px;color:var(--ink-2);margin-top:6px;text-align:center">Spending takes effect now. Arrivals roll when you run the week.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Coming up</h2>
+      <div id="events"><div style="font-size:13px;color:var(--ink-2)">Nothing on the calendar. Enjoy it while it lasts.</div></div>
+    </div>
+  </section>
+
+  <!-- CENTRE: monitor -->
+  <section class="col-centre">
+    <div class="card" style="padding:0;border:0;background:transparent">
+      <div class="monitor">
+        <div class="blip" aria-hidden="true"></div>
+        <div class="top">
+          <div>
+            <div class="label">Public satisfaction</div>
+            <div class="sat"><span id="sat">70</span><small>/ 100</small></div>
+          </div>
+          <div class="verdict" id="verdict">Steady<p>The public has no strong feelings about you yet.</p></div>
+        </div>
+        <svg id="trace" viewBox="0 0 520 150" preserveAspectRatio="none" aria-label="Satisfaction over the year"></svg>
+        <div class="vitals">
+          <div class="vital">
+            <div class="label">Staff load</div>
+            <div class="val"><span id="vStaff">—</span><small> patients / worker</small></div>
+            <div class="bar" id="bStaff" style="--safe:80%"><i></i></div>
+            <div class="note" id="nStaff">Safe up to 4.0</div>
+          </div>
+          <div class="vital">
+            <div class="label">Bed occupancy</div>
+            <div class="val"><span id="vBeds">—</span><small>%</small></div>
+            <div class="bar" id="bBeds" style="--safe:85%"><i></i></div>
+            <div class="note" id="nBeds">Safe up to 85%</div>
+          </div>
+          <div class="vital">
+            <div class="label">ER utilization</div>
+            <div class="val"><span id="vER">—</span><small>%</small></div>
+            <div class="bar" id="bER" style="--safe:100%"><i></i></div>
+            <div class="note" id="nER">Safe up to 100%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>This week</h2>
+      <div id="conditions" style="font-size:14px;color:var(--ink-2)">Waiting for the first week to run.</div>
+      <div class="arrivals">
+        <div class="stat"><div class="eyebrow">Daily arrivals</div><div class="n" id="sArr">—</div></div>
+        <div class="stat"><div class="eyebrow">Expected</div><div class="n" id="sExp">60<small> ± 15%</small></div></div>
+        <div class="stat"><div class="eyebrow">Needed a bed</div><div class="n" id="sAdm">—</div></div>
+        <div class="stat"><div class="eyebrow">Needed the ER</div><div class="n" id="sER">—</div></div>
+        <div class="stat"><div class="eyebrow">Treated this year</div><div class="n" id="sTot">0</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Hospital log</h2>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="card">
+      <h2>How this hospital works</h2>
+      <details><summary>Why staff-to-patient ratios matter</summary><p>Every nurse or doctor can only safely keep track of so many patients at once. This game uses one worker for every four patients as the safe limit, which is in the neighbourhood of many general wards. Push past it and waits grow, small problems get missed, and you pay overtime to keep the doors open.</p></details>
+      <details><summary>Bed occupancy and the 85% rule of thumb</summary><p>Hospitals need empty beds as a buffer because arrivals are never predictable. Above roughly 85% occupancy, admissions slow down and patients wait in hallways. The public notices hallway medicine quickly, and your satisfaction score reflects that.</p></details>
+      <details><summary>Emergency room capacity and "boarding"</summary><p>The ER is meant to be a fast in-and-out space. When it fills up, or when inpatient beds are full and admitted patients wait inside the ER, every new arrival waits longer. That is why ER bays are tracked separately from beds, and why they cost more to build.</p></details>
+      <details><summary>Where the money comes from</summary><p>This is a Canadian hospital, so there's no user-pay revenue: patients are never billed, and treating more of them doesn't bring in more money. Your funding is a fixed weekly operating grant from the health authority, the same whether the week is quiet or overwhelming. Wages and upkeep come off the top. A few times a year a family or a local philanthropist makes a donation, which helps but can't be planned around. You cannot go bankrupt, but if your balance goes negative the province steps in, trims your grant for a few weeks, and the public hears about it.</p></details>
+      <details><summary>Why plan ahead</summary><p>New staff take four weeks to onboard, beds take three weeks to open, and ER bays take eight. Demand grows a little every week and events like flu season arrive on a schedule. The trick is expanding for the hospital you will have in two months, not the one you have today.</p></details>
+      <details><summary>How this game estimates strain</summary><p>Roughly 40% of arrivals need an inpatient bed and 25% need ER care. Each week rolls a random swing of about ±15% on arrivals, then layers on whatever conditions are active. Satisfaction climbs slowly when all three vitals are inside their safe limits, drops faster when they are not, and takes a hit whenever you cut staff or close beds.</p></details>
+      <p class="fine">This is a simplified educational model for exploring healthcare capacity concepts. It doesn't reflect any real hospital and isn't a clinical or policy planning tool. Built on the <a href="https://mahumahmed.github.io/hospital-capacity-simulator/">Hospital Capacity Simulator</a> by Mahum Ahmed.</p>
+    </div>
+  </section>
+
+  <!-- RIGHT: money and chief -->
+  <section class="col-right">
+    <div class="card">
+      <div class="eyebrow">Balance</div>
+      <div class="balance" id="balance">$500K</div>
+      <table class="ledger" id="ledger"><tr><td colspan="2" style="color:var(--ink-2)">Run the first week to see your ledger.</td></tr></table>
+      <div id="oversight"></div>
+    </div>
+
+    <div class="card" id="chiefCard">
+      <h2>Chief of Staff</h2>
+      <div class="chief">
+        <div class="avatar" aria-hidden="true">🩺</div>
+        <div class="bubble"><div class="who">Dr. Okafor</div><div id="chief">Welcome aboard. The board wants two things from you this year: a hospital the public trusts, and a balance sheet that doesn't scare them. Hire a little ahead of demand, and keep an eye on the calendar. I'll speak up when something needs your attention.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Year so far</h2>
+      <table class="ledger" id="yearTotals"></table>
+      <div style="margin-top:12px;display:flex;gap:6px">
+        <button class="btn" id="save">Save game</button>
+        <button class="btn" id="restart">Start over</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Start screen -->
+<div class="overlay open" id="startOverlay">
+  <div class="modal">
+    <div class="eyebrow">Choose your difficulty</div>
+    <h2>Ward &amp; Budget</h2>
+    <p>You have 52 weeks. Hire staff, build beds, expand the ER, and spend wisely. There is no way to lose, only ways to end the year with a public that loves you or grumbles about you.</p>
+    <div class="presets">
+      <button class="choice" data-preset="community"><b>New Hospital Manager</b><span>Start with a steady, well-resourced hospital and learn the ropes: 25 staff, 45 beds, 25 ER bays, $500K in the bank. The easiest place to begin.</span></button>
+      <button class="choice" data-preset="rural"><b>Experienced Hospital Manager</b><span>A smaller hospital with a tighter budget tests your judgment: 12 staff, 20 beds, 10 ER bays, $180K. Every dollar counts and the public notices any misstep.</span></button>
+      <button class="choice" data-preset="urban"><b>Hospital Turn Around Expert</b><span>Take charge of a large, overstretched hospital where demand is already high and only rising: 60 staff, 110 beds, 55 ER bays, $900K. Can you turn it around?</span></button>
+    </div>
+    <div id="resumeRow" style="margin-top:12px;display:none"><button class="btn" id="resume" style="width:100%">Resume saved game</button></div>
+  </div>
+</div>
+
+<!-- Decision / event / report modal -->
+<div class="overlay" id="modalOverlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- Chief of Staff pop-up -->
+<div class="toast" id="chiefToast" role="status" aria-live="polite">
+  <div class="avatar" aria-hidden="true">🩺</div>
+  <div>
+    <div class="who">Dr. Okafor</div>
+    <div class="msg" id="toastMsg"></div>
+  </div>
+  <button class="close" id="toastClose" aria-label="Dismiss message">×</button>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const fmt = k => (k<0?'-':'') + '$' + (Math.abs(k)>=1000 ? (Math.abs(k)/1000).toFixed(2)+'M' : Math.round(Math.abs(k))+'K');
+  const rnd = (a,b) => a + Math.random()*(b-a);
+  const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+
+  // Money in thousands of dollars. Canadian public hospitals: no user-pay revenue.
+  // Funding is a fixed weekly grant from the health authority, topped up now and then by donations.
+  const COST = { wage:1.6, hireBonus:4, bedBuild:8, bedUpkeep:0.2, erBuild:22, erUpkeep:0.6 };
+  const SAFE = { staff:4, beds:0.85, er:1.0 };
+  const PRESETS = {
+    community:{ staff:25, beds:45, er:25, budget:500, grant:108, demand:60, growth:0.015, name:'New Hospital Manager' },
+    rural:{ staff:12, beds:20, er:10, budget:180, grant:50, demand:28, growth:0.012, name:'Experienced Hospital Manager' },
+    urban:{ staff:60, beds:110, er:55, budget:900, grant:255, demand:150, growth:0.014, name:'Hospital Turn Around Expert' }
+  };
+  const CONDITIONS = {
+    flu:{ label:'Flu season', icon:'🤧', mult:1.35, staffMult:0.95, blurb:'More patients, and some of your own staff are off sick.' },
+    heat:{ label:'Heat wave', icon:'🔥', mult:1.2, staffMult:1, blurb:'Heat exhaustion and dehydration cases climb, especially among seniors.' },
+    holiday:{ label:'Holiday weekend', icon:'🎉', mult:1.25, staffMult:0.85, blurb:'More accidents, fewer staff willing to work the long weekend.' },
+    outbreak:{ label:'Local outbreak', icon:'😷', mult:1.5, staffMult:0.9, blurb:'A cluster of infections is spreading. Arrivals spike with no notice.' },
+    neighbour:{ label:'Neighbouring ER closed', icon:'🚧', mult:1.2, staffMult:1, blurb:'The hospital down the road has closed its ER for renovations. Their patients are now yours.' }
+  };
+
+  let S = null; // game state
+
+  function newGame(presetKey){
+    const p = PRESETS[presetKey];
+    S = {
+      preset:presetKey, presetName:p.name, week:1, staff:p.staff, beds:p.beds, er:p.er, budget:p.budget, baseGrant:p.grant,
+      demand:p.demand, growth:p.growth, sat:70, satHist:[70], oversight:0,
+      pendingStaff:[], pendingBeds:[], pendingER:[],
+      cutsThisWeek:0, log:[], seen:{}, totals:{ treated:0, wages:0, build:0, overtime:0, income:0 },
+      lastResult:null, schedule:buildSchedule(p), active:[], decisionsDone:{}
+    };
+    log('Week 1', `You start as a ${p.name}, taking charge of a hospital with ${p.staff} staff, ${p.beds} beds, ${p.er} ER bays and ${fmt(p.budget)} in the bank. Funding comes from the health authority's weekly grant of ${fmt(p.grant)}, not from patients.`);
+    render();
+  }
+
+  // Events are placed on the calendar with a start week, length and warning lead time.
+  function buildSchedule(p){
+    const ev = [];
+    const fluStart = 12 + Math.floor(rnd(0,4));
+    ev.push({ type:'flu', start:fluStart, len:6, warn:4 });
+    ev.push({ type:'holiday', start:20 + Math.floor(rnd(0,3)), len:1, warn:1 });
+    ev.push({ type:'heat', start:28 + Math.floor(rnd(0,5)), len:2, warn:1 });
+    ev.push({ type:'holiday', start:36 + Math.floor(rnd(0,2)), len:1, warn:1 });
+    ev.push({ type:'outbreak', start:Math.floor(rnd(7,11)), len:3, warn:0 });
+    ev.push({ type:'outbreak', start:Math.floor(rnd(40,47)), len:3, warn:0 });
+    ev.push({ type:'holiday', start:51, len:1, warn:1 });
+    // Decision cards
+    ev.push({ type:'decision', id:'donor', start:8 });
+    ev.push({ type:'decision', id:'neighbour', start:30 });
+    ev.push({ type:'decision', id:'grant', start:44 });
+    // Unscripted donations: a wealthy family or local philanthropist gives, unannounced, a few times a year
+    const donorLines = [
+      'A grateful family whose father recovered here left a gift for the ward.',
+      'A local business owner, moved by a story in the paper, sent a cheque.',
+      'A retired philanthropist added the hospital to her annual giving list.',
+      'An anonymous donor dropped off a gift "for wherever it is needed most."'
+    ];
+    const donationWeeks = new Set();
+    while(donationWeeks.size<3) donationWeeks.add(Math.floor(rnd(4,50)));
+    [...donationWeeks].forEach(w=>{ ev.push({ type:'donation', start:w, len:1, warn:0, amount:Math.round(rnd(12,35)), line:donorLines[Math.floor(rnd(0,donorLines.length))] }); });
+    return ev;
+  }
+
+  function log(when, text){ S.log.unshift({when, text}); }
+
+  // ---------- Actions ----------
+  function hire(n){ const cost = COST.hireBonus*n; S.budget -= cost; S.totals.build += cost; S.pendingStaff.push({n, ready:S.week+4}); log(`Week ${S.week}`, `Hired ${n} new staff (signing costs ${fmt(cost)}). Onboarding takes 4 weeks.`); render(); }
+  function cutStaff(n){ if(S.staff-n<1) return; S.staff -= n; S.cutsThisWeek += 2; log(`Week ${S.week}`, `Let ${n} staff member go. The union noticed.`); render(); }
+  function buildBeds(n){ const cost = COST.bedBuild*n; S.budget -= cost; S.totals.build += cost; S.pendingBeds.push({n, ready:S.week+3}); log(`Week ${S.week}`, `Started building ${n} beds for ${fmt(cost)}. Ready in 3 weeks.`); render(); }
+  function closeBeds(n){ if(S.beds-n<5) return; S.beds -= n; S.cutsThisWeek += 1.5; log(`Week ${S.week}`, `Closed ${n} beds to save on upkeep.`); render(); }
+  function buildER(n){ const cost = COST.erBuild*n; S.budget -= cost; S.totals.build += cost; S.pendingER.push({n, ready:S.week+8}); log(`Week ${S.week}`, `Started ${n} new ER bay${n>1?'s':''} for ${fmt(cost)}. Ready in 8 weeks.`); render(); }
+
+  // ---------- Run a week ----------
+  function runWeek(){
+    if(S.week>52) return;
+    const w = S.week;
+    // Complete pending builds
+    [['pendingStaff','staff','staff started'],['pendingBeds','beds','beds opened'],['pendingER','er','ER bays opened']].forEach(([key,res,verb])=>{
+      const ready = S[key].filter(x=>x.ready<=w); const later = S[key].filter(x=>x.ready>w);
+      const n = ready.reduce((a,x)=>a+x.n,0);
+      if(n){ S[res]+=n; log(`Week ${w}`, `${n} ${verb}.`); }
+      S[key]=later;
+    });
+
+    // Active conditions
+    S.active = S.schedule.filter(e=>e.type!=='decision' && e.type!=='donation' && w>=e.start && w<e.start+e.len);
+    let mult=1, staffMult=1;
+    S.active.forEach(e=>{ mult*=CONDITIONS[e.type].mult; staffMult*=CONDITIONS[e.type].staffMult; });
+    S.active.filter(e=>e.start===w).forEach(e=>log(`Week ${w}`, `${CONDITIONS[e.type].icon} ${CONDITIONS[e.type].label} begins. ${CONDITIONS[e.type].blurb}`));
+
+    // Arrivals
+    const swing = 1 + rnd(-0.15,0.15);
+    const arrivals = Math.round(S.demand*mult*swing);
+    const effStaff = S.staff*staffMult;
+    const staffLoad = arrivals/Math.max(effStaff,1);
+    const admitted = Math.round(arrivals*0.4);
+    const occ = admitted/S.beds;
+    const erNeed = Math.round(arrivals*0.25);
+    const erUtil = erNeed/S.er;
+
+    // Money
+    const wages = S.staff*COST.wage;
+    const upkeep = S.beds*COST.bedUpkeep + S.er*COST.erUpkeep;
+    const overtime = staffLoad>SAFE.staff ? Math.round((staffLoad/SAFE.staff-1)*wages*1.5*10)/10 : 0;
+    const boarding = occ>SAFE.beds ? Math.round((occ-SAFE.beds)*admitted*7*0.4*10)/10 : 0;
+    const grantCut = S.oversight>0 ? 0.35 : 0;
+    const grant = Math.round(S.baseGrant*(1-grantCut)*10)/10;
+    const donationsNow = S.schedule.filter(e=>e.type==='donation' && e.start===w);
+    const donationTotal = donationsNow.reduce((a,e)=>a+e.amount,0);
+    donationsNow.forEach(e=>log(`Week ${w}`, `💝 ${e.line} A gift of ${fmt(e.amount)} for the hospital.`));
+    const income = grant + donationTotal;
+    const expenses = wages + upkeep + overtime + boarding;
+    const net = Math.round((income-expenses)*10)/10;
+    S.budget = Math.round((S.budget+net)*10)/10;
+    S.totals.treated += arrivals*7; S.totals.wages += wages; S.totals.overtime += overtime+boarding; S.totals.income += income;
+
+    // Satisfaction
+    let d = 0;
+    const over = [staffLoad/SAFE.staff, occ/SAFE.beds, erUtil/SAFE.er];
+    const worst = Math.max(...over);
+    if(worst<=0.97) d += 1.8;                               // comfortable
+    else if(worst<=1.0) d += 0.8;                           // busy but fine
+    over.forEach(r=>{ if(r>1) d -= Math.min(4, (r-1)*9); });
+    if(worst<0.55) d -= 0.6;                                // half empty hospital, people ask why taxes pay for it
+    d -= S.cutsThisWeek;
+    if(S.oversight>0) d -= 1;
+    if(S.budget<0 && S.oversight===0){ S.oversight=4; log(`Week ${w}`, `Balance went negative. The province steps in: grant cut 35% for 4 weeks, and the local paper has the story.`); d -= 4; }
+    else if(S.oversight>0){ S.oversight--; if(S.oversight===0) log(`Week ${w}`, `Provincial oversight ends. Your grant is back to normal.`); }
+    S.sat = Math.round(clamp(S.sat+d,0,100)*10)/10;
+    S.satHist.push(S.sat);
+
+    S.lastResult = { arrivals, admitted, erNeed, staffLoad, occ, erUtil, wages, upkeep, overtime, boarding, grant, donationTotal, income, expenses, net, swing, mult, cond:S.active.map(e=>e.type) };
+    // Log line
+    const bits = [];
+    if(staffLoad>SAFE.staff) bits.push('staff ran overtime');
+    if(occ>SAFE.beds) bits.push('patients waited in hallways');
+    if(erUtil>SAFE.er) bits.push('the ER was over capacity');
+    log(`Week ${w}`, `${arrivals} patients a day (${swing>1?'+':''}${Math.round((swing-1)*100)}% swing). ${bits.length?bits.join(', ').replace(/^./,c=>c.toUpperCase())+'.':'Everything ran inside safe limits.'} Satisfaction ${d>=0?'+':''}${d.toFixed(1)}.`);
+
+    S.cutsThisWeek = 0;
+    S.demand = S.demand*(1+S.growth);
+    S.week++;
+    chiefCheck();
+    render();
+    // Decision cards fire at the start of their week
+    const dec = S.schedule.find(e=>e.type==='decision' && e.start===S.week && !S.decisionsDone[e.id]);
+    if(S.week>52) setTimeout(showReport, 400);
+    else if(dec) setTimeout(()=>showDecision(dec.id), 300);
+    autosave();
+  }
+
+  // ---------- Chief of Staff ----------
+  const CHIEF = {
+    staff:'Your staff are looking after more than four patients each. That means overtime on the ledger and longer waits in the lobby. Onboarding takes four weeks, so hire well before the crunch, not during it.',
+    beds:'We are above 85% bed occupancy. Admitted patients are lying in hallways, and the public hates that more than almost anything. Beds take three weeks to open, so if a busy season is coming, start building now.',
+    er:'The ER is over capacity. Ambulances are being diverted and every new patient waits longer. ER bays take a full two months to build, the slowest thing we have, so plan them well ahead of the demand you expect.',
+    negative:'We are in the red. The province has trimmed our grant and the newspaper ran it on page one. You can keep spending, but the public trusts a hospital that pays its bills.',
+    idle:'We are running well under capacity. The public likes short waits, but they also ask why their taxes pay for empty beds. A little slack is wise; a lot is expensive.',
+    flu:'Flu season is on the calendar. Expect about a third more patients for six weeks, and a few of our own staff off sick. Hiring five or so now is usually cheaper than the overtime.',
+    mid:'Halfway through the year. Demand has been creeping up week by week. Have a look at whether your beds and ER will still be comfortable at the pace things are growing.',
+    happy:'Satisfaction is above 85. People are writing thank-you cards. Nice work. The trick now is not to let a busy stretch undo it.',
+    late:'Ten weeks to go. Anything you build now still has time to matter, and the final report weighs the whole year, not just the ending.'
+  };
+  function chief(key, text){
+    if(S.seen[key]) return; S.seen[key]=true;
+    const msg = text||CHIEF[key];
+    $('chief').textContent = msg;
+    showToast(msg);
+    const card = $('chiefCard'); card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+  }
+  let toastTimer=null;
+  function showToast(msg){
+    $('toastMsg').textContent = msg;
+    $('chiefToast').classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 9000);
+  }
+  function hideToast(){ $('chiefToast').classList.remove('show'); clearTimeout(toastTimer); }
+  function chiefCheck(){
+    const r = S.lastResult; if(!r) return;
+    if(r.staffLoad>SAFE.staff) chief('staff');
+    else if(r.occ>SAFE.beds) chief('beds');
+    else if(r.erUtil>SAFE.er) chief('er');
+    else if(S.budget<0) chief('negative');
+    else if(Math.max(r.staffLoad/4,r.occ/0.85,r.erUtil)<0.5 && S.week>6) chief('idle');
+    else if(S.week===27) chief('mid');
+    else if(S.week===43) chief('late');
+    else if(S.sat>85) chief('happy');
+    const flu = S.schedule.find(e=>e.type==='flu');
+    if(S.week===flu.start-flu.warn) chief('flu');
+  }
+
+  // ---------- Decisions ----------
+  const DECISIONS = {
+    donor:{ title:'A donor comes calling', eyebrow:'Decision', body:'A local family offers to fund a 20-bed wing in memory of their grandmother, if the hospital covers 30% of the cost. Beds would open in three weeks.',
+      choices:[
+        { label:'Accept the gift', sub:'Pay 30% (about $48K) for 20 beds. Satisfaction +3.', fn(){ const c=Math.round(COST.bedBuild*20*0.3); S.budget-=c; S.totals.build+=c; S.pendingBeds.push({n:20,ready:S.week+3}); S.sat=clamp(S.sat+3,0,100); log(`Week ${S.week}`,`Accepted the donor wing: 20 beds for ${fmt(c)}, opening in 3 weeks. The ribbon cutting made the news.`); } },
+        { label:'Politely decline', sub:'No cost, no beds. The donor is a little hurt. Satisfaction -1.', fn(){ S.sat=clamp(S.sat-1,0,100); log(`Week ${S.week}`,`Declined the donor wing. The family funded the art gallery instead.`); } }
+      ] },
+    neighbour:{ title:'The hospital down the road closes its ER', eyebrow:'Decision', body:'Renovations will close the neighbouring ER for eight weeks. Their patients are coming to you. The region offers a one-time $120K support payment if you commit to taking them.',
+      choices:[
+        { label:'Take the patients and the money', sub:'+$120K now. Arrivals up 20% for 8 weeks.', fn(){ S.budget+=120; S.totals.income+=120; S.schedule.push({type:'neighbour',start:S.week,len:8,warn:0}); log(`Week ${S.week}`,`Agreed to cover the neighbouring ER for 8 weeks and banked ${fmt(120)}.`); } },
+        { label:'Say you are at capacity', sub:'No money, no extra patients. The region remembers. Satisfaction -3.', fn(){ S.sat=clamp(S.sat-3,0,100); log(`Week ${S.week}`,`Told the region you could not take the overflow. Not a popular call.`); } }
+      ] },
+    grant:{ title:'Year-end surplus review', eyebrow:'Decision', body:'The province is reviewing budgets. Hospitals that hand back surplus this week get a bump in next year\'s funding, but the money goes now.',
+      choices:[
+        { label:'Return $60K to the province', sub:'-$60K now. Satisfaction +2 for being a good steward. Best if you can afford it.', fn(){ S.budget-=60; S.sat=clamp(S.sat+2,0,100); log(`Week ${S.week}`,`Returned ${fmt(60)} to the province. The minister sent a nice letter.`); } },
+        { label:'Keep it for the hospital', sub:'No change. You will need it for the winter.', fn(){ log(`Week ${S.week}`,`Kept the surplus. The winter will be long.`); } }
+      ] }
+  };
+  function showDecision(id){
+    const d = DECISIONS[id]; S.decisionsDone[id]=true;
+    $('modal').innerHTML = `<div class="eyebrow">${d.eyebrow} · Week ${S.week}</div><h2>${d.title}</h2><p>${d.body}</p><div class="choices">${d.choices.map((c,i)=>`<button class="choice" data-i="${i}"><b>${c.label}</b><span>${c.sub}</span></button>`).join('')}</div>`;
+    $('modal').querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{ d.choices[+b.dataset.i].fn(); closeModal(); render(); autosave(); }));
+    $('modalOverlay').classList.add('open');
+  }
+  function closeModal(){ $('modalOverlay').classList.remove('open'); }
+
+  // ---------- Report card ----------
+  function showReport(){
+    const avg = S.satHist.reduce((a,b)=>a+b,0)/S.satHist.length;
+    const min = Math.min(...S.satHist), max = Math.max(...S.satHist);
+    const score = Math.round(avg*0.6 + S.sat*0.4);
+    let style;
+    const spentOnBuild = S.totals.build, overtimeShare = S.totals.overtime/(S.totals.wages+1);
+    if(score>=85) style='You ran a hospital people brag about. Short waits, warm rooms, and a balance sheet the board framed.';
+    else if(score>=70 && S.budget<0) style='The public loves you and the accountants do not. You bought goodwill with borrowed money, and it mostly worked.';
+    else if(score>=70) style='A steady hand. You expanded a little ahead of demand and the public mostly forgave the odd hallway bed.';
+    else if(overtimeShare>0.25) style='You ran a lean hospital on the backs of exhausted staff. The overtime bill tells the story the public felt in the waiting room.';
+    else if(spentOnBuild<50) style='You kept the cheque book closed and the hospital slowly fell behind a growing town. Cheap, but not popular.';
+    else style='A hard year. You built and hired, but always a few weeks behind the need. Next year, start earlier.';
+    $('modal').innerHTML = `<div class="eyebrow">Year-end report · ${S.presetName}</div><h2>Final score: ${score}</h2>
+      <div class="style">${style}</div>
+      <div class="report">
+        <div><div class="eyebrow">Satisfaction now</div><div class="n">${Math.round(S.sat)}</div></div>
+        <div><div class="eyebrow">Average all year</div><div class="n">${Math.round(avg)}</div></div>
+        <div><div class="eyebrow">Best / worst week</div><div class="n">${Math.round(max)} / ${Math.round(min)}</div></div>
+        <div><div class="eyebrow">Final balance</div><div class="n" style="${S.budget<0?'color:var(--red)':''}">${fmt(S.budget)}</div></div>
+        <div><div class="eyebrow">Patients treated</div><div class="n">${S.totals.treated.toLocaleString()}</div></div>
+        <div><div class="eyebrow">Spent on building and hiring</div><div class="n">${fmt(S.totals.build)}</div></div>
+        <div><div class="eyebrow">Wages</div><div class="n">${fmt(S.totals.wages)}</div></div>
+        <div><div class="eyebrow">Overtime and hallway costs</div><div class="n">${fmt(S.totals.overtime)}</div></div>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-2)">Something to think about: which single decision would you change, and what would it have cost? Hospitals face this trade-off every budget cycle.</p>
+      <div class="choices"><button class="choice" id="again"><b>Play again</b><span>Try a different hospital or a different strategy.</span></button></div>`;
+    $('again').addEventListener('click',()=>{ closeModal(); clearSave(); $('startOverlay').classList.add('open'); });
+    $('modalOverlay').classList.add('open');
+  }
+
+  // ---------- Render ----------
+  function render(){
+    const over = S.week>52;
+    $('week').textContent = Math.min(S.week,52);
+    $('yearfill').style.width = ((Math.min(S.week,53)-1)/52*100)+'%';
+    $('staffN').textContent = S.staff; $('bedsN').textContent = S.beds; $('erN').textContent = S.er;
+    $('wageTotal').textContent = fmt(S.staff*COST.wage);
+    $('bedUpkeep').textContent = fmt(S.beds*COST.bedUpkeep);
+    $('erUpkeep').textContent = fmt(S.er*COST.erUpkeep);
+    const pend = (arr,unit) => arr.length ? arr.map(x=>`+${x.n} ${unit} in ${x.ready-S.week} wk`).join(' · ') : '';
+    $('staffPending').textContent = pend(S.pendingStaff,'staff'); $('bedPending').textContent = pend(S.pendingBeds,'beds'); $('erPending').textContent = pend(S.pendingER,'bays');
+    $('hire1').textContent = `Hire 1 (${fmt(COST.hireBonus)})`; $('hire5').textContent = `Hire 5 (${fmt(COST.hireBonus*5)})`;
+    $('bed5').textContent = `Build 5 (${fmt(COST.bedBuild*5)})`; $('bed10').textContent = `Build 10 (${fmt(COST.bedBuild*10)})`;
+    $('er2').textContent = `Build 2 (${fmt(COST.erBuild*2)})`; $('er5').textContent = `Build 5 (${fmt(COST.erBuild*5)})`;
+    document.querySelectorAll('.col-left .btn').forEach(b=>b.disabled=over);
+    $('cut1').disabled = over || S.staff<=1; $('bedCut5').disabled = over || S.beds<=5;
+    $('next').textContent = over ? 'Year complete' : `Run week ${S.week} ▶`;
+
+    // Satisfaction
+    $('sat').textContent = Math.round(S.sat);
+    const v = S.sat>=85?['Beloved','Thank-you cards are arriving at the front desk.']:S.sat>=70?['Trusted','People speak well of the hospital, mostly.']:S.sat>=55?['Wary','Waits are a regular topic at the coffee shop.']:S.sat>=40?['Frustrated','Letters to the editor are not kind.']:['Angry','There is a petition, and it is not in your favour.'];
+    $('verdict').innerHTML = `${v[0]}<p>${v[1]}</p>`;
+    drawTrace();
+
+    // Vitals
+    const r = S.lastResult;
+    const setBar = (id, ratio, warnAt) => { const el=$(id); el.className='bar'+(ratio>1?' bad':ratio>warnAt?' warn':''); el.querySelector('i').style.width = Math.min(ratio*80,100)+'%'; };
+    if(r){
+      $('vStaff').textContent = r.staffLoad.toFixed(1); setBar('bStaff', r.staffLoad/SAFE.staff, 0.9);
+      $('nStaff').textContent = r.staffLoad>SAFE.staff ? 'Over the safe limit of 4.0. Overtime billed.' : 'Safe up to 4.0 patients per worker';
+      $('vBeds').textContent = Math.round(r.occ*100); setBar('bBeds', r.occ/SAFE.beds, 0.9);
+      $('nBeds').textContent = r.occ>SAFE.beds ? 'Over 85%. Patients waiting in hallways.' : 'Safe up to 85% full';
+      $('vER').textContent = Math.round(r.erUtil*100); setBar('bER', r.erUtil/SAFE.er, 0.9);
+      $('nER').textContent = r.erUtil>SAFE.er ? 'Over capacity. Ambulances diverted.' : 'Safe up to 100% of bays';
+      $('sArr').textContent = r.arrivals; $('sAdm').textContent = r.admitted; $('sER').textContent = r.erNeed;
+      const condText = r.cond.length ? r.cond.map(c=>`${CONDITIONS[c].icon} <b>${CONDITIONS[c].label}</b>`).join(' + ') : '☀️ <b>Normal week</b>';
+      $('conditions').innerHTML = `${condText} · arrivals ${r.swing>=1?'+':''}${Math.round((r.swing-1)*100)}% vs forecast${r.mult>1?`, ×${r.mult.toFixed(2)} from conditions`:''}`;
+      const row = (l,vv,cls)=>`<tr><td>${l}</td><td class="${cls||''}">${vv}</td></tr>`;
+      $('ledger').innerHTML = row('Operating grant', '+'+fmt(r.grant),'pos') + (r.donationTotal?row('Donations','+'+fmt(r.donationTotal),'pos'):'') + row('Wages', '-'+fmt(r.wages),'neg') + row('Upkeep', '-'+fmt(r.upkeep),'neg') + (r.overtime?row('Overtime','-'+fmt(r.overtime),'neg'):'') + (r.boarding?row('Hallway care costs','-'+fmt(r.boarding),'neg'):'') + `<tr class="total"><td>Net last week</td><td class="${r.net<0?'neg':'pos'}">${r.net>=0?'+':''}${fmt(r.net)}</td></tr>`;
+    }
+    $('sTot').textContent = S.totals.treated.toLocaleString();
+    $('sExp').innerHTML = `${Math.round(S.demand)}<small> ± 15%</small>`;
+    $('balance').textContent = fmt(S.budget); $('balance').className = 'balance'+(S.budget<0?' neg':'');
+    $('oversight').innerHTML = S.oversight>0 ? `<div class="oversight">Provincial oversight: grant cut 35% for ${S.oversight} more week${S.oversight>1?'s':''}.</div>` : '';
+    $('yearTotals').innerHTML = `<tr><td>Patients treated</td><td>${S.totals.treated.toLocaleString()}</td></tr><tr><td>Income</td><td class="pos">${fmt(S.totals.income)}</td></tr><tr><td>Wages</td><td class="neg">${fmt(S.totals.wages)}</td></tr><tr><td>Building and hiring</td><td class="neg">${fmt(S.totals.build)}</td></tr><tr><td>Overtime and hallway</td><td class="neg">${fmt(S.totals.overtime)}</td></tr>`;
+
+    // Upcoming
+    const up = S.schedule.filter(e=>e.type!=='decision' && e.type!=='donation' && e.start+e.len>S.week && S.week>=e.start-e.warn).sort((a,b)=>a.start-b.start);
+    $('events').innerHTML = up.length ? up.map(e=>{ const c=CONDITIONS[e.type]; const now=S.week>=e.start; const left = now ? e.start+e.len-S.week : e.start-S.week; return `<div class="event${now?' now':''}">${c.icon} <b>${c.label}</b> · ${now?`${left} week${left>1?'s':''} left`:`starts in ${left} week${left>1?'s':''}`}<br><span style="color:var(--ink-2)">${c.blurb}</span></div>`; }).join('') : '<div style="font-size:13px;color:var(--ink-2)">Nothing on the calendar. Enjoy it while it lasts.</div>';
+
+    $('log').innerHTML = S.log.slice(0,60).map(l=>`<p><span>${l.when.replace('Week ','W')}</span>${l.text}</p>`).join('');
+  }
+
+  function drawTrace(){
+    const svg = $('trace'); const W=520, H=150, pad=8;
+    const x = i => pad + i*(W-2*pad)/52;
+    const y = v => H - pad - (v/100)*(H-2*pad);
+    let g = '';
+    for(let i=0;i<=52;i+=4) g += `<line x1="${x(i)}" y1="0" x2="${x(i)}" y2="${H}" stroke="var(--monitor-grid)" stroke-width="1"/>`;
+    [25,50,75].forEach(v=>{ g += `<line x1="0" y1="${y(v)}" x2="${W}" y2="${y(v)}" stroke="var(--monitor-grid)" stroke-width="1"/>`; });
+    g += `<line x1="0" y1="${y(70)}" x2="${W}" y2="${y(70)}" stroke="var(--trace-dim)" stroke-width="1" stroke-dasharray="4 4"/>`;
+    const pts = S.satHist.map((v,i)=>`${x(i)},${y(v)}`).join(' ');
+    const last = S.satHist.length-1;
+    const area = `M${x(0)},${y(0)} L${pts.replace(/ /g,' L')} L${x(last)},${y(0)} Z`;
+    g += `<path d="${area}" fill="var(--trace)" opacity="0.08"/>`;
+    g += `<polyline points="${pts}" fill="none" stroke="var(--trace)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+    g += `<circle cx="${x(last)}" cy="${y(S.sat)}" r="4" fill="var(--trace)"/>`;
+    [0,13,26,39,52].forEach(i=>{ g += `<text x="${x(i)+3}" y="${H-2}" font-family="IBM Plex Mono" font-size="9" fill="#5F8A7C">W${i}</text>`; });
+    svg.innerHTML = g;
+  }
+
+  // ---------- Save / load (works on GitHub Pages; silently skipped where storage is unavailable) ----------
+  const KEY='wardAndBudget.v1';
+  function autosave(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+  function clearSave(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+  function loadSave(){ try{ const s=localStorage.getItem(KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
+
+  // ---------- Wire up ----------
+  $('hire1').addEventListener('click',()=>hire(1)); $('hire5').addEventListener('click',()=>hire(5)); $('cut1').addEventListener('click',()=>cutStaff(1));
+  $('bed5').addEventListener('click',()=>buildBeds(5)); $('bed10').addEventListener('click',()=>buildBeds(10)); $('bedCut5').addEventListener('click',()=>closeBeds(5));
+  $('er2').addEventListener('click',()=>buildER(2)); $('er5').addEventListener('click',()=>buildER(5));
+  $('next').addEventListener('click',runWeek);
+  $('save').addEventListener('click',()=>{ autosave(); $('save').textContent='Saved'; setTimeout(()=>$('save').textContent='Save game',1200); });
+  $('toastClose').addEventListener('click', hideToast);
+  $('restart').addEventListener('click',()=>{ if(confirm('Start a new year? Your current game will be lost.')){ clearSave(); $('startOverlay').classList.add('open'); } });
+  document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{ newGame(b.dataset.preset); $('startOverlay').classList.remove('open'); autosave(); }));
+  const saved = loadSave();
+  if(saved && saved.week<=52){ $('resumeRow').style.display='block'; $('resume').addEventListener('click',()=>{ S=saved; $('startOverlay').classList.remove('open'); render(); }); }
+  document.addEventListener('keydown',e=>{ if(e.key==='Enter' && !$('startOverlay').classList.contains('open') && !$('modalOverlay').classList.contains('open') && S && S.week<=52) runWeek(); });
+})();
+</script>
+</body>
+</html>
