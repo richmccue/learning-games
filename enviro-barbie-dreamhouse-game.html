@@ -1,0 +1,2731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Barbie's Dreamhouse Eco-Glam Quest & Upgrades</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      background: radial-gradient(circle, #ff80bf 0%, #ff1493 60%, #99004d 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      max-width: 960px;
+      max-height: 540px;
+      background: #000;
+      box-shadow: 0 0 40px rgba(255, 20, 147, 0.7), 0 0 15px rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #ffb6c1;
+    }
+
+    /* UI Overlay */
+    .screen-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 105, 180, 0.94);
+      backdrop-filter: blur(5px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 18px;
+      z-index: 50;
+      overflow-y: auto;
+    }
+
+    .hidden {
+      display: none !important;
+      pointer-events: none !important;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #ffffff;
+      text-shadow: 3px 3px 0px #ff007f, 6px 6px 12px rgba(0,0,0,0.3);
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+      font-weight: 900;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      color: #fff0f5;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 0.92rem;
+      max-width: 620px;
+      line-height: 1.45;
+      margin-bottom: 14px;
+      color: #fff5f8;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 100;
+    }
+
+    .btn {
+      background: linear-gradient(180deg, #ff66b2 0%, #ff007f 100%);
+      color: #ffffff;
+      border: 3px solid #ffffff;
+      border-radius: 30px;
+      padding: 9px 22px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(255, 0, 127, 0.5);
+      transition: all 0.2s transform, 0.2s box-shadow;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      touch-action: manipulation;
+      pointer-events: auto;
+      position: relative;
+      z-index: 100;
+    }
+
+    .btn:hover, .btn:active {
+      transform: scale(1.05);
+      box-shadow: 0 8px 22px rgba(255, 0, 127, 0.8);
+      background: linear-gradient(180deg, #ff80bf 0%, #e60073 100%);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(180deg, #ffffff 0%, #ffcce6 100%);
+      color: #d6006c;
+      border-color: #ff007f;
+    }
+
+    /* Eco-Trivia Card in Boutique */
+    .trivia-card {
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      border: 3px solid #10B981;
+      border-radius: 16px;
+      padding: 12px 18px;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 680px;
+      text-align: left;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+
+    .trivia-card h3 {
+      color: #059669;
+      font-size: 1rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trivia-question {
+      font-size: 0.88rem;
+      color: #1F2937;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .trivia-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .trivia-btn {
+      background: #F3F4F6;
+      border: 2px solid #D1D5DB;
+      border-radius: 12px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #374151;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .trivia-btn:hover {
+      background: #E0E7FF;
+      border-color: #6366F1;
+    }
+
+    .trivia-btn.correct {
+      background: #D1FAE5 !important;
+      border-color: #10B981 !important;
+      color: #065F46 !important;
+    }
+
+    .trivia-btn.wrong {
+      background: #FEE2E2 !important;
+      border-color: #EF4444 !important;
+      color: #991B1B !important;
+    }
+
+    /* Shop Cards */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      width: 100%;
+      max-width: 820px;
+      margin-bottom: 14px;
+      z-index: 60;
+    }
+
+    .shop-card {
+      background: rgba(255, 255, 255, 0.25);
+      border: 2px solid #ffffff;
+      border-radius: 14px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .shop-card .icon {
+      font-size: 1.8rem;
+      margin-bottom: 4px;
+    }
+
+    .shop-card h3 {
+      font-size: 0.95rem;
+      color: #fff;
+      margin-bottom: 4px;
+      text-shadow: 1px 1px 2px #d6006c;
+    }
+
+    .shop-card p {
+      font-size: 0.78rem;
+      margin-bottom: 8px;
+      line-height: 1.25;
+      color: #fff0f5;
+    }
+
+    .shop-card .cost {
+      font-weight: 900;
+      color: #FFD700;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .shop-card.selected {
+      border-color: #FFD700;
+      background: rgba(255, 215, 0, 0.35);
+      transform: scale(1.02);
+      box-shadow: 0 0 15px #FFD700;
+    }
+
+    .wallet-banner {
+      background: rgba(255, 255, 255, 0.92);
+      color: #d6006c;
+      padding: 5px 16px;
+      border-radius: 20px;
+      font-weight: 900;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Live Educational Fact Banner */
+    #eco-fact-banner {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #10B981;
+      border-radius: 24px;
+      padding: 6px 18px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #065F46;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      z-index: 30;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 90%;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    #eco-fact-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(4px);
+    }
+
+    /* Instruction card */
+    .instruction-card {
+      background: rgba(255, 255, 255, 0.25);
+      border: 2px dashed #ffffff;
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      max-width: 660px;
+      text-align: left;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .instruction-card ul {
+      margin-left: 20px;
+      margin-top: 4px;
+    }
+
+    /* In-Game HUD */
+    #hud {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      pointer-events: none;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .hud-pill {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #ff1493;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-weight: 800;
+      color: #d6006c;
+      font-size: 0.8rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .hud-pill.eco-pill {
+      border-color: #10B981;
+      color: #047857;
+    }
+
+    .hud-pill.timer-pill {
+      background: linear-gradient(90deg, #FFD700 0%, #FF69B4 100%);
+      color: #fff;
+      border-color: #ffffff;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    .lipstick-swatches {
+      display: flex;
+      gap: 2px;
+      max-width: 170px;
+      flex-wrap: wrap;
+    }
+
+    .swatch-slot {
+      width: 6px;
+      height: 10px;
+      border-radius: 2px;
+      background: rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.8);
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    .swatch-slot.filled {
+      transform: scale(1.15);
+      box-shadow: 0 0 4px white;
+    }
+
+    /* Mobile Controls */
+    #touch-controls {
+      position: absolute;
+      bottom: 12px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .touch-group {
+      display: flex;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .touch-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 105, 180, 0.85) 100%);
+      border: 3px solid #ffffff;
+      color: #ff007f;
+      font-size: 1.35rem;
+      font-weight: 900;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+
+    .touch-btn:active {
+      transform: scale(0.92);
+      background: radial-gradient(circle, #ff66b2 0%, #ff007f 100%);
+      color: #ffffff;
+    }
+
+    .touch-btn.action {
+      background: radial-gradient(circle, #fff0f5 0%, #ff1493 100%);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <!-- Real-time Educational Fact Notification -->
+    <div id="eco-fact-banner">🌱 <span id="eco-fact-text">Clean Beauty: Sustainable minerals reduce packaging waste!</span></div>
+
+    <!-- In-Game HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-pill" id="hud-lives">💖 <span id="lives-count">3</span></div>
+      <div class="hud-pill eco-pill" id="hud-restore">🌿 Restored: <span id="restore-pct">0%</span></div>
+      <div class="hud-pill" id="hud-gang">🐱 Gang: <span id="gang-count">0</span></div>
+      <div class="hud-pill" id="hud-level">🏰 Room: <span id="level-name">Living Room</span></div>
+      <div class="hud-pill timer-pill hidden" id="hud-gadget">⚡ <span id="gadget-timer-text">Heels: 10s</span></div>
+      <div class="hud-pill" id="hud-lipsticks">
+        💄 <span id="lipstick-count">0 / 20</span>
+        <div class="lipstick-swatches" id="swatch-container"></div>
+      </div>
+      <div class="hud-pill" id="hud-score">✨ Score: <span id="score-val">0</span></div>
+    </div>
+
+    <!-- Title Screen -->
+    <div id="screen-title" class="screen-overlay">
+      <h1>BARBIE'S DREAMHOUSE</h1>
+      <h2>🌿 Eco-Glam Quest & Restoration 🌿</h2>
+      <p>Clean up the Dreamhouse with eco-friendly lipsticks! Learn environmental science facts, answer Boutique eco-trivia for bonus lipsticks, recruit cat squads, and equip 10-second superpowers!</p>
+      <div class="btn-group">
+        <button class="btn" id="btn-play" onclick="window.startNewGame()" ontouchend="window.startNewGame()">Play Game (Enter / Space)</button>
+        <button class="btn btn-secondary" id="btn-how" onclick="window.showHow()" ontouchend="window.showHow()">How To Play</button>
+      </div>
+    </div>
+
+    <!-- How To Play Screen -->
+    <div id="screen-how" class="screen-overlay hidden">
+      <h2>How To Play & Restore</h2>
+      <div class="instruction-card">
+        <p><strong>👑 Environmental Restoration & Gameplay:</strong></p>
+        <ul>
+          <li><strong>💄 Eco-Lipsticks & Facts:</strong> Collect all 20 sustainable lipstick shades. Each pickup teaches an environmental restoration or green science fact!</li>
+          <li><strong>🌱 Eco-Trivia Bonus:</strong> Answer the environmental restoration quiz in the Boutique to earn <strong>+3 Bonus Lipsticks</strong>!</li>
+          <li><strong>🛍️ 10s Boutique Gadgets:</strong> Trade lipsticks for <em>Diamond Heels (Speed)</em>, <em>Invisible Makeup (Stealth)</em>, or <em>Fairy Wings (Super Jump)</em> for the first 10s of the next room!</li>
+          <li><strong>🐱 Cat Gang:</strong> Leap over any cat <strong>3 times</strong> to recruit it. Cats protect Barbie by tackling Kens!</li>
+          <li><strong>🐕 Guard Dogs:</strong> Protect your cats from Ken's dogs by charming them with hearts or glitter-freezing them!</li>
+          <li><strong>✨ Glitter Freeze:</strong> Double-tap <strong>Up Arrow (↑) / Jump</strong> to freeze the nearest threat for 10s.</li>
+        </ul>
+      </div>
+      <button class="btn" id="btn-back-title" onclick="window.showTitle()" ontouchend="window.showTitle()">Back To Menu</button>
+    </div>
+
+    <!-- Glam Boutique Screen (With Educational Trivia Challenge) -->
+    <div id="screen-boutique" class="screen-overlay hidden">
+      <h1>🛍️ GLAM BOUTIQUE & ECO-LAB 🌿</h1>
+      <h2>Answer the Eco-Challenge to Earn Bonus Lipsticks!</h2>
+
+      <!-- Eco-Restoration Trivia Challenge -->
+      <div class="trivia-card" id="boutique-trivia-card">
+        <h3>🧪 Eco-Restoration Challenge (+3 Bonus Lipsticks)</h3>
+        <div class="trivia-question" id="trivia-q-text">Loading question...</div>
+        <div class="trivia-options" id="trivia-options-box"></div>
+      </div>
+
+      <div class="wallet-banner">
+        <div>💄 Lipstick Wallet: <span id="shop-lipstick-wallet">20</span></div>
+        <div>🌿 Eco-Score: <span id="shop-eco-score">100%</span></div>
+      </div>
+
+      <div class="shop-grid">
+        <!-- Gadget 1: Diamond High Heels -->
+        <div class="shop-card" id="card-heels">
+          <div class="icon">👠</div>
+          <h3>Diamond Heels</h3>
+          <p>Super speed (+45%) with sparkle footstep trails for 10 seconds!</p>
+          <div class="cost">Cost: 6 Lipsticks</div>
+          <button class="btn btn-secondary" id="btn-buy-heels" onclick="window.selectGadget('heels', 6)">Equip 👠</button>
+        </div>
+
+        <!-- Gadget 2: Stealth Makeup -->
+        <div class="shop-card" id="card-makeup">
+          <div class="icon">✨</div>
+          <h3>Invisible Makeup</h3>
+          <p>Shimmering stealth for 10 seconds! Kens & Dogs cannot harm you.</p>
+          <div class="cost">Cost: 8 Lipsticks</div>
+          <button class="btn btn-secondary" id="btn-buy-makeup" onclick="window.selectGadget('makeup', 8)">Equip ✨</button>
+        </div>
+
+        <!-- Gadget 3: Fairy Wings -->
+        <div class="shop-card" id="card-wings">
+          <div class="icon">🧚‍♀️</div>
+          <h3>Fairy Wings</h3>
+          <p>Equips glowing fairy wings for mega super-jumps for 10 seconds!</p>
+          <div class="cost">Cost: 8 Lipsticks</div>
+          <button class="btn btn-secondary" id="btn-buy-wings" onclick="window.selectGadget('wings', 8)">Equip 🧚‍♀️</button>
+        </div>
+
+        <!-- Gadget 4: Extra Life Heart -->
+        <div class="shop-card" id="card-heart">
+          <div class="icon">💖</div>
+          <h3>Glam Heart</h3>
+          <p>Restores +1 full heart life to Barbie's health pool!</p>
+          <div class="cost">Cost: 5 Lipsticks</div>
+          <button class="btn btn-secondary" id="btn-buy-heart" onclick="window.selectGadget('heart', 5)">Buy 💖</button>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn" id="btn-continue-level" onclick="window.continueToNextLevel()" ontouchend="window.continueToNextLevel()">Enter Next Room 💖</button>
+      </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="screen-game-over" class="screen-overlay hidden">
+      <h1>OH NO! 💔</h1>
+      <h2>Barbie Ran Out of Energy!</h2>
+      <p>Ready to try again with your Cat Gang and ecological upgrades?</p>
+      <div class="btn-group">
+        <button class="btn" id="btn-restart" onclick="window.startNewGame()" ontouchend="window.startNewGame()">Try Again</button>
+      </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="screen-victory" class="screen-overlay hidden">
+      <h1>✨ 100% ECO-RESTORED! ✨</h1>
+      <h2>Supreme Environmental & Fashion Hero!</h2>
+      <p>You collected all 60 sustainable lipsticks, mastered green science trivia, restored the entire Dreamhouse ecosystem, and led your Cat Gang to triumph!</p>
+      <p><strong>Final Eco-Glam Score: <span id="final-score">0</span></strong></p>
+      <div class="btn-group">
+        <button class="btn" id="btn-play-again" onclick="window.startNewGame()" ontouchend="window.startNewGame()">Play Again</button>
+      </div>
+    </div>
+
+    <!-- Mobile Touch Controls -->
+    <div id="touch-controls">
+      <div class="touch-group">
+        <div class="touch-btn" id="t-left">◀</div>
+        <div class="touch-btn" id="t-right">▶</div>
+      </div>
+      <div class="touch-group">
+        <div class="touch-btn action" id="t-charm">✨</div>
+        <div class="touch-btn" id="t-jump">▲</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       20 DISTINCT LIPSTICK SHADES & REAL-WORLD ECO-SCIENCE FACTS
+       ========================================================================== */
+    const LIPSTICK_SHADES = [
+      { name: "Ruby Glam", hex: "#E60039", fact: "Planting native wildflowers restores 60% more wild pollinator biodiversity!" },
+      { name: "Bubblegum Pop", hex: "#FF69B4", fact: "Recycled aluminum makeup tubes save 95% of the energy needed for new metal!" },
+      { name: "Hot Magenta", hex: "#FF007F", fact: "Reef-safe minerals protect delicate ocean coral reefs from bleaching!" },
+      { name: "Velvet Plum", hex: "#7A1C4B", fact: "Composting organic plant pigments prevents landfill methane greenhouse emissions!" },
+      { name: "Coral Sparkle", hex: "#FF6F59", fact: "Solar panels on rooftop lounges produce clean zero-emission renewable energy!" },
+      { name: "Sunset Peach", hex: "#FFA07A", fact: "Rainwater collection barrels reduce tap water strain during dry summer seasons!" },
+      { name: "Barbie Pink", hex: "#FF1493", fact: "Biodegradable glitter made from plant cellulose dissolves safely in nature!" },
+      { name: "Lilac Dream", hex: "#C8A2C8", fact: "Urban green spaces lower surrounding neighborhood temperatures by up to 5°C!" },
+      { name: "Golden Rose", hex: "#E8A394", fact: "Ethically sourced mica prevents habitat destruction in sensitive forest ecosystems!" },
+      { name: "Cherry Kiss", hex: "#C2185B", fact: "Planting shoreline kelp and mangroves traps carbon 5x faster than land trees!" },
+      { name: "Sweet Mauve", hex: "#B76E79", fact: "Energy-efficient LED lighting uses 75% less electricity than traditional bulbs!" },
+      { name: "Cotton Candy", hex: "#FBAED2", fact: "Organic shea butter farming supports soil health without synthetic pesticides!" },
+      { name: "Wine Diva", hex: "#581845", fact: "Upcycling glass containers keeps durable materials in the circular economy!" },
+      { name: "Electric Fuchsia", hex: "#E0115F", fact: "Zero-plastic shampoo & beauty bars prevent millions of microplastics in oceans!" },
+      { name: "Nude Elegance", hex: "#C88A75", fact: "Cover crops and regenerative agriculture restore depleted soil nutrients!" },
+      { name: "Raspberry Shine", hex: "#D21F6B", fact: "Natural berry seed oils provide antioxidants with zero petroleum byproducts!" },
+      { name: "Sparkling Apricot", hex: "#F88379", fact: "Bees pollinate 1 out of every 3 bites of food humans eat worldwide!" },
+      { name: "Violet Charm", hex: "#8A2BE2", fact: "Wetland restoration naturally filters freshwater and buffers against floods!" },
+      { name: "Crimson Velvet", hex: "#9E1B32", fact: "Sustainable bamboo grows up to 1 meter per day without needing replanting!" },
+      { name: "Diamond Shimmer", hex: "#FFE4E1", fact: "Clean air restoration protects wildlife and enhances ecosystem longevity!" }
+    ];
+
+    /* ==========================================================================
+       EDUCATIONAL ECO-TRIVIA QUESTION POOL
+       ========================================================================== */
+    const ECO_TRIVIA_POOL = [
+      {
+        q: "What is the cleanest, most renewable way to power Barbie's Dreamhouse?",
+        options: ["Rooftop Solar & Wind Energy", "Coal Generators", "Single-Use Batteries", "Incinerating Plastics"],
+        correct: 0,
+        explanation: "Solar and wind generate clean power without emitting greenhouse gases!"
+      },
+      {
+        q: "Why is cellulose-based plant glitter better for the environment than plastic glitter?",
+        options: ["It dissolves into microplastics", "It is 100% biodegradable and non-toxic to marine life", "It is magnetic", "It repels water"],
+        correct: 1,
+        explanation: "Plant cellulose biodegrades naturally without harming ocean ecosystems!"
+      },
+      {
+        q: "How does planting native flowers and trees help local ecosystems?",
+        options: ["It drains all groundwater", "It provides vital food and habitat for bees and pollinators", "It stops the wind completely", "It replaces the atmosphere"],
+        correct: 1,
+        explanation: "Native plants support indigenous birds, butterflies, and essential pollinators!"
+      },
+      {
+        q: "What is the primary benefit of recycling cosmetics packaging (glass and aluminum)?",
+        options: ["It saves immense energy and keeps waste out of oceans", "It makes bottles heavier", "It changes the color of glass", "It has no effect"],
+        correct: 0,
+        explanation: "Recycling aluminum and glass conserves up to 95% of the energy needed for new raw materials!"
+      }
+    ];
+
+    /* ==========================================================================
+       AUDIO SYNTHESIS ENGINE
+       ========================================================================== */
+    const AudioEngine = {
+      ctx: null,
+      init() {
+        try {
+          if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) this.ctx = new AudioContext();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+          }
+        } catch(e) {}
+      },
+      play(type) {
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          if (type === 'jump') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(340, t);
+            osc.frequency.exponentialRampToValueAtTime(700, t + 0.15);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.15);
+            osc.start(t);
+            osc.stop(t + 0.15);
+          } else if (type === 'correct') {
+            // High double success chime
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523, t);
+            osc.frequency.setValueAtTime(784, t + 0.1);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.35);
+            osc.start(t);
+            osc.stop(t + 0.35);
+          } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, t);
+            osc.frequency.linearRampToValueAtTime(120, t + 0.2);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
+            osc.start(t);
+            osc.stop(t + 0.2);
+          } else if (type === 'upgrade') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, t);
+            osc.frequency.setValueAtTime(554, t + 0.08);
+            osc.frequency.setValueAtTime(659, t + 0.16);
+            osc.frequency.setValueAtTime(880, t + 0.24);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.4);
+            osc.start(t);
+            osc.stop(t + 0.4);
+          } else if (type === 'expire') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, t);
+            osc.frequency.exponentialRampToValueAtTime(250, t + 0.25);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
+            osc.start(t);
+            osc.stop(t + 0.25);
+          } else if (type === 'meow') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(650, t);
+            osc.frequency.exponentialRampToValueAtTime(1050, t + 0.12);
+            osc.frequency.exponentialRampToValueAtTime(800, t + 0.28);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
+            osc.start(t);
+            osc.stop(t + 0.3);
+          } else if (type === 'bark') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, t);
+            osc.frequency.exponentialRampToValueAtTime(90, t + 0.12);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.14);
+            osc.start(t);
+            osc.stop(t + 0.14);
+          } else if (type === 'cat_flee') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(900, t);
+            osc.frequency.exponentialRampToValueAtTime(400, t + 0.25);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
+            osc.start(t);
+            osc.stop(t + 0.25);
+          } else if (type === 'dog_charmed') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(380, t);
+            osc.frequency.exponentialRampToValueAtTime(620, t + 0.25);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
+            osc.start(t);
+            osc.stop(t + 0.25);
+          } else if (type === 'cat_join') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523, t);
+            osc.frequency.setValueAtTime(659, t + 0.1);
+            osc.frequency.setValueAtTime(783, t + 0.2);
+            osc.frequency.setValueAtTime(1046, t + 0.3);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.45);
+            osc.start(t);
+            osc.stop(t + 0.45);
+          } else if (type === 'pounce') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(300, t);
+            osc.frequency.exponentialRampToValueAtTime(800, t + 0.15);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
+            osc.start(t);
+            osc.stop(t + 0.2);
+          } else if (type === 'glitter') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(500, t);
+            osc.frequency.exponentialRampToValueAtTime(1400, t + 0.4);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.45);
+            osc.start(t);
+            osc.stop(t + 0.45);
+          } else if (type === 'charm') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, t);
+            osc.frequency.linearRampToValueAtTime(880, t + 0.1);
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
+            osc.start(t);
+            osc.stop(t + 0.2);
+          } else if (type === 'collect') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(660, t);
+            osc.frequency.setValueAtTime(880, t + 0.08);
+            osc.frequency.setValueAtTime(1100, t + 0.16);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
+            osc.start(t);
+            osc.stop(t + 0.25);
+          } else if (type === 'hit') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, t);
+            osc.frequency.linearRampToValueAtTime(110, t + 0.25);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
+            osc.start(t);
+            osc.stop(t + 0.25);
+          } else if (type === 'ken_charmed') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, t);
+            osc.frequency.linearRampToValueAtTime(700, t + 0.3);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
+            osc.start(t);
+            osc.stop(t + 0.3);
+          }
+        } catch(e) {}
+      }
+    };
+
+    /* ==========================================================================
+       GAME STATE & GLOBAL SETUP
+       ========================================================================== */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const STATE = {
+      TITLE: 'TITLE',
+      HOW: 'HOW',
+      PLAYING: 'PLAYING',
+      BOUTIQUE: 'BOUTIQUE',
+      GAME_OVER: 'GAME_OVER',
+      VICTORY: 'VICTORY'
+    };
+
+    let gameState = STATE.TITLE;
+    let currentLevelIndex = 0;
+    let score = 0;
+    let lives = 3;
+    let lipstickWallet = 0;
+    let triviaAnsweredForCurrentBoutique = false;
+
+    // Single Equipped 10-Second Gadget
+    let equippedGadget = null;
+    let gadgetTimer = 0;
+    let selectedBoutiqueGadget = null;
+    let selectedBoutiqueCost = 0;
+
+    let cameraX = 0;
+    const WORLD_HEIGHT = 540;
+    let worldWidth = 3200;
+
+    const keys = {
+      left: false,
+      right: false,
+      jump: false,
+      charm: false
+    };
+
+    let lastUpPressTime = 0;
+    let charmCooldown = 0;
+    let factBannerTimeout = null;
+
+    let player;
+    let platforms = [];
+    let lipsticks = [];
+    let kens = [];
+    let dogs = [];
+    let cats = [];
+    let projectiles = [];
+    let particles = [];
+    let floatingTexts = [];
+
+    const LEVEL_DATA = [
+      {
+        name: "Glam Living Room",
+        theme: "livingroom",
+        bgColor1: "#ffe6f0",
+        bgColor2: "#ff99cc",
+        width: 3200,
+        kenCount: 5,
+        dogCount: 4,
+        catCount: 7,
+        kenSpeed: 1.6
+      },
+      {
+        name: "Penthouse Runway",
+        theme: "runway",
+        bgColor1: "#fbe4ff",
+        bgColor2: "#d946ef",
+        width: 3800,
+        kenCount: 7,
+        dogCount: 6,
+        catCount: 9,
+        kenSpeed: 2.2
+      },
+      {
+        name: "Rooftop Pool & Disco",
+        theme: "rooftop",
+        bgColor1: "#ffc2ea",
+        bgColor2: "#7928ca",
+        width: 4400,
+        kenCount: 9,
+        dogCount: 8,
+        catCount: 11,
+        kenSpeed: 2.7
+      }
+    ];
+
+    /* ==========================================================================
+       KEN'S GUARD DOG CLASS
+       ========================================================================== */
+    class Dog {
+      constructor(x, y, range) {
+        this.startX = x;
+        this.x = x;
+        this.y = y;
+        this.width = 42;
+        this.height = 32;
+        this.range = range;
+        this.baseSpeed = 1.6;
+        this.speed = this.baseSpeed;
+        this.vx = this.speed;
+        this.facing = 1;
+        this.isCharmed = false;
+        this.charmedTimer = 0;
+        this.freezeTimer = 0;
+        this.animTimer = Math.random() * 10;
+        this.barkCooldown = Math.floor(Math.random() * 100);
+        this.chasingCat = null;
+        this.color = ['#8B5A2B', '#5C4033', '#A0522D', '#3E2723'][Math.floor(Math.random() * 4)];
+      }
+
+      freeze(durationFrames) {
+        this.freezeTimer = durationFrames;
+        createBurst(this.x + this.width / 2, this.y + this.height / 2, '#FFD700', 14, 'sparkle');
+      }
+
+      charm() {
+        if (this.isCharmed) return;
+        this.isCharmed = true;
+        this.freezeTimer = 0;
+        this.chasingCat = null;
+        AudioEngine.play('dog_charmed');
+        score += 250;
+        updateHUD();
+        createFloatingText(this.x + 10, this.y - 14, "Good Boy! +250 💖", "#FF1493");
+        createBurst(this.x + this.width / 2, this.y + 15, '#FF69B4', 18, 'heart');
+      }
+
+      update() {
+        this.animTimer += 0.2;
+
+        if (this.isCharmed) {
+          this.charmedTimer++;
+          this.y -= 1.4;
+          if (this.charmedTimer % 8 === 0) {
+            createBurst(this.x + this.width / 2, this.y + 10, '#ff69b4', 2, 'heart');
+          }
+          return;
+        }
+
+        if (this.freezeTimer > 0) {
+          this.freezeTimer--;
+          if (this.freezeTimer % 12 === 0) {
+            const gx = this.x + Math.random() * this.width;
+            const gy = this.y + Math.random() * this.height;
+            particles.push(new Particle(gx, gy, (Math.random() - 0.5), -1, '#FFE066', 20, 'sparkle'));
+          }
+          return;
+        }
+
+        let nearestCat = null;
+        let minDist = 260;
+
+        cats.forEach(cat => {
+          if (!cat.isFleeing) {
+            const dist = Math.hypot((cat.x + cat.width / 2) - (this.x + this.width / 2), (cat.y + cat.height / 2) - (this.y + this.height / 2));
+            if (dist < minDist) {
+              minDist = dist;
+              nearestCat = cat;
+            }
+          }
+        });
+
+        this.chasingCat = nearestCat;
+
+        if (this.chasingCat) {
+          const dx = (this.chasingCat.x + this.chasingCat.width / 2) - (this.x + this.width / 2);
+          this.facing = Math.sign(dx) || 1;
+          this.vx = this.facing * 3.4;
+          this.x += this.vx;
+
+          this.barkCooldown--;
+          if (this.barkCooldown <= 0) {
+            AudioEngine.play('bark');
+            createFloatingText(this.x, this.y - 16, "WOOF! 🐕", "#FF0055");
+            this.barkCooldown = 70 + Math.random() * 40;
+          }
+
+          if (checkRectCollision(this, this.chasingCat)) {
+            this.chasingCat.flee();
+            this.chasingCat = null;
+          }
+        } else {
+          this.vx = this.facing * this.baseSpeed;
+          this.x += this.vx;
+          if (this.x > this.startX + this.range) {
+            this.facing = -1;
+          } else if (this.x < this.startX) {
+            this.facing = 1;
+          }
+        }
+
+        const isStealthActive = (equippedGadget === 'makeup' && gadgetTimer > 0);
+        if (checkRectCollision(this, player) && !this.isCharmed && this.freezeTimer <= 0 && !isStealthActive) {
+          player.takeDamage();
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height);
+        ctx.scale(this.facing, 1);
+
+        const isFrozen = this.freezeTimer > 0;
+        const legSwing = (this.isCharmed || isFrozen) ? 0 : Math.sin(this.animTimer * 2) * 5;
+        const tailWag = Math.sin(this.animTimer * 3) * 0.4;
+
+        if (isFrozen) {
+          ctx.shadowColor = '#FFD700';
+          ctx.shadowBlur = 12;
+        }
+
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 4.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-16, -16);
+        ctx.quadraticCurveTo(-26, -26 + tailWag * 10, -22 + tailWag * 15, -30);
+        ctx.stroke();
+
+        ctx.fillStyle = isFrozen ? '#4A5568' : this.color;
+        ctx.fillRect(-14 + legSwing, -10, 6, 10);
+        ctx.fillRect(-6 - legSwing, -10, 6, 10);
+        ctx.fillRect(6 + legSwing, -10, 6, 10);
+        ctx.fillRect(12 - legSwing, -10, 6, 10);
+
+        ctx.beginPath();
+        ctx.ellipse(0, -16, 18, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(14, -22, 11, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#D2B48C';
+        ctx.beginPath();
+        ctx.ellipse(20, -18, 7, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.arc(25, -19, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.ellipse(10, -26, 5, 9, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = isFrozen ? '#718096' : '#DC2626';
+        ctx.fillRect(7, -18, 6, 10);
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(9, -16, 2, 2);
+        ctx.fillRect(9, -12, 2, 2);
+
+        if (this.isCharmed) {
+          ctx.fillStyle = '#FF1493';
+          ctx.font = '12px sans-serif';
+          ctx.fillText('💖', 12, -22);
+        } else if (isFrozen) {
+          drawMiniStar(ctx, 15, -24, 3, '#FFD700');
+        } else if (this.chasingCat) {
+          ctx.fillStyle = '#EF4444';
+          ctx.beginPath();
+          ctx.arc(16, -24, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = '#111';
+          ctx.beginPath();
+          ctx.arc(16, -24, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        if (isFrozen) {
+          ctx.restore();
+          ctx.save();
+          ctx.translate(this.x + this.width / 2, this.y);
+          const secondsLeft = Math.ceil(this.freezeTimer / 60);
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillStyle = '#FFFFFF';
+          ctx.strokeStyle = '#FFD700';
+          ctx.lineWidth = 2;
+          const text = `✨ ${secondsLeft}s`;
+          ctx.strokeText(text, -12, -10);
+          ctx.fillText(text, -12, -10);
+          ctx.restore();
+          return;
+        }
+
+        ctx.restore();
+      }
+    }
+
+    /* ==========================================================================
+       CAT CLASS
+       ========================================================================== */
+    const CAT_COLORS = [
+      { body: '#FFFFFF', inner: '#FFB6C1', name: 'Persian Kitty' },
+      { body: '#FF9E40', inner: '#FFE4B5', name: 'Ginger Tabby' },
+      { body: '#4A5568', inner: '#FFB6C1', name: 'Smoky Grey' },
+      { body: '#FF69B4', inner: '#FFFFFF', name: 'Glam Pink Kitty' },
+      { body: '#D2B48C', inner: '#FFF8DC', name: 'Caramel Calico' }
+    ];
+
+    class Cat {
+      constructor(x, y, range, colorObj) {
+        this.startX = x;
+        this.x = x;
+        this.y = y;
+        this.width = 34;
+        this.height = 28;
+        this.range = range;
+        this.speed = 1.2 + Math.random() * 0.8;
+        this.vx = this.speed;
+        this.facing = 1;
+        this.color = colorObj || CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
+        
+        this.jumpOverCount = 0;
+        this.hasRegisteredThisAirtime = false;
+        this.isGangMember = false;
+        this.gangIndex = 0;
+        
+        this.isPouncing = false;
+        this.targetKen = null;
+        this.pounceCooldown = 0;
+        this.tailAngle = 0;
+        this.animTimer = Math.random() * 10;
+        this.isFleeing = false;
+      }
+
+      flee() {
+        if (this.isFleeing) return;
+        this.isFleeing = true;
+        AudioEngine.play('cat_flee');
+        createBurst(this.x + 16, this.y + 10, '#FF4500', 14, 'sparkle');
+
+        if (this.isGangMember) {
+          this.isGangMember = false;
+          createFloatingText(this.x - 10, this.y - 20, "🙀 Cat Panicked & Ran!", "#FF3366");
+          let idx = 0;
+          cats.forEach(c => {
+            if (c.isGangMember && c !== this) c.gangIndex = idx++;
+          });
+          updateHUD();
+        } else {
+          createFloatingText(this.x, this.y - 15, "🙀 Eeek!", "#FF3366");
+        }
+      }
+
+      update() {
+        this.animTimer += 0.2;
+        this.tailAngle = Math.sin(this.animTimer * 1.5) * 0.35;
+
+        if (this.isFleeing) {
+          this.x -= this.facing * 7.5;
+          this.y -= 3.5;
+          return;
+        }
+
+        if (this.isGangMember) {
+          if (this.pounceCooldown > 0) this.pounceCooldown--;
+
+          if (!this.isPouncing && this.pounceCooldown <= 0) {
+            let nearestKen = null;
+            let minDist = 380;
+
+            kens.forEach(ken => {
+              if (!ken.isCharmed) {
+                const dist = Math.hypot((ken.x + 19) - this.x, (ken.y + 35) - this.y);
+                if (dist < minDist) {
+                  minDist = dist;
+                  nearestKen = ken;
+                }
+              }
+            });
+
+            if (nearestKen) {
+              this.isPouncing = true;
+              this.targetKen = nearestKen;
+              AudioEngine.play('pounce');
+              createFloatingText(this.x, this.y - 15, "MEOW TACKLE! 🐾", "#FF1493");
+            }
+          }
+
+          if (this.isPouncing && this.targetKen) {
+            const tx = this.targetKen.x + 10;
+            const ty = this.targetKen.y + 20;
+            const dx = tx - this.x;
+            const dy = ty - this.y;
+            const dist = Math.hypot(dx, dy);
+
+            this.facing = dx >= 0 ? 1 : -1;
+            this.x += (dx / (dist || 1)) * 9.5;
+            this.y += (dy / (dist || 1)) * 9.5;
+
+            if (dist < 32 || checkRectCollision(this, this.targetKen)) {
+              if (!this.targetKen.isCharmed) {
+                this.targetKen.isCharmed = true;
+                this.targetKen.freezeTimer = 0;
+                AudioEngine.play('ken_charmed');
+                score += 300;
+                updateHUD();
+
+                createFloatingText(this.targetKen.x, this.targetKen.y - 15, "Ken Cleared! +300 ✨", "#FF007F");
+                createBurst(this.targetKen.x + 19, this.targetKen.y + 35, '#FF69B4', 22, 'heart');
+                createBurst(this.x + 15, this.y + 10, '#FFD700', 14, 'sparkle');
+              }
+              this.isPouncing = false;
+              this.targetKen = null;
+              this.pounceCooldown = 120;
+            }
+          } else {
+            const formationOffsetX = -player.facing * (45 + this.gangIndex * 32);
+            const targetX = player.x + formationOffsetX;
+            const targetY = player.y + player.height - this.height;
+
+            const dx = targetX - this.x;
+            const dy = targetY - this.y;
+
+            if (Math.abs(dx) > 10) {
+              this.vx = Math.sign(dx) * Math.min(7.0, Math.abs(dx) * 0.15);
+              this.x += this.vx;
+              this.facing = Math.sign(dx);
+            }
+            this.y += dy * 0.12;
+          }
+          return;
+        }
+
+        this.x += this.vx;
+        if (this.x > this.startX + this.range) {
+          this.vx = -Math.abs(this.speed);
+          this.facing = -1;
+        } else if (this.x < this.startX) {
+          this.vx = Math.abs(this.speed);
+          this.facing = 1;
+        }
+
+        const isBarbieHorizontallyOver = (player.x + player.width > this.x - 6 && player.x < this.x + this.width + 6);
+        const isBarbieAbove = (player.y + player.height <= this.y + 12 && player.y + player.height >= this.y - 85);
+
+        if (isBarbieHorizontallyOver && isBarbieAbove && !player.isGrounded) {
+          if (!this.hasRegisteredThisAirtime) {
+            this.hasRegisteredThisAirtime = true;
+            this.jumpOverCount++;
+            AudioEngine.play('meow');
+            createBurst(this.x + 16, this.y, '#FF69B4', 8, 'heart');
+
+            if (this.jumpOverCount >= 3) {
+              this.isGangMember = true;
+              this.gangIndex = cats.filter(c => c.isGangMember && !c.isFleeing).length - 1;
+              AudioEngine.play('cat_join');
+              score += 500;
+              updateHUD();
+              createFloatingText(this.x - 10, this.y - 30, "👑 GANG MEMBER RECRUITED! 🐱", "#FFD700");
+              createBurst(this.x + 16, this.y + 10, '#FFD700', 25, 'sparkle');
+            } else {
+              createFloatingText(this.x, this.y - 18, `🐾 Cat Jump: ${this.jumpOverCount}/3`, "#FFFFFF");
+            }
+          }
+        }
+
+        if (!isBarbieHorizontallyOver || player.isGrounded) {
+          this.hasRegisteredThisAirtime = false;
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height);
+        ctx.scale(this.facing, 1);
+
+        const legSwing = (this.isPouncing || Math.abs(this.vx) > 0.2) ? Math.sin(this.animTimer * 2) * 4 : 0;
+
+        ctx.strokeStyle = this.color.body;
+        ctx.lineWidth = 4.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-12, -14);
+        ctx.quadraticCurveTo(-22, -26 + this.tailAngle * 15, -18 + this.tailAngle * 20, -32);
+        ctx.stroke();
+
+        ctx.fillStyle = this.color.body;
+        ctx.fillRect(-12 + legSwing, -8, 5, 8);
+        ctx.fillRect(-4 - legSwing, -8, 5, 8);
+        ctx.fillRect(4 + legSwing, -8, 5, 8);
+        ctx.fillRect(10 - legSwing, -8, 5, 8);
+
+        ctx.beginPath();
+        ctx.ellipse(0, -14, 15, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(10, -20, 9, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(5, -26);
+        ctx.lineTo(8, -34);
+        ctx.lineTo(13, -27);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(11, -26);
+        ctx.lineTo(16, -33);
+        ctx.lineTo(18, -25);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = this.color.inner;
+        ctx.beginPath();
+        ctx.moveTo(7, -27);
+        ctx.lineTo(8, -31);
+        ctx.lineTo(11, -27);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#10B981';
+        ctx.beginPath();
+        ctx.arc(13, -21, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(13.8, -21.8, 0.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(14, -18);
+        ctx.lineTo(21, -20);
+        ctx.moveTo(14, -17);
+        ctx.lineTo(20, -16);
+        ctx.stroke();
+
+        ctx.fillStyle = '#FF1493';
+        ctx.beginPath();
+        ctx.arc(16, -18, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (this.isGangMember) {
+          ctx.fillStyle = '#FFD700';
+          ctx.fillRect(5, -16, 9, 3);
+          ctx.beginPath();
+          ctx.arc(9.5, -13, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+          drawMiniStar(ctx, 10, -36, 4, '#FFD700');
+        }
+
+        if (!this.isGangMember && this.jumpOverCount > 0) {
+          ctx.restore();
+          ctx.save();
+          ctx.translate(this.x + this.width / 2, this.y - 12);
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+          ctx.fillRect(-18, -12, 36, 14);
+          ctx.fillStyle = '#FFD700';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`🐾 ${this.jumpOverCount}/3`, 0, -2);
+          ctx.restore();
+          return;
+        }
+
+        ctx.restore();
+      }
+    }
+
+    /* ==========================================================================
+       BARBIE CLASS
+       ========================================================================== */
+    class Barbie {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 38;
+        this.height = 68;
+        this.vx = 0;
+        this.vy = 0;
+        this.facing = 1;
+        this.isGrounded = false;
+        this.animTimer = 0;
+        this.invulnerableTimer = 0;
+        this.charmPoseTimer = 0;
+        this.glitterBlowingTimer = 0;
+      }
+
+      update() {
+        const isHeelsActive = (equippedGadget === 'heels' && gadgetTimer > 0);
+        const isWingsActive = (equippedGadget === 'wings' && gadgetTimer > 0);
+
+        const speed = isHeelsActive ? 7.4 : 5.0;
+
+        if (keys.left) {
+          this.vx = -speed;
+          this.facing = -1;
+        } else if (keys.right) {
+          this.vx = speed;
+          this.facing = 1;
+        } else {
+          this.vx *= 0.70;
+          if (Math.abs(this.vx) < 0.1) this.vx = 0;
+        }
+
+        if (isHeelsActive && Math.abs(this.vx) > 1.5 && Math.random() < 0.4) {
+          particles.push(new Particle(this.x + 19, this.y + 64, (Math.random() - 0.5), -1, '#FFD700', 16, 'sparkle'));
+        }
+
+        const jumpStrength = isWingsActive ? -17.2 : -14.2;
+
+        if (keys.jump && this.isGrounded) {
+          this.vy = jumpStrength;
+          this.isGrounded = false;
+          AudioEngine.play('jump');
+          createBurst(this.x + this.width / 2, this.y + this.height, isWingsActive ? '#FF69B4' : '#ffffff', 10, 'sparkle');
+        }
+
+        this.vy += 0.52;
+        if (this.vy > 15) this.vy = 15;
+
+        this.x += this.vx;
+        this.checkHorizontalCollisions();
+
+        this.y += this.vy;
+        this.isGrounded = false;
+        this.checkVerticalCollisions();
+
+        if (this.x < 0) this.x = 0;
+        if (this.x + this.width > worldWidth) this.x = worldWidth - this.width;
+
+        if (this.y > WORLD_HEIGHT + 100) {
+          this.takeDamage(true);
+        }
+
+        if (keys.charm && charmCooldown <= 0) {
+          this.shootCharm();
+          charmCooldown = 20;
+          this.charmPoseTimer = 15;
+        }
+
+        if (charmCooldown > 0) charmCooldown--;
+        if (this.invulnerableTimer > 0) this.invulnerableTimer--;
+        if (this.charmPoseTimer > 0) this.charmPoseTimer--;
+        if (this.glitterBlowingTimer > 0) this.glitterBlowingTimer--;
+
+        if (Math.abs(this.vx) > 0.3) {
+          this.animTimer += 0.22;
+        } else {
+          this.animTimer = 0;
+        }
+      }
+
+      checkHorizontalCollisions() {
+        for (let p of platforms) {
+          if (p.isSolid && checkRectCollision(this, p)) {
+            if (this.vx > 0) {
+              this.x = p.x - this.width;
+            } else if (this.vx < 0) {
+              this.x = p.x + p.w;
+            }
+            this.vx = 0;
+          }
+        }
+      }
+
+      checkVerticalCollisions() {
+        for (let p of platforms) {
+          if (checkRectCollision(this, p)) {
+            if (this.vy > 0 && (this.y + this.height - this.vy) <= p.y + 14) {
+              this.y = p.y - this.height;
+              this.vy = 0;
+              this.isGrounded = true;
+            } else if (p.isSolid && this.vy < 0) {
+              this.y = p.y + p.h;
+              this.vy = 0;
+            }
+          }
+        }
+      }
+
+      shootCharm() {
+        const originX = this.facing === 1 ? this.x + this.width + 4 : this.x - 4;
+        const originY = this.y + 26;
+        projectiles.push(new CharmSparkle(originX, originY, this.facing * 8.5));
+        AudioEngine.play('charm');
+        createBurst(originX, originY, '#ff1493', 10);
+      }
+
+      blowGlitterFreeze() {
+        this.glitterBlowingTimer = 35;
+        AudioEngine.play('glitter');
+
+        const mouthX = this.facing === 1 ? this.x + this.width + 8 : this.x - 8;
+        const mouthY = this.y + 18;
+
+        let nearestThreat = null;
+        let minDist = Infinity;
+
+        const allThreats = [...kens, ...dogs];
+        allThreats.forEach(t => {
+          if (!t.isCharmed) {
+            const dx = (t.x + t.width / 2) - (this.x + this.width / 2);
+            const dy = (t.y + t.height / 2) - (this.y + this.height / 2);
+            const dist = Math.hypot(dx, dy);
+            if (dist < minDist) {
+              minDist = dist;
+              nearestThreat = t;
+            }
+          }
+        });
+
+        const glitterColors = ['#FFD700', '#FF69B4', '#00FFFF', '#FFFFFF', '#FF1493', '#FFF8DC'];
+
+        if (nearestThreat) {
+          nearestThreat.freeze(600);
+
+          const targetX = nearestThreat.x + nearestThreat.width / 2;
+          const targetY = nearestThreat.y + nearestThreat.height / 2;
+          const targetAngle = Math.atan2(targetY - mouthY, targetX - mouthX);
+
+          if (targetX < this.x) this.facing = -1;
+          else this.facing = 1;
+
+          for (let i = 0; i < 45; i++) {
+            const angle = targetAngle + (Math.random() - 0.5) * 0.7;
+            const spd = 4.0 + Math.random() * 8.5;
+            const col = glitterColors[Math.floor(Math.random() * glitterColors.length)];
+            particles.push(new Particle(
+              mouthX, mouthY,
+              Math.cos(angle) * spd,
+              Math.sin(angle) * spd,
+              col,
+              35 + Math.random() * 25,
+              'sparkle'
+            ));
+          }
+
+          createFloatingText(nearestThreat.x + 10, nearestThreat.y - 28, "✨ FROZEN! 10s ✨", "#FFE066");
+        } else {
+          for (let i = 0; i < 25; i++) {
+            const angle = (this.facing === 1 ? -0.3 : Math.PI - 0.3) + (Math.random() - 0.5) * 0.8;
+            const spd = 3.5 + Math.random() * 6.5;
+            const col = glitterColors[Math.floor(Math.random() * glitterColors.length)];
+            particles.push(new Particle(
+              mouthX, mouthY,
+              Math.cos(angle) * spd,
+              Math.sin(angle) * spd,
+              col,
+              30 + Math.random() * 20,
+              'sparkle'
+            ));
+          }
+        }
+      }
+
+      takeDamage(isPit = false) {
+        const isStealthActive = (equippedGadget === 'makeup' && gadgetTimer > 0);
+        if (isStealthActive && !isPit) return;
+
+        if (this.invulnerableTimer > 0) return;
+        lives--;
+        AudioEngine.play('hit');
+        updateHUD();
+        this.invulnerableTimer = 80;
+        createFloatingText(this.x + 20, this.y - 10, "-1 Heart! 💔", "#ff0055");
+
+        if (lives <= 0) {
+          triggerGameOver();
+        } else if (isPit) {
+          this.x = Math.max(50, this.x - 200);
+          this.y = 150;
+          this.vy = 0;
+        } else {
+          this.vy = -8;
+          this.vx = -this.facing * 6;
+        }
+      }
+
+      draw(ctx) {
+        if (this.invulnerableTimer > 0 && Math.floor(this.invulnerableTimer / 4) % 2 === 0) {
+          return;
+        }
+
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height);
+        ctx.scale(this.facing, 1);
+
+        const isStealthActive = (equippedGadget === 'makeup' && gadgetTimer > 0);
+        const isWingsActive = (equippedGadget === 'wings' && gadgetTimer > 0);
+        const isHeelsActive = (equippedGadget === 'heels' && gadgetTimer > 0);
+
+        if (isStealthActive) {
+          ctx.globalAlpha = 0.45;
+          if (Math.random() < 0.25) {
+            particles.push(new Particle(this.x + Math.random() * this.width, this.y + Math.random() * this.height, 0, -0.8, '#FFD700', 15, 'sparkle'));
+          }
+        }
+
+        const legSwing = Math.sin(this.animTimer) * 10;
+        const armSwing = Math.cos(this.animTimer) * 12;
+
+        if (isWingsActive) {
+          const wingFlap = Math.sin(this.animTimer * 1.8) * 0.25;
+          ctx.save();
+          ctx.translate(-8, -38);
+          ctx.rotate(wingFlap);
+          ctx.fillStyle = 'rgba(255, 105, 180, 0.7)';
+          ctx.strokeStyle = '#FFD700';
+          ctx.lineWidth = 1.5;
+
+          ctx.beginPath();
+          ctx.ellipse(-14, -14, 18, 10, -0.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.ellipse(-10, 2, 12, 6, 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.fillStyle = '#FFE066';
+        ctx.beginPath();
+        ctx.ellipse(-12, -48, 14, 22, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFD033';
+        ctx.beginPath();
+        ctx.ellipse(-14, -40, 10, 20, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFD6BE';
+        ctx.fillRect(-8 + legSwing * 0.3, -22, 6, 20);
+        ctx.fillRect(2 - legSwing * 0.3, -22, 6, 20);
+
+        ctx.fillStyle = isHeelsActive ? '#FFD700' : '#FF007F';
+        ctx.fillRect(-10 + legSwing * 0.3, -4, 9, 5);
+        ctx.fillRect(1 - legSwing * 0.3, -4, 9, 5);
+
+        ctx.fillStyle = '#FF1493';
+        ctx.beginPath();
+        ctx.moveTo(-10, -42);
+        ctx.lineTo(10, -42);
+        ctx.lineTo(13, -22);
+        ctx.lineTo(-13, -22);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(-10, -32, 20, 3);
+
+        ctx.fillStyle = '#FFD6BE';
+        ctx.fillRect(-3, -46, 6, 5);
+
+        ctx.beginPath();
+        ctx.arc(0, -52, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#00B4D8';
+        ctx.beginPath();
+        ctx.arc(4, -53, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(5, -54, 0.9, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#E60039';
+        if (this.glitterBlowingTimer > 0) {
+          ctx.beginPath();
+          ctx.arc(6, -50, 2.8, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(3, -49, 2.2, 0, Math.PI);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = '#FFE066';
+        ctx.beginPath();
+        ctx.arc(-2, -55, 11, Math.PI * 0.9, Math.PI * 2.2);
+        ctx.fill();
+
+        ctx.fillStyle = '#FF007F';
+        ctx.fillRect(-5, -63, 10, 3);
+        ctx.beginPath();
+        ctx.arc(0, -62, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFD6BE';
+        if (this.glitterBlowingTimer > 0) {
+          ctx.save();
+          ctx.translate(0, -40);
+          ctx.rotate(-0.4);
+          ctx.fillRect(0, 0, 16, 5);
+          ctx.fillStyle = '#E60000';
+          ctx.fillRect(15, -1, 3, 5);
+          ctx.restore();
+        } else if (this.charmPoseTimer > 0) {
+          ctx.fillRect(2, -40, 14, 5);
+          ctx.fillStyle = '#E60000';
+          ctx.fillRect(16, -41, 3, 4);
+        } else {
+          ctx.save();
+          ctx.translate(-2, -38);
+          ctx.rotate((armSwing * Math.PI) / 180);
+          ctx.fillStyle = '#FFD6BE';
+          ctx.fillRect(-2, 0, 5, 14);
+
+          ctx.fillStyle = '#E60000';
+          ctx.fillRect(-2, 14, 5, 2.5);
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    /* ==========================================================================
+       KEN ENEMY CLASS
+       ========================================================================== */
+    class Ken {
+      constructor(x, y, range, speed) {
+        this.startX = x;
+        this.x = x;
+        this.y = y;
+        this.width = 38;
+        this.height = 70;
+        this.range = range;
+        this.speed = speed;
+        this.vx = speed;
+        this.facing = 1;
+        this.isCharmed = false;
+        this.charmedTimer = 0;
+        this.freezeTimer = 0;
+        this.animTimer = Math.random() * 10;
+        this.suitColor = ['#1E293B', '#0F172A', '#1E3A8A', '#2E1065'][Math.floor(Math.random() * 4)];
+        this.tieColor = ['#FF1493', '#00B4D8', '#FFD700', '#EC4899'][Math.floor(Math.random() * 4)];
+      }
+
+      freeze(durationFrames) {
+        this.freezeTimer = durationFrames;
+        createBurst(this.x + this.width / 2, this.y + this.height / 2, '#FFD700', 16, 'sparkle');
+      }
+
+      update() {
+        this.animTimer += 0.15;
+
+        if (this.isCharmed) {
+          this.charmedTimer++;
+          this.y -= 2.2;
+          if (this.charmedTimer % 6 === 0) {
+            createBurst(this.x + this.width / 2, this.y + 20, '#ff69b4', 2, 'heart');
+          }
+          return;
+        }
+
+        if (this.freezeTimer > 0) {
+          this.freezeTimer--;
+          if (this.freezeTimer % 12 === 0) {
+            const gx = this.x + Math.random() * this.width;
+            const gy = this.y + Math.random() * this.height;
+            particles.push(new Particle(gx, gy, (Math.random() - 0.5), -1, '#FFE066', 20, 'sparkle'));
+          }
+          return;
+        }
+
+        this.x += this.vx;
+        if (this.x > this.startX + this.range) {
+          this.vx = -Math.abs(this.speed);
+          this.facing = -1;
+        } else if (this.x < this.startX) {
+          this.vx = Math.abs(this.speed);
+          this.facing = 1;
+        }
+
+        const isStealthActive = (equippedGadget === 'makeup' && gadgetTimer > 0);
+        if (checkRectCollision(this, player) && !this.isCharmed && this.freezeTimer <= 0 && !isStealthActive) {
+          player.takeDamage();
+        }
+      }
+
+      charm() {
+        if (this.isCharmed) return;
+        this.isCharmed = true;
+        this.freezeTimer = 0;
+        AudioEngine.play('ken_charmed');
+        score += 200;
+        updateHUD();
+        createFloatingText(this.x + 10, this.y - 12, "Charmed! +200 ✨", "#ff007f");
+        createBurst(this.x + this.width / 2, this.y + 30, '#ff1493', 18, 'heart');
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height);
+        ctx.scale(this.facing, 1);
+
+        const isFrozen = this.freezeTimer > 0;
+        const legSwing = (this.isCharmed || isFrozen) ? 0 : Math.sin(this.animTimer) * 8;
+
+        if (isFrozen) {
+          ctx.shadowColor = '#FFD700';
+          ctx.shadowBlur = 14;
+        }
+
+        ctx.fillStyle = '#4A2E18';
+        ctx.beginPath();
+        ctx.arc(0, -56, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = isFrozen ? '#4A5568' : this.suitColor;
+        ctx.fillRect(-9 + legSwing * 0.3, -24, 7, 20);
+        ctx.fillRect(2 - legSwing * 0.3, -24, 7, 20);
+
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(-10 + legSwing * 0.3, -4, 9, 5);
+        ctx.fillRect(1 - legSwing * 0.3, -4, 9, 5);
+
+        ctx.fillStyle = isFrozen ? '#4A5568' : this.suitColor;
+        ctx.fillRect(-12, -46, 24, 24);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(-5, -46);
+        ctx.lineTo(5, -46);
+        ctx.lineTo(0, -32);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = isFrozen ? '#FFD700' : this.tieColor;
+        ctx.beginPath();
+        ctx.moveTo(-2, -45);
+        ctx.lineTo(2, -45);
+        ctx.lineTo(1.5, -34);
+        ctx.lineTo(-1.5, -34);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#FFD1BA';
+        ctx.fillRect(-3, -50, 6, 5);
+
+        ctx.beginPath();
+        ctx.arc(0, -54, 9, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (this.isCharmed) {
+          ctx.fillStyle = '#FF1493';
+          ctx.font = '12px sans-serif';
+          ctx.fillText('💖', -1, -50);
+        } else if (isFrozen) {
+          drawMiniStar(ctx, 3, -55, 3, '#FFD700');
+          drawMiniStar(ctx, -3, -55, 3, '#FFD700');
+        } else {
+          ctx.fillStyle = '#0077B6';
+          ctx.beginPath();
+          ctx.arc(3, -55, 2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#9C4221';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(2, -50, 3, 0.1, Math.PI * 0.9);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = '#5A381E';
+        ctx.beginPath();
+        ctx.ellipse(-2, -61, 9, 6, 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (isFrozen) {
+          ctx.restore();
+          ctx.save();
+          ctx.translate(this.x + this.width / 2, this.y);
+          const secondsLeft = Math.ceil(this.freezeTimer / 60);
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillStyle = '#FFFFFF';
+          ctx.strokeStyle = '#FFD700';
+          ctx.lineWidth = 2;
+          const text = `✨ ${secondsLeft}s`;
+          ctx.strokeText(text, -12, -10);
+          ctx.fillText(text, -12, -10);
+          ctx.restore();
+          return;
+        }
+
+        ctx.restore();
+      }
+    }
+
+    /* ==========================================================================
+       LIPSTICK COLLECTIBLE CLASS
+       ========================================================================== */
+    class LipstickCollectible {
+      constructor(x, y, shade, index) {
+        this.x = x;
+        this.y = y;
+        this.width = 28;
+        this.height = 40;
+        this.shade = shade;
+        this.index = index;
+        this.collected = false;
+        this.bobOffset = Math.random() * Math.PI * 2;
+      }
+
+      update() {
+        this.bobOffset += 0.05;
+
+        if (!this.collected) {
+          const pCenterX = player.x + player.width / 2;
+          const pCenterY = player.y + player.height / 2;
+          const lCenterX = this.x + this.width / 2;
+          const lCenterY = this.y + this.height / 2;
+          const dist = Math.hypot(pCenterX - lCenterX, pCenterY - lCenterY);
+
+          if (checkRectCollision(this, player) || dist < 50) {
+            this.collected = true;
+            lipstickWallet++;
+            AudioEngine.play('collect');
+            score += 100;
+            createBurst(this.x + 12, this.y + 16, this.shade.hex, 16, 'sparkle');
+            createFloatingText(this.x, this.y - 14, `+1 ${this.shade.name}! 💄`, this.shade.hex);
+            showEcoFact(this.shade.fact);
+            onLipstickCollected(this.index);
+          }
+        }
+      }
+
+      draw(ctx) {
+        if (this.collected) return;
+
+        const currentY = this.y + Math.sin(this.bobOffset) * 5;
+
+        ctx.save();
+        ctx.translate(this.x + 14, currentY + 20);
+
+        ctx.fillStyle = '#D4AF37';
+        ctx.fillRect(-7, -2, 14, 18);
+        ctx.fillStyle = '#FFE27A';
+        ctx.fillRect(-5, -2, 3, 18);
+
+        ctx.fillStyle = '#E2E8F0';
+        ctx.fillRect(-5, -10, 10, 8);
+
+        ctx.fillStyle = this.shade.hex;
+        ctx.beginPath();
+        ctx.moveTo(-5, -10);
+        ctx.lineTo(-5, -22);
+        ctx.lineTo(4, -16);
+        ctx.lineTo(4, -10);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillRect(-4, -19, 2, 7);
+
+        if (Math.sin(this.bobOffset * 2) > 0.8) {
+          drawMiniStar(ctx, 8, -18, 5, '#FFFFFF');
+        }
+
+        ctx.restore();
+      }
+    }
+
+    function showEcoFact(text) {
+      const banner = document.getElementById('eco-fact-banner');
+      const factText = document.getElementById('eco-fact-text');
+      factText.innerText = text;
+      banner.classList.add('show');
+
+      if (factBannerTimeout) clearTimeout(factBannerTimeout);
+      factBannerTimeout = setTimeout(() => {
+        banner.classList.remove('show');
+      }, 4200);
+    }
+
+    /* ==========================================================================
+       PROJECTILES & PARTICLES
+       ========================================================================== */
+    class CharmSparkle {
+      constructor(x, y, vx) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.radius = 12;
+        this.life = 45;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.life--;
+
+        if (Math.random() < 0.6) {
+          particles.push(new Particle(this.x, this.y, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, '#ff69b4', 20, 'sparkle'));
+        }
+
+        for (let ken of kens) {
+          if (!ken.isCharmed) {
+            const hit = (
+              this.x > ken.x &&
+              this.x < ken.x + ken.width &&
+              this.y > ken.y &&
+              this.y < ken.y + ken.height
+            );
+            if (hit) {
+              ken.charm();
+              this.life = 0;
+              return;
+            }
+          }
+        }
+
+        for (let dog of dogs) {
+          if (!dog.isCharmed) {
+            const hit = (
+              this.x > dog.x &&
+              this.x < dog.x + dog.width &&
+              this.y > dog.y &&
+              this.y < dog.y + dog.height
+            );
+            if (hit) {
+              dog.charm();
+              this.life = 0;
+              return;
+            }
+          }
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.fillStyle = '#FF1493';
+        ctx.shadowColor = '#FF69B4';
+        ctx.shadowBlur = 12;
+
+        ctx.beginPath();
+        ctx.moveTo(0, -3);
+        ctx.bezierCurveTo(-5, -10, -12, -4, -12, 3);
+        ctx.bezierCurveTo(-12, 9, 0, 16, 0, 18);
+        ctx.bezierCurveTo(0, 16, 12, 9, 12, 3);
+        ctx.bezierCurveTo(12, -4, 5, -10, 0, -3);
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    class Particle {
+      constructor(x, y, vx, vy, color, life, type = 'dot') {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.life = life;
+        this.maxLife = life;
+        this.type = type;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.life--;
+        this.y += this.vy;
+      }
+
+      draw(ctx) {
+        const alpha = Math.max(0, this.life / this.maxLife);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = this.color;
+        ctx.translate(this.x, this.y);
+
+        if (this.type === 'heart') {
+          ctx.beginPath();
+          ctx.arc(-3, -3, 3, 0, Math.PI * 2);
+          ctx.arc(3, -3, 3, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (this.type === 'sparkle') {
+          drawMiniStar(ctx, 0, 0, 4, this.color);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    class FloatingText {
+      constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 50;
+      }
+
+      update() {
+        this.y -= 0.9;
+        this.life--;
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.life / 50);
+        ctx.font = 'bold 15px "Segoe UI", sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 3;
+        ctx.strokeText(this.text, this.x, this.y);
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+      }
+    }
+
+    function drawMiniStar(ctx, cx, cy, r, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        ctx.lineTo(Math.cos((i * 90) * Math.PI / 180) * r + cx, Math.sin((i * 90) * Math.PI / 180) * r + cy);
+        ctx.lineTo(Math.cos((i * 90 + 45) * Math.PI / 180) * (r * 0.35) + cx, Math.sin((i * 90 + 45) * Math.PI / 180) * (r * 0.35) + cy);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function createBurst(x, y, color, count, type = 'dot') {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = 1.5 + Math.random() * 3.5;
+        particles.push(new Particle(
+          x, y,
+          Math.cos(angle) * spd,
+          Math.sin(angle) * spd,
+          color,
+          25 + Math.random() * 20,
+          type
+        ));
+      }
+    }
+
+    function createFloatingText(x, y, text, color) {
+      floatingTexts.push(new FloatingText(x, y, text, color));
+    }
+
+    function checkRectCollision(r1, r2) {
+      const w1 = r1.width || r1.w;
+      const h1 = r1.height || r1.h;
+      const w2 = r2.width || r2.w;
+      const h2 = r2.height || r2.h;
+      return (
+        r1.x < r2.x + w2 &&
+        r1.x + w1 > r2.x &&
+        r1.y < r2.y + h2 &&
+        r1.y + h1 > r2.y
+      );
+    }
+
+    /* ==========================================================================
+       LEVEL SETUP & PROGRESSION
+       ========================================================================== */
+    function loadLevel(levelIndex) {
+      currentLevelIndex = levelIndex;
+      const lvl = LEVEL_DATA[levelIndex];
+      worldWidth = lvl.width;
+
+      platforms = [];
+      lipsticks = [];
+      kens = [];
+      dogs = [];
+      cats = [];
+      projectiles = [];
+      particles = [];
+      floatingTexts = [];
+
+      player = new Barbie(60, 300);
+
+      if (equippedGadget) {
+        gadgetTimer = 600;
+      } else {
+        gadgetTimer = 0;
+      }
+
+      if (lvl.theme === 'rooftop') {
+        for (let x = 0; x < worldWidth; x += 500) {
+          platforms.push({ x: x, y: 460, w: 410, h: 80, isSolid: true, type: 'ground' });
+        }
+      } else {
+        platforms.push({ x: 0, y: 460, w: worldWidth, h: 80, isSolid: true, type: 'ground' });
+      }
+
+      for (let x = 200; x < worldWidth - 250; x += 260 + Math.random() * 90) {
+        const p1 = { x: x, y: 360, w: 140, h: 20, isSolid: false, type: 'glam_shelf' };
+        platforms.push(p1);
+
+        const roll = Math.random();
+        if (roll > 0.3) {
+          const p2 = { x: x + 60, y: 260, w: 130, h: 20, isSolid: false, type: 'glam_shelf' };
+          platforms.push(p2);
+
+          if (roll > 0.7) {
+            const p3 = { x: x + 110, y: 170, w: 120, h: 20, isSolid: false, type: 'glam_shelf' };
+            platforms.push(p3);
+          }
+        }
+      }
+
+      const spawnSurfaces = platforms.filter(p => p.x > 80 && p.x < worldWidth - 120);
+      spawnSurfaces.sort((a, b) => a.x - b.x);
+
+      for (let i = 0; i < 20; i++) {
+        const targetIndex = Math.min(spawnSurfaces.length - 1, Math.floor((i / 20) * spawnSurfaces.length));
+        const surface = spawnSurfaces[targetIndex];
+        const lx = surface.x + 20 + ((i * 37) % Math.max(20, surface.w - 45));
+        const ly = surface.y - 38;
+        lipsticks.push(new LipstickCollectible(lx, ly, LIPSTICK_SHADES[i], i));
+      }
+
+      const kenStep = (worldWidth - 600) / lvl.kenCount;
+      for (let k = 0; k < lvl.kenCount; k++) {
+        const kx = 450 + k * kenStep;
+        let ky = 390;
+        let patrolRange = 160 + Math.random() * 100;
+
+        for (let p of platforms) {
+          if (kx >= p.x && kx + 80 <= p.x + p.w && p.y < 420) {
+            ky = p.y - 70;
+            patrolRange = Math.min(patrolRange, p.w - 40);
+            break;
+          }
+        }
+        kens.push(new Ken(kx, ky, patrolRange, lvl.kenSpeed));
+      }
+
+      const dogStep = (worldWidth - 500) / lvl.dogCount;
+      for (let d = 0; d < lvl.dogCount; d++) {
+        const dx = 320 + d * dogStep + (Math.random() * 60 - 30);
+        let dy = 428;
+        let dogRange = 140 + Math.random() * 100;
+
+        for (let p of platforms) {
+          if (dx >= p.x && dx + 50 <= p.x + p.w && p.y < 420) {
+            dy = p.y - 32;
+            dogRange = Math.min(dogRange, p.w - 45);
+            break;
+          }
+        }
+        dogs.push(new Dog(dx, dy, dogRange));
+      }
+
+      const catStep = (worldWidth - 500) / lvl.catCount;
+      for (let c = 0; c < lvl.catCount; c++) {
+        const cx = 220 + c * catStep + (Math.random() * 60 - 30);
+        let cy = 432;
+        let catRange = 120 + Math.random() * 80;
+
+        for (let p of platforms) {
+          if (cx >= p.x && cx + 40 <= p.x + p.w && p.y < 420) {
+            cy = p.y - 28;
+            catRange = Math.min(catRange, p.w - 36);
+            break;
+          }
+        }
+        cats.push(new Cat(cx, cy, catRange));
+      }
+
+      initSwatchUI();
+      updateHUD();
+    }
+
+    function initSwatchUI() {
+      const container = document.getElementById('swatch-container');
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < 20; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'swatch-slot';
+        slot.id = `swatch-${i}`;
+        slot.title = LIPSTICK_SHADES[i].name;
+        container.appendChild(slot);
+      }
+    }
+
+    function onLipstickCollected(index) {
+      const slot = document.getElementById(`swatch-${index}`);
+      if (slot) {
+        slot.style.backgroundColor = LIPSTICK_SHADES[index].hex;
+        slot.classList.add('filled');
+      }
+
+      const collectedCount = lipsticks.filter(l => l.collected).length;
+      updateHUD();
+
+      if (collectedCount >= 20) {
+        setTimeout(handleLevelClear, 600);
+      }
+    }
+
+    function handleLevelClear() {
+      score += 1000;
+      updateHUD();
+      AudioEngine.play('collect');
+
+      equippedGadget = null;
+      gadgetTimer = 0;
+      selectedBoutiqueGadget = null;
+
+      if (currentLevelIndex < LEVEL_DATA.length - 1) {
+        openBoutique();
+      } else {
+        document.getElementById('final-score').innerText = score;
+        setScreen(STATE.VICTORY);
+      }
+    }
+
+    function triggerGameOver() {
+      gameState = STATE.GAME_OVER;
+      setScreen(STATE.GAME_OVER);
+    }
+
+    function updateHUD() {
+      document.getElementById('lives-count').innerText = lives;
+      document.getElementById('level-name').innerText = LEVEL_DATA[currentLevelIndex].name;
+      document.getElementById('score-val').innerText = score;
+      const count = lipsticks.filter(l => l.collected).length;
+      document.getElementById('lipstick-count').innerText = `${count} / 20`;
+      
+      const pct = Math.round((count / 20) * 100);
+      document.getElementById('restore-pct').innerText = `${pct}%`;
+
+      const gangCount = cats.filter(c => c.isGangMember && !c.isFleeing).length;
+      document.getElementById('gang-count').innerText = gangCount;
+
+      const gadgetPill = document.getElementById('hud-gadget');
+      const timerText = document.getElementById('gadget-timer-text');
+      if (equippedGadget && gadgetTimer > 0) {
+        gadgetPill.classList.remove('hidden');
+        const secondsLeft = Math.ceil(gadgetTimer / 60);
+        let name = "Heels";
+        if (equippedGadget === 'makeup') name = "Stealth";
+        if (equippedGadget === 'wings') name = "Wings";
+        timerText.innerText = `${name}: ${secondsLeft}s`;
+      } else {
+        gadgetPill.classList.add('hidden');
+      }
+    }
+
+    /* ==========================================================================
+       GLAM BOUTIQUE & INTERACTIVE ECO-TRIVIA CHALLENGE
+       ========================================================================== */
+    function openBoutique() {
+      selectedBoutiqueGadget = null;
+      selectedBoutiqueCost = 0;
+      triviaAnsweredForCurrentBoutique = false;
+
+      setupTriviaChallenge();
+      updateShopUI();
+      setScreen(STATE.BOUTIQUE);
+    }
+
+    function setupTriviaChallenge() {
+      const trivia = ECO_TRIVIA_POOL[currentLevelIndex % ECO_TRIVIA_POOL.length];
+      document.getElementById('trivia-q-text').innerText = trivia.q;
+      const optBox = document.getElementById('trivia-options-box');
+      optBox.innerHTML = '';
+
+      trivia.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'trivia-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkTriviaAnswer(idx, trivia.correct, btn, trivia.explanation);
+        optBox.appendChild(btn);
+      });
+    }
+
+    function checkTriviaAnswer(selectedIdx, correctIdx, btnEl, explanation) {
+      if (triviaAnsweredForCurrentBoutique) return;
+      triviaAnsweredForCurrentBoutique = true;
+
+      const allBtns = document.querySelectorAll('.trivia-btn');
+      allBtns.forEach((b, i) => {
+        if (i === correctIdx) b.classList.add('correct');
+        else if (i === selectedIdx) b.classList.add('wrong');
+        b.disabled = true;
+      });
+
+      if (selectedIdx === correctIdx) {
+        lipstickWallet += 3;
+        score += 300;
+        AudioEngine.play('correct');
+        document.getElementById('trivia-q-text').innerHTML = `✅ <strong>Correct! (+3 Lipsticks!)</strong> ${explanation}`;
+      } else {
+        AudioEngine.play('wrong');
+        document.getElementById('trivia-q-text').innerHTML = `❌ <strong>Nice try!</strong> ${explanation}`;
+      }
+
+      updateShopUI();
+    }
+
+    function updateShopUI() {
+      document.getElementById('shop-lipstick-wallet').innerText = lipstickWallet;
+      document.getElementById('shop-eco-score').innerText = `${Math.min(100, 33 * (currentLevelIndex + 1))}% Restored`;
+
+      const cards = {
+        heels: { card: document.getElementById('card-heels'), btn: document.getElementById('btn-buy-heels'), cost: 6, label: "Equip 👠 (6)" },
+        makeup: { card: document.getElementById('card-makeup'), btn: document.getElementById('btn-buy-makeup'), cost: 8, label: "Equip ✨ (8)" },
+        wings: { card: document.getElementById('card-wings'), btn: document.getElementById('btn-buy-wings'), cost: 8, label: "Equip 🧚‍♀️ (8)" },
+        heart: { card: document.getElementById('card-heart'), btn: document.getElementById('btn-buy-heart'), cost: 5, label: "Buy 💖 (5)" }
+      };
+
+      Object.keys(cards).forEach(key => {
+        const item = cards[key];
+        item.card.classList.remove('selected');
+        
+        if (selectedBoutiqueGadget === key) {
+          item.card.classList.add('selected');
+          item.btn.innerText = "Selected ✨";
+          item.btn.disabled = false;
+        } else {
+          item.btn.innerText = item.label;
+          item.btn.disabled = lipstickWallet < item.cost;
+        }
+      });
+    }
+
+    window.selectGadget = function(type, cost) {
+      if (selectedBoutiqueGadget === type) {
+        lipstickWallet += cost;
+        selectedBoutiqueGadget = null;
+        selectedBoutiqueCost = 0;
+      } else {
+        if (selectedBoutiqueGadget) {
+          lipstickWallet += selectedBoutiqueCost;
+        }
+
+        if (lipstickWallet < cost) return;
+
+        lipstickWallet -= cost;
+        selectedBoutiqueGadget = type;
+        selectedBoutiqueCost = cost;
+        AudioEngine.play('upgrade');
+
+        if (type === 'heart') {
+          lives++;
+          updateHUD();
+        }
+      }
+
+      updateShopUI();
+    };
+
+    window.continueToNextLevel = function() {
+      if (selectedBoutiqueGadget && selectedBoutiqueGadget !== 'heart') {
+        equippedGadget = selectedBoutiqueGadget;
+      } else {
+        equippedGadget = null;
+      }
+
+      currentLevelIndex++;
+      loadLevel(currentLevelIndex);
+      setScreen(STATE.PLAYING);
+    };
+
+    /* ==========================================================================
+       ENVIRONMENT DRAWING
+       ========================================================================== */
+    function drawEnvironment(ctx) {
+      const lvl = LEVEL_DATA[currentLevelIndex];
+
+      const grad = ctx.createLinearGradient(0, 0, 0, WORLD_HEIGHT);
+      grad.addColorStop(0, lvl.bgColor1);
+      grad.addColorStop(1, lvl.bgColor2);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(-cameraX, 0);
+
+      if (lvl.theme === 'livingroom') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+        for (let x = 0; x < worldWidth; x += 120) {
+          ctx.fillRect(x, 0, 60, 460);
+        }
+
+        for (let x = 200; x < worldWidth; x += 600) {
+          ctx.strokeStyle = '#D4AF37';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, 50);
+          ctx.stroke();
+
+          ctx.fillStyle = '#FFE57F';
+          ctx.beginPath();
+          ctx.arc(x, 60, 16, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (lvl.theme === 'runway') {
+        for (let x = 300; x < worldWidth; x += 500) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x - 90, 460);
+          ctx.lineTo(x + 90, 460);
+          ctx.closePath();
+          ctx.fill();
+        }
+      } else if (lvl.theme === 'rooftop') {
+        ctx.fillStyle = 'rgba(255, 105, 180, 0.25)';
+        for (let x = 100; x < worldWidth; x += 400) {
+          ctx.fillRect(x, 220, 90, 240);
+        }
+
+        ctx.fillStyle = '#00f2fe';
+        ctx.fillRect(0, 480, worldWidth, 60);
+      }
+
+      for (let p of platforms) {
+        if (p.type === 'ground') {
+          ctx.fillStyle = '#FF007F';
+          ctx.fillRect(p.x, p.y, p.w, p.h);
+          ctx.fillStyle = '#FF66B2';
+          ctx.fillRect(p.x, p.y, p.w, 10);
+          ctx.fillStyle = '#FFD700';
+          ctx.fillRect(p.x, p.y + 10, p.w, 4);
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(p.x, p.y, p.w, p.h);
+          ctx.fillStyle = '#FF1493';
+          ctx.fillRect(p.x, p.y + p.h - 4, p.w, 4);
+          ctx.fillStyle = '#FFD700';
+          ctx.fillRect(p.x, p.y, p.w, 3);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    /* ==========================================================================
+       MAIN LOOP
+       ========================================================================== */
+    function gameLoop() {
+      if (gameState === STATE.PLAYING) {
+        if (gadgetTimer > 0) {
+          gadgetTimer--;
+          if (gadgetTimer === 0) {
+            AudioEngine.play('expire');
+            createFloatingText(player.x, player.y - 20, "Gadget Expired! 💨", "#FFFFFF");
+          }
+        }
+
+        player.update();
+
+        const targetCamX = player.x - canvas.width * 0.35;
+        cameraX += (targetCamX - cameraX) * 0.1;
+        if (cameraX < 0) cameraX = 0;
+        if (cameraX > worldWidth - canvas.width) cameraX = worldWidth - canvas.width;
+
+        lipsticks.forEach(l => l.update());
+        kens.forEach(k => k.update());
+        dogs.forEach(d => d.update());
+        cats.forEach(c => c.update());
+
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          projectiles[i].update();
+          if (projectiles[i].life <= 0) projectiles.splice(i, 1);
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          particles[i].update();
+          if (particles[i].life <= 0) particles.splice(i, 1);
+        }
+
+        for (let i = floatingTexts.length - 1; i >= 0; i--) {
+          floatingTexts[i].update();
+          if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
+        }
+
+        updateHUD();
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawEnvironment(ctx);
+
+        ctx.save();
+        ctx.translate(-cameraX, 0);
+
+        lipsticks.forEach(l => l.draw(ctx));
+        kens.forEach(k => k.draw(ctx));
+        dogs.forEach(d => d.draw(ctx));
+        cats.forEach(c => c.draw(ctx));
+        player.draw(ctx);
+        projectiles.forEach(p => p.draw(ctx));
+        particles.forEach(p => p.draw(ctx));
+        floatingTexts.forEach(ft => ft.draw(ctx));
+
+        ctx.restore();
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    const screens = {
+      [STATE.TITLE]: document.getElementById('screen-title'),
+      [STATE.HOW]: document.getElementById('screen-how'),
+      [STATE.BOUTIQUE]: document.getElementById('screen-boutique'),
+      [STATE.GAME_OVER]: document.getElementById('screen-game-over'),
+      [STATE.VICTORY]: document.getElementById('screen-victory')
+    };
+    const hudElement = document.getElementById('hud');
+
+    function setScreen(newState) {
+      gameState = newState;
+      Object.values(screens).forEach(el => {
+        if (el) el.classList.add('hidden');
+      });
+
+      if (newState === STATE.PLAYING) {
+        if (hudElement) hudElement.classList.remove('hidden');
+      } else {
+        if (hudElement) hudElement.classList.add('hidden');
+        if (screens[newState]) {
+          screens[newState].classList.remove('hidden');
+        }
+      }
+    }
+
+    window.startNewGame = function() {
+      AudioEngine.init();
+      lives = 3;
+      score = 0;
+      lipstickWallet = 0;
+      equippedGadget = null;
+      gadgetTimer = 0;
+      selectedBoutiqueGadget = null;
+      loadLevel(0);
+      setScreen(STATE.PLAYING);
+    };
+
+    window.showHow = function() {
+      setScreen(STATE.HOW);
+    };
+
+    window.showTitle = function() {
+      setScreen(STATE.TITLE);
+    };
+
+    function registerUpJumpPress() {
+      const now = performance.now();
+      if (now - lastUpPressTime < 380 && gameState === STATE.PLAYING && player) {
+        player.blowGlitterFreeze();
+        lastUpPressTime = 0;
+      } else {
+        lastUpPressTime = now;
+      }
+    }
+
+    /* ==========================================================================
+       KEYBOARD & TOUCH CONTROLS
+       ========================================================================== */
+    window.addEventListener('keydown', (e) => {
+      AudioEngine.init();
+
+      if (gameState === STATE.TITLE && (e.code === 'Enter' || e.code === 'Space')) {
+        window.startNewGame();
+        e.preventDefault();
+        return;
+      }
+
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+      
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+        if (!keys.jump) {
+          registerUpJumpPress();
+        }
+        keys.jump = true;
+        e.preventDefault();
+      }
+      if (e.code === 'KeyX' || e.code === 'ShiftLeft' || e.code === 'KeyE') {
+        keys.charm = true;
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') keys.jump = false;
+      if (e.code === 'KeyX' || e.code === 'ShiftLeft' || e.code === 'KeyE') keys.charm = false;
+    });
+
+    function setupTouchButton(id, keyName) {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      const setKey = (val, e) => {
+        e.preventDefault();
+        AudioEngine.init();
+        if (val && keyName === 'jump') {
+          registerUpJumpPress();
+        }
+        keys[keyName] = val;
+      };
+      btn.addEventListener('touchstart', (e) => setKey(true, e), { passive: false });
+      btn.addEventListener('touchend', (e) => setKey(false, e), { passive: false });
+      btn.addEventListener('mousedown', (e) => setKey(true, e));
+      btn.addEventListener('mouseup', (e) => setKey(false, e));
+      btn.addEventListener('mouseleave', (e) => setKey(false, e));
+    }
+
+    setupTouchButton('t-left', 'left');
+    setupTouchButton('t-right', 'right');
+    setupTouchButton('t-jump', 'jump');
+    setupTouchButton('t-charm', 'charm');
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
