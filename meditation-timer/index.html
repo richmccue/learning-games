@@ -1,0 +1,1531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meditation Timer</title>
+<meta name="description" content="A calm, offline meditation timer with a start chime, gentle interval chimes, and a closing chime.">
+<meta name="theme-color" content="#B08D4E">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Meditate">
+<style>
+  :root {
+    color-scheme: light dark;
+    --surface: #EDEFF0;
+    --surface-2: #E2E5E7;
+    --line: #D2D6D9;
+    --text: #23262E;
+    --text-soft: #5B6068;
+    --accent: #B08D4E;
+    --accent-light: #D6BC8A;
+    --accent-press: #8F7440;
+    --danger: #A6564C;
+    --danger-press: #8A463E;
+    --focus: #7C93B8;
+    --tap: 48px;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: #16181F;
+      --surface-2: #1D2029;
+      --line: #2B2F3A;
+      --text: #F1F0EC;
+      --text-soft: #9BA0AC;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    font-family: var(--font-ui);
+    background: var(--surface);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow-x: hidden;
+  }
+
+  h1 { font-size: 1.05rem; font-weight: 600; margin: 0; }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .screen {
+    min-height: 100dvh;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- shared building blocks ---------- */
+
+  .icon-btn {
+    width: var(--tap);
+    height: var(--tap);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    border-radius: 999px;
+    color: var(--text-soft);
+  }
+  .icon-btn:active { background: var(--surface-2); }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+    min-height: 56px;
+    background: var(--accent);
+    color: #1B1508;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0 1.5rem;
+  }
+  .btn-primary:active { background: var(--accent-press); }
+
+  .btn-secondary {
+    min-height: var(--tap);
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--text);
+    background: transparent;
+  }
+  .btn-secondary:active { background: var(--surface-2); }
+
+  .btn-danger {
+    min-height: var(--tap);
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #FBEDEA;
+    font-weight: 600;
+  }
+  .btn-danger:active { background: var(--danger-press); }
+
+  .btn-text {
+    min-height: var(--tap);
+    color: var(--accent-press);
+    font-weight: 600;
+    text-align: left;
+  }
+  .btn-text--danger { color: var(--danger); }
+
+  .stepper-btn {
+    width: var(--tap);
+    height: var(--tap);
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .stepper-btn:active { background: var(--surface-2); }
+
+  .sheet {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 16, 20, 0.5);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 20;
+    padding: 0 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+  .sheet-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 420px;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .sheet-title {
+    font-size: 1.02rem;
+    margin: 0 0 0.4rem;
+    text-align: center;
+  }
+
+  /* ---------- home screen ---------- */
+
+  #screen-home {
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 1rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0 1rem;
+  }
+
+  .install-hint, .update-banner {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+  .install-hint p { margin: 0 0 0.6rem; color: var(--text-soft); }
+  .install-hint-actions { display: flex; gap: 1.25rem; }
+  .install-hint-actions button { padding: 0; min-height: 32px; }
+
+  .update-banner button {
+    width: 100%;
+    text-align: left;
+    color: var(--accent-press);
+    font-weight: 600;
+  }
+
+  .length-picker {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 2.5rem 0 1.75rem;
+  }
+
+  .length-value {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 130px;
+  }
+
+  .length-number {
+    font-family: var(--font-serif);
+    font-size: 4.4rem;
+    line-height: 1;
+    width: 100%;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    -moz-appearance: textfield;
+  }
+  .length-number::-webkit-outer-spin-button,
+  .length-number::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .length-unit {
+    color: var(--text-soft);
+    font-size: 0.9rem;
+    margin-top: 0.15rem;
+  }
+
+  .popular {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+  .popular-label { color: var(--text-soft); font-size: 0.85rem; }
+  .chips { display: flex; gap: 0.6rem; }
+  .chip {
+    min-width: var(--tap);
+    height: var(--tap);
+    padding: 0 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .chip[aria-pressed="true"] {
+    border-color: var(--accent);
+    color: var(--accent-press);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+
+  .settings-summary {
+    display: block;
+    width: 100%;
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+    line-height: 1.4;
+    padding: 0.5rem 0 1.75rem;
+  }
+  .settings-summary:active { color: var(--text); }
+
+  /* ---------- session screen (always dark, low light) ---------- */
+
+  #screen-session {
+    --surface: #12141B;
+    --surface-2: #1C1F29;
+    --line: #2A2E3A;
+    --text: #F1F0EC;
+    --text-soft: #9BA0AC;
+    background: var(--surface);
+    color: var(--text);
+    justify-content: center;
+  }
+
+  .session-inner {
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 1.5rem 2rem calc(2rem + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .phase {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .phase-label {
+    color: var(--text-soft);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .big-serif {
+    font-family: var(--font-serif);
+    font-size: 3.4rem;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+
+  .big-serif-small {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    margin: 0;
+    text-align: center;
+  }
+
+  .ring-wrap {
+    position: relative;
+    width: min(72vw, 260px);
+    height: min(72vw, 260px);
+  }
+  .ring-wrap.pulse { animation: pulseFlash 500ms ease-out; }
+  @media (prefers-reduced-motion: reduce) {
+    .ring-wrap.pulse { animation: none; }
+  }
+  @keyframes pulseFlash {
+    0% { filter: brightness(1); }
+    30% { filter: brightness(1.5); }
+    100% { filter: brightness(1); }
+  }
+
+  .ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-track {
+    fill: none;
+    stroke: var(--surface-2);
+    stroke-width: 8;
+  }
+  .ring-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.25s linear;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ring-progress { transition: none; }
+  }
+
+  .ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .phase-status { color: var(--text-soft); font-size: 0.9rem; margin: 0; min-height: 1.2em; }
+
+  .session-actions { display: flex; gap: 1rem; }
+  #screen-session .btn-secondary { border-color: var(--line); color: var(--text); }
+  .btn-end { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
+
+  .session-note {
+    color: var(--text-soft);
+    font-size: 0.85rem;
+    text-align: center;
+    max-width: 32ch;
+  }
+
+  /* ---------- settings screen ---------- */
+
+  #screen-settings {
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0.5rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .settings-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0 1.25rem;
+  }
+  .settings-header h1 { font-size: 1.15rem; }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .setting-row--action { display: block; }
+  .setting-label p { margin: 0; }
+  .setting-hint { color: var(--text-soft); font-size: 0.82rem; margin-top: 0.2rem; }
+
+  .stepper { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+  .stepper-btn-sm {
+    width: 36px; height: 36px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stepper-btn-sm:active { background: var(--surface-2); }
+  .stepper-value {
+    min-width: 3.4rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .segmented {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+  .segmented button {
+    min-height: 36px;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .segmented button[aria-pressed="true"] {
+    border-color: var(--accent);
+    color: var(--accent-press);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+
+  .about { padding: 1.5rem 0 0.5rem; }
+  .about-title { color: var(--text-soft); font-size: 0.82rem; margin: 0 0 0.5rem; }
+  .about-body, .about-credit {
+    font-size: 0.88rem;
+    color: var(--text-soft);
+    line-height: 1.5;
+    margin: 0 0 0.6rem;
+  }
+
+  @media (min-width: 560px) {
+    .length-number { font-size: 5rem; }
+  }
+
+  /* .screen, .phase, and .sheet each set their own `display` for when
+     they're shown (flex, in every case), which ties in specificity with
+     the browser's built-in `[hidden] { display: none }` rule. Whichever
+     rule comes LAST in the stylesheet wins a tie, so this override has to
+     stay at the very end of this <style> block to guarantee `hidden`
+     always wins, on these three selectors and any future one that needs it. */
+  .screen[hidden],
+  .phase[hidden],
+  .sheet[hidden] {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="live-region" class="sr-only" aria-live="polite"></div>
+
+<!-- ================= HOME ================= -->
+<section id="screen-home" class="screen">
+  <header class="home-header">
+    <h1>Meditation Timer</h1>
+    <button id="btn-settings" class="icon-btn" aria-label="Open settings">&#9881;</button>
+  </header>
+
+  <div id="update-banner" class="update-banner" hidden>
+    <button id="btn-update">Update available, tap to refresh</button>
+  </div>
+
+  <div id="install-hint" class="install-hint" hidden>
+    <p id="install-hint-text"></p>
+    <div class="install-hint-actions">
+      <button id="btn-install" class="btn-text" hidden>Install</button>
+      <button id="btn-dismiss-install" class="btn-text">Not now</button>
+    </div>
+  </div>
+
+  <div class="length-picker">
+    <button id="btn-minus" class="stepper-btn" aria-label="Subtract 1 minute">&#8722;</button>
+    <div class="length-value">
+      <input id="length-input" class="length-number" type="number" inputmode="numeric"
+             pattern="[0-9]*" min="1" max="180" step="1" value="10"
+             aria-label="Session length in minutes">
+      <span class="length-unit">minutes</span>
+    </div>
+    <button id="btn-plus" class="stepper-btn" aria-label="Add 1 minute">+</button>
+  </div>
+
+  <div class="popular">
+    <span class="popular-label">Popular</span>
+    <div id="chips" class="chips"></div>
+  </div>
+
+  <button id="settings-summary" class="settings-summary"></button>
+
+  <button id="btn-start" class="btn-primary">Start</button>
+</section>
+
+<!-- ================= SESSION ================= -->
+<section id="screen-session" class="screen" hidden aria-hidden="true">
+  <div class="session-inner">
+
+    <div id="phase-settling" class="phase" hidden>
+      <p class="phase-label">Settling in</p>
+      <p id="settle-count" class="big-serif"></p>
+      <div class="session-actions">
+        <button id="btn-skip" class="btn-secondary">Skip</button>
+        <button id="btn-cancel" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <div id="phase-running" class="phase" hidden>
+      <div id="ring-wrap" class="ring-wrap">
+        <svg viewBox="0 0 240 240" class="ring" aria-hidden="true">
+          <circle class="ring-track" cx="120" cy="120" r="108"></circle>
+          <circle id="ring-progress" class="ring-progress" cx="120" cy="120" r="108"></circle>
+        </svg>
+        <div class="ring-center">
+          <p id="time-remaining" class="big-serif"></p>
+          <p id="phase-status" class="phase-status"></p>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button id="btn-pause" class="btn-secondary">Pause</button>
+        <button id="btn-resume" class="btn-secondary" hidden>Resume</button>
+        <button id="btn-end" class="btn-secondary btn-end">End</button>
+      </div>
+      <p id="session-note" class="session-note" hidden></p>
+    </div>
+
+    <div id="phase-complete" class="phase" hidden>
+      <p class="phase-label">Session complete</p>
+      <p id="complete-summary" class="big-serif-small"></p>
+      <button id="btn-done" class="btn-primary">Done</button>
+    </div>
+
+  </div>
+
+  <div id="end-sheet" class="sheet" hidden>
+    <div class="sheet-panel" role="alertdialog" aria-modal="true" aria-labelledby="end-sheet-title">
+      <p id="end-sheet-title" class="sheet-title">End this session?</p>
+      <button id="btn-keep-going" class="btn-secondary">Keep going</button>
+      <button id="btn-end-confirm" class="btn-danger">End session</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SETTINGS ================= -->
+<section id="screen-settings" class="screen" hidden aria-hidden="true">
+  <header class="settings-header">
+    <button id="btn-back" class="icon-btn" aria-label="Back to home">&#8592;</button>
+    <h1>Settings</h1>
+  </header>
+
+  <div class="setting-row">
+    <div class="setting-label">
+      <p>Interval chime</p>
+      <p class="setting-hint">A soft chime along the way</p>
+    </div>
+    <div class="stepper">
+      <button id="interval-minus" class="stepper-btn-sm" aria-label="Decrease interval">&#8722;</button>
+      <span id="interval-value" class="stepper-value"></span>
+      <button id="interval-plus" class="stepper-btn-sm" aria-label="Increase interval">+</button>
+    </div>
+  </div>
+
+  <div class="setting-row">
+    <div class="setting-label">
+      <p>Settle-in countdown</p>
+      <p class="setting-hint">Quiet seconds before the first chime</p>
+    </div>
+    <div id="settle-options" class="segmented" role="group" aria-label="Settle-in countdown"></div>
+  </div>
+
+  <div class="setting-row setting-row--action">
+    <button id="btn-test-chime" class="btn-text">Test chime</button>
+    <p id="ios-silent-note" class="setting-hint" hidden>On iPhone, turn off silent mode to hear chimes.</p>
+  </div>
+
+  <div class="setting-row setting-row--action">
+    <button id="btn-reset-popular" class="btn-text">Reset popular lengths</button>
+  </div>
+
+  <div class="setting-row setting-row--action" style="border-bottom: none;">
+    <button id="btn-reset-all" class="btn-text btn-text--danger">Reset all settings</button>
+  </div>
+
+  <div class="about">
+    <p class="about-title">About</p>
+    <p class="about-body">Version <span id="app-version"></span>.</p>
+    <p class="about-body">Meditation Timer has no accounts, analytics, ads, or trackers. Every setting and session count stays on this device, and disappears if you remove the app or clear its site data.</p>
+    <p class="about-credit" id="chime-credit"></p>
+  </div>
+</section>
+
+<div id="confirm-sheet" class="sheet" hidden>
+  <div class="sheet-panel" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+    <p id="confirm-title" class="sheet-title"></p>
+    <button id="btn-confirm-cancel" class="btn-secondary">Cancel</button>
+    <button id="btn-confirm-ok" class="btn-danger"></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var APP_VERSION = "1.0.0";
+  var STORAGE_KEY = "meditationTimer.v1";
+  var DEFAULTS = {
+    schemaVersion: 1,
+    lastSessionMinutes: 10,
+    intervalMinutes: 1,
+    settleInSeconds: 5,
+    history: {},
+    installHintDismissed: false
+  };
+  var SETTLE_OPTIONS = [0, 5, 10, 15, 30];
+  var STARTER_CHIPS = [5, 10, 20];
+  var RING_CIRCUMFERENCE = 2 * Math.PI * 108;
+
+  /* ---------------- storage ---------------- */
+
+  function cloneDefaults() {
+    return JSON.parse(JSON.stringify(DEFAULTS));
+  }
+
+  function loadState() {
+    var base = cloneDefaults();
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var saved = JSON.parse(raw);
+        for (var key in base) {
+          if (saved && Object.prototype.hasOwnProperty.call(saved, key)) {
+            base[key] = saved[key];
+          }
+        }
+        base.history = (saved && saved.history) ? saved.history : {};
+      }
+    } catch (e) {
+      // Storage unavailable or corrupt: continue with defaults for this visit.
+    }
+    return base;
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      // Private browsing or storage full: the app still works, just without persistence.
+    }
+  }
+
+  var state = loadState();
+
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(function () {});
+    }
+  } catch (e) {}
+
+  /* ---------------- helpers ---------------- */
+
+  function clamp(n, min, max) {
+    return Math.min(max, Math.max(min, n));
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  function announceLive(msg) {
+    liveRegion.textContent = "";
+    window.requestAnimationFrame(function () { liveRegion.textContent = msg; });
+  }
+
+  function isStandalone() {
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+           window.navigator.standalone === true;
+  }
+
+  function isIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  function formatRemaining(ms) {
+    var totalSeconds = Math.max(0, Math.round(ms / 1000));
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.floor((totalSeconds % 3600) / 60);
+    var s = totalSeconds % 60;
+    var ss = String(s).padStart(2, "0");
+    if (h > 0) {
+      return h + ":" + String(m).padStart(2, "0") + ":" + ss;
+    }
+    return m + ":" + ss;
+  }
+
+  /* ---------------- top-3 popular lengths ---------------- */
+
+  function topThree(history) {
+    var ranked = Object.keys(history).map(function (minutes) {
+      var h = history[minutes];
+      return { minutes: Number(minutes), count: h.count, lastCompletedAt: h.lastCompletedAt };
+    }).sort(function (a, b) {
+      if (b.count !== a.count) return b.count - a.count;
+      if (b.lastCompletedAt !== a.lastCompletedAt) return b.lastCompletedAt - a.lastCompletedAt;
+      return a.minutes - b.minutes;
+    }).map(function (entry) { return entry.minutes; });
+
+    var seen = {};
+    var picks = [];
+    ranked.concat(STARTER_CHIPS).forEach(function (m) {
+      if (picks.length < 3 && !seen[m]) { seen[m] = true; picks.push(m); }
+    });
+    return picks.sort(function (a, b) { return a - b; });
+  }
+
+  function recordCompletion(minutes) {
+    var key = String(minutes);
+    var entry = state.history[key] || { count: 0, lastCompletedAt: 0 };
+    entry.count += 1;
+    entry.lastCompletedAt = Date.now();
+    state.history[key] = entry;
+    saveState();
+  }
+
+  /* ---------------- DOM refs ---------------- */
+
+  var liveRegion = $("live-region");
+
+  var screenHome = $("screen-home");
+  var screenSession = $("screen-session");
+  var screenSettings = $("screen-settings");
+
+  var btnSettings = $("btn-settings");
+  var updateBanner = $("update-banner");
+  var btnUpdate = $("btn-update");
+  var installHint = $("install-hint");
+  var installHintText = $("install-hint-text");
+  var btnInstall = $("btn-install");
+  var btnDismissInstall = $("btn-dismiss-install");
+
+  var btnMinus = $("btn-minus");
+  var btnPlus = $("btn-plus");
+  var lengthInput = $("length-input");
+  var chipsEl = $("chips");
+  var settingsSummary = $("settings-summary");
+  var btnStart = $("btn-start");
+
+  var phaseSettling = $("phase-settling");
+  var settleCountEl = $("settle-count");
+  var btnSkip = $("btn-skip");
+  var btnCancel = $("btn-cancel");
+
+  var phaseRunning = $("phase-running");
+  var ringWrap = $("ring-wrap");
+  var ringProgress = $("ring-progress");
+  var timeRemainingEl = $("time-remaining");
+  var phaseStatusEl = $("phase-status");
+  var btnPause = $("btn-pause");
+  var btnResume = $("btn-resume");
+  var btnEnd = $("btn-end");
+  var sessionNoteEl = $("session-note");
+
+  var phaseComplete = $("phase-complete");
+  var completeSummaryEl = $("complete-summary");
+  var btnDone = $("btn-done");
+
+  var endSheet = $("end-sheet");
+  var btnKeepGoing = $("btn-keep-going");
+  var btnEndConfirm = $("btn-end-confirm");
+
+  var btnBack = $("btn-back");
+  var intervalMinus = $("interval-minus");
+  var intervalPlus = $("interval-plus");
+  var intervalValueEl = $("interval-value");
+  var settleOptionsEl = $("settle-options");
+  var btnTestChime = $("btn-test-chime");
+  var iosSilentNote = $("ios-silent-note");
+  var btnResetPopular = $("btn-reset-popular");
+  var btnResetAll = $("btn-reset-all");
+  var appVersionEl = $("app-version");
+  var chimeCreditEl = $("chime-credit");
+
+  var confirmSheet = $("confirm-sheet");
+  var confirmTitleEl = $("confirm-title");
+  var btnConfirmCancel = $("btn-confirm-cancel");
+  var btnConfirmOk = $("btn-confirm-ok");
+
+  ringProgress.style.strokeDasharray = String(RING_CIRCUMFERENCE);
+
+  /* ---------------- audio ---------------- */
+
+  var audioCtx = null;
+  var chimeBuffers = { start: null, soft: null };
+  var useSynth = true;
+  var chimesLoadAttempted = false;
+
+  function ensureAudioContext() {
+    if (!audioCtx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+    }
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume().catch(function () {});
+    }
+    return audioCtx;
+  }
+
+  function resumeAudioContextIfNeeded() {
+    if (audioCtx && audioCtx.state === "suspended") {
+      audioCtx.resume().catch(function () {});
+    }
+  }
+
+  function loadChimeBuffers(ctx) {
+    if (chimesLoadAttempted) return Promise.resolve();
+    chimesLoadAttempted = true;
+    // Optional upgrade path: if real recordings are dropped into ./audio/
+    // (matching the file names in the plan), prefer them over the
+    // synthesized bell. Until then this fetch simply 404s and useSynth stays true.
+    return Promise.all([
+      fetch("./audio/chime.mp3").catch(function () { return null; }),
+      fetch("./audio/chime-soft.mp3").catch(function () { return null; })
+    ]).then(function (results) {
+      var startRes = results[0], softRes = results[1];
+      if (startRes && startRes.ok && softRes && softRes.ok) {
+        return Promise.all([
+          startRes.arrayBuffer().then(function (b) { return ctx.decodeAudioData(b); }),
+          softRes.arrayBuffer().then(function (b) { return ctx.decodeAudioData(b); })
+        ]).then(function (buffers) {
+          chimeBuffers.start = buffers[0];
+          chimeBuffers.soft = buffers[1];
+          useSynth = false;
+        });
+      }
+    }).catch(function () {
+      useSynth = true;
+    });
+  }
+
+  function unlockAudio() {
+    var ctx = ensureAudioContext();
+    try {
+      if ("audioSession" in navigator) { navigator.audioSession.type = "playback"; }
+    } catch (e) {}
+    // Play a near-silent buffer inside this gesture handler to unlock audio on iOS.
+    var buffer = ctx.createBuffer(1, 1, 22050);
+    var src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(ctx.destination);
+    src.start(0);
+    return loadChimeBuffers(ctx);
+  }
+
+  function vibrate(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+  }
+
+  function playSynthBell(ctx, t, soft) {
+    var baseFreq = soft ? 660 : 440;
+    var partials = soft ? [1, 2.4] : [1, 2.0, 3.4, 4.2];
+    var peakGain = soft ? 0.10 : 0.22;
+    var duration = soft ? 1.6 : 2.8;
+    partials.forEach(function (mult, i) {
+      var osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = baseFreq * mult;
+      var gain = ctx.createGain();
+      var g = peakGain / (i + 1);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(g, t + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration - i * 0.15);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + duration + 0.1);
+    });
+  }
+
+  function playChimeKind(kind, when) {
+    var ctx = ensureAudioContext();
+    var t = ctx.currentTime + (when || 0);
+    if (!useSynth && chimeBuffers[kind]) {
+      var src = ctx.createBufferSource();
+      src.buffer = chimeBuffers[kind];
+      var gain = ctx.createGain();
+      gain.gain.value = kind === "soft" ? 0.55 : 1;
+      src.connect(gain).connect(ctx.destination);
+      src.start(t);
+    } else {
+      playSynthBell(ctx, t, kind === "soft");
+    }
+  }
+
+  function playStartChime() {
+    playChimeKind("start", 0);
+    vibrate(30);
+    pulseRing();
+  }
+  function playEndChime() {
+    playChimeKind("start", 0);
+    playChimeKind("start", 1.5);
+    vibrate([30, 100, 30]);
+  }
+  function playIntervalChime() {
+    playChimeKind("soft", 0);
+    vibrate(15);
+    pulseRing();
+  }
+
+  function pulseRing() {
+    ringWrap.classList.remove("pulse");
+    // Force reflow so the animation can restart on back-to-back chimes.
+    void ringWrap.offsetWidth;
+    ringWrap.classList.add("pulse");
+  }
+
+  function showTransientNote(msg) {
+    sessionNoteEl.textContent = msg;
+    sessionNoteEl.hidden = false;
+    window.clearTimeout(showTransientNote._t);
+    showTransientNote._t = window.setTimeout(function () {
+      sessionNoteEl.hidden = true;
+    }, 6000);
+  }
+
+  /* ---------------- wake lock ---------------- */
+
+  var wakeLock = null;
+  var wakeLockVideo = null;
+
+  function requestWakeLock() {
+    if ("wakeLock" in navigator) {
+      navigator.wakeLock.request("screen").then(function (lock) {
+        wakeLock = lock;
+        wakeLock.addEventListener("release", function () { wakeLock = null; });
+      }).catch(function () {
+        startVideoFallback();
+      });
+    } else {
+      startVideoFallback();
+    }
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock) {
+      wakeLock.release().catch(function () {});
+      wakeLock = null;
+    }
+    stopVideoFallback();
+  }
+
+  function startVideoFallback() {
+    if (wakeLockVideo) return;
+    try {
+      var canvas = document.createElement("canvas");
+      canvas.width = 1; canvas.height = 1;
+      var ctx2d = canvas.getContext("2d");
+      ctx2d.fillRect(0, 0, 1, 1);
+      if (!canvas.captureStream) {
+        showTransientNote("Your screen may lock. Keep the phone awake to hear the chimes.");
+        return;
+      }
+      var stream = canvas.captureStream();
+      var video = document.createElement("video");
+      video.muted = true;
+      video.setAttribute("muted", "");
+      video.setAttribute("playsinline", "");
+      video.loop = true;
+      video.style.position = "fixed";
+      video.style.width = "1px";
+      video.style.height = "1px";
+      video.style.opacity = "0";
+      video.style.pointerEvents = "none";
+      video.srcObject = stream;
+      document.body.appendChild(video);
+      video.play().catch(function () {});
+      wakeLockVideo = video;
+    } catch (e) {
+      showTransientNote("Your screen may lock. Keep the phone awake to hear the chimes.");
+    }
+  }
+
+  function stopVideoFallback() {
+    if (!wakeLockVideo) return;
+    var stream = wakeLockVideo.srcObject;
+    if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+    wakeLockVideo.remove();
+    wakeLockVideo = null;
+  }
+
+  /* ---------------- timing engine ---------------- */
+
+  var session = {
+    plannedMs: 0,
+    intervalMs: 0,
+    phase: "idle",
+    startedAt: null,
+    pausedAt: null,
+    pausedTotalMs: 0,
+    nextChime: 1,
+    updateTimer: null,
+    settleTimer: null,
+    settleRemaining: 0
+  };
+
+  function elapsedMs(now) {
+    now = now || Date.now();
+    if (!session.startedAt) return 0;
+    var end = session.pausedAt !== null ? session.pausedAt : now;
+    return end - session.startedAt - session.pausedTotalMs;
+  }
+
+  function handleStartTap() {
+    var minutes = clamp(Math.round(Number(lengthInput.value)) || state.lastSessionMinutes, 1, 180);
+    state.lastSessionMinutes = minutes;
+    saveState();
+
+    unlockAudio();
+    requestWakeLock();
+
+    session.plannedMs = minutes * 60000;
+    session.intervalMs = state.intervalMinutes > 0 ? state.intervalMinutes * 60000 : 0;
+    session.pausedTotalMs = 0;
+    session.pausedAt = null;
+    session.nextChime = 1;
+    session.startedAt = null;
+
+    goSession();
+    if (state.settleInSeconds > 0) {
+      beginSettling(state.settleInSeconds);
+    } else {
+      beginRunning();
+    }
+  }
+
+  function beginSettling(seconds) {
+    session.phase = "settling";
+    session.settleRemaining = seconds;
+    renderSessionPhase();
+    updateSettleDisplay();
+    announceLive("Settling in");
+    session.settleTimer = window.setInterval(function () {
+      session.settleRemaining -= 1;
+      if (session.settleRemaining <= 0) {
+        window.clearInterval(session.settleTimer);
+        beginRunning();
+      } else {
+        updateSettleDisplay();
+      }
+    }, 1000);
+  }
+
+  function updateSettleDisplay() {
+    settleCountEl.textContent = String(session.settleRemaining);
+  }
+
+  function skipSettling() {
+    window.clearInterval(session.settleTimer);
+    beginRunning();
+  }
+
+  function cancelSettling() {
+    window.clearInterval(session.settleTimer);
+    releaseWakeLock();
+    session.phase = "idle";
+    goHome();
+  }
+
+  function beginRunning() {
+    session.phase = "running";
+    session.startedAt = Date.now();
+    playStartChime();
+    renderSessionPhase();
+    updateRunningDisplay(session.plannedMs);
+    announceLive("Session started");
+    session.updateTimer = window.setInterval(tick, 250);
+  }
+
+  function tick() {
+    if (session.phase !== "running") return;
+    var now = Date.now();
+    var elapsed = elapsedMs(now);
+
+    if (session.intervalMs > 0) {
+      var dueAt = session.nextChime * session.intervalMs;
+      if (elapsed >= dueAt && dueAt < session.plannedMs) {
+        var lateBy = elapsed - dueAt;
+        if (lateBy <= 2000) playIntervalChime();
+        session.nextChime += 1;
+      }
+    }
+
+    if (elapsed >= session.plannedMs) {
+      completeNaturally(false);
+      return;
+    }
+    updateRunningDisplay(session.plannedMs - elapsed);
+  }
+
+  function updateRunningDisplay(remainingMs) {
+    timeRemainingEl.textContent = formatRemaining(remainingMs);
+    var frac = clamp(remainingMs / (session.plannedMs || 1), 0, 1);
+    ringProgress.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - frac));
+  }
+
+  function pauseSession() {
+    if (session.phase !== "running") return;
+    session.phase = "paused";
+    session.pausedAt = Date.now();
+    window.clearInterval(session.updateTimer);
+    releaseWakeLock();
+    renderSessionPhase();
+    announceLive("Paused");
+  }
+
+  function resumeSession() {
+    if (session.phase !== "paused") return;
+    var now = Date.now();
+    session.pausedTotalMs += now - session.pausedAt;
+    session.pausedAt = null;
+    session.phase = "running";
+    requestWakeLock();
+    resumeAudioContextIfNeeded();
+    renderSessionPhase();
+    announceLive("Resumed");
+    session.updateTimer = window.setInterval(tick, 250);
+    tick();
+  }
+
+  function completeNaturally(wasBackgrounded) {
+    window.clearInterval(session.updateTimer);
+    session.phase = "complete";
+    releaseWakeLock();
+    var plannedMinutes = Math.round(session.plannedMs / 60000);
+    if (!wasBackgrounded) playEndChime();
+    recordCompletion(plannedMinutes);
+    showComplete(plannedMinutes, plannedMinutes, false);
+  }
+
+  function endEarly() {
+    window.clearInterval(session.updateTimer);
+    session.phase = "complete";
+    releaseWakeLock();
+    var meditatedMinutes = Math.max(0, Math.round(elapsedMs() / 60000));
+    var plannedMinutes = Math.round(session.plannedMs / 60000);
+    playEndChime();
+    showComplete(meditatedMinutes, plannedMinutes, true);
+  }
+
+  function showComplete(meditatedMinutes, plannedMinutes, early) {
+    completeSummaryEl.textContent = early
+      ? (meditatedMinutes + " of " + plannedMinutes + " minutes")
+      : (plannedMinutes + " minutes");
+    renderSessionPhase();
+    announceLive("Session complete");
+  }
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible") return;
+    resumeAudioContextIfNeeded();
+    if (session.phase === "running") {
+      requestWakeLock();
+      var elapsed = elapsedMs();
+      if (elapsed >= session.plannedMs) {
+        completeNaturally(true);
+      } else {
+        if (session.intervalMs > 0) {
+          while (session.nextChime * session.intervalMs <= elapsed) session.nextChime += 1;
+        }
+        updateRunningDisplay(session.plannedMs - elapsed);
+      }
+    }
+  });
+
+  function renderSessionPhase() {
+    var phase = session.phase;
+    phaseSettling.hidden = phase !== "settling";
+    phaseRunning.hidden = !(phase === "running" || phase === "paused");
+    phaseComplete.hidden = phase !== "complete";
+    btnPause.hidden = phase !== "running";
+    btnResume.hidden = phase !== "paused";
+    phaseStatusEl.textContent = phase === "paused" ? "Paused" : "";
+    if (phase !== "running" && phase !== "paused") sessionNoteEl.hidden = true;
+  }
+
+  /* ---------------- end-session confirmation sheet ---------------- */
+
+  function openEndSheet() { endSheet.hidden = false; }
+  function closeEndSheet() { endSheet.hidden = true; }
+
+  /* ---------------- generic confirm sheet ---------------- */
+
+  var pendingConfirmAction = null;
+  function openConfirm(title, okLabel, onConfirm) {
+    confirmTitleEl.textContent = title;
+    btnConfirmOk.textContent = okLabel;
+    pendingConfirmAction = onConfirm;
+    confirmSheet.hidden = false;
+  }
+  function closeConfirm() {
+    confirmSheet.hidden = true;
+    pendingConfirmAction = null;
+  }
+
+  /* ---------------- home screen rendering ---------------- */
+
+  function setLength(n) {
+    var clamped = clamp(Math.round(n), 1, 180);
+    lengthInput.value = String(clamped);
+    state.lastSessionMinutes = clamped;
+    saveState();
+    updateChips();
+  }
+
+  function updateLengthDisplay() {
+    lengthInput.value = String(state.lastSessionMinutes);
+  }
+
+  function updateChips() {
+    var picks = topThree(state.history);
+    chipsEl.innerHTML = "";
+    picks.forEach(function (minutes) {
+      var btn = document.createElement("button");
+      btn.className = "chip";
+      btn.textContent = String(minutes);
+      btn.setAttribute("aria-pressed", String(minutes === Number(lengthInput.value)));
+      btn.setAttribute("aria-label", minutes + " minutes");
+      btn.addEventListener("click", function () { setLength(minutes); });
+      chipsEl.appendChild(btn);
+    });
+  }
+
+  function updateSettingsSummary() {
+    var intervalText = state.intervalMinutes === 0 ? "off" : (state.intervalMinutes + " min");
+    var settleText = state.settleInSeconds === 0 ? "no" : (state.settleInSeconds + " s");
+    settingsSummary.textContent = "Chime every " + intervalText + ", " + settleText + " settle-in (tap to change)";
+  }
+
+  /* ---------------- settings screen rendering ---------------- */
+
+  function setIntervalMinutes(n) {
+    state.intervalMinutes = clamp(Math.round(n), 0, 60);
+    saveState();
+    renderIntervalValue();
+    updateSettingsSummary();
+  }
+
+  function renderIntervalValue() {
+    intervalValueEl.textContent = state.intervalMinutes === 0 ? "Off" : String(state.intervalMinutes);
+  }
+
+  function setSettleIn(seconds) {
+    state.settleInSeconds = seconds;
+    saveState();
+    renderSettleOptions();
+    updateSettingsSummary();
+  }
+
+  function renderSettleOptions() {
+    settleOptionsEl.innerHTML = "";
+    SETTLE_OPTIONS.forEach(function (seconds) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", String(seconds === state.settleInSeconds));
+      btn.textContent = seconds === 0 ? "Off" : (seconds + " s");
+      btn.addEventListener("click", function () { setSettleIn(seconds); });
+      settleOptionsEl.appendChild(btn);
+    });
+  }
+
+  function renderAbout() {
+    appVersionEl.textContent = APP_VERSION;
+    chimeCreditEl.textContent = useSynth
+      ? "Chimes are synthesized in your browser with the Web Audio API. No recording is used."
+      : "Chime recording: add your source and its licence here once audio/chime.mp3 and audio/chime-soft.mp3 are in place.";
+  }
+
+  function renderSettings() {
+    renderIntervalValue();
+    renderSettleOptions();
+    renderAbout();
+    iosSilentNote.hidden = !isIOS();
+  }
+
+  /* ---------------- stepper hold-to-repeat ---------------- */
+
+  function bindRepeat(el, fn) {
+    var timeout = null, interval = null;
+    function start(e) {
+      e.preventDefault();
+      fn();
+      timeout = window.setTimeout(function () {
+        interval = window.setInterval(fn, 100);
+      }, 500);
+    }
+    function stop() {
+      window.clearTimeout(timeout);
+      window.clearInterval(interval);
+    }
+    el.addEventListener("pointerdown", start);
+    ["pointerup", "pointerleave", "pointercancel"].forEach(function (evt) {
+      el.addEventListener(evt, stop);
+    });
+  }
+
+  /* ---------------- screen navigation ---------------- */
+
+  var currentScreen = "home";
+
+  function showScreen(el, visible) {
+    el.hidden = !visible;
+    el.setAttribute("aria-hidden", String(!visible));
+  }
+
+  function goHome() {
+    currentScreen = "home";
+    showScreen(screenHome, true);
+    showScreen(screenSession, false);
+    showScreen(screenSettings, false);
+    updateLengthDisplay();
+    updateChips();
+    updateSettingsSummary();
+    maybeShowInstallHint();
+    if (pendingUpdateReg) showUpdateBanner();
+  }
+
+  function goSession() {
+    currentScreen = "session";
+    showScreen(screenHome, false);
+    showScreen(screenSession, true);
+    showScreen(screenSettings, false);
+    closeEndSheet();
+  }
+
+  function goSettings() {
+    currentScreen = "settings";
+    showScreen(screenHome, false);
+    showScreen(screenSession, false);
+    showScreen(screenSettings, true);
+    renderSettings();
+  }
+
+  /* ---------------- install hint (Android + iOS) ---------------- */
+
+  var deferredInstallPrompt = null;
+
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    maybeShowInstallHint();
+  });
+
+  function maybeShowInstallHint() {
+    if (currentScreen !== "home" || isStandalone() || state.installHintDismissed) {
+      installHint.hidden = true;
+      return;
+    }
+    if (deferredInstallPrompt) {
+      installHintText.textContent = "Install Meditation Timer for one-tap access and offline chimes.";
+      btnInstall.hidden = false;
+      installHint.hidden = false;
+    } else if (isIOS()) {
+      installHintText.textContent = "Tap Share, then \u201cAdd to Home Screen,\u201d so chimes work offline.";
+      btnInstall.hidden = true;
+      installHint.hidden = false;
+    } else {
+      installHint.hidden = true;
+    }
+  }
+
+  btnInstall.addEventListener("click", function () {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.finally(function () {
+      deferredInstallPrompt = null;
+      installHint.hidden = true;
+    });
+  });
+
+  btnDismissInstall.addEventListener("click", function () {
+    state.installHintDismissed = true;
+    saveState();
+    installHint.hidden = true;
+  });
+
+  /* ---------------- service worker + update banner ---------------- */
+
+  var pendingUpdateReg = null;
+
+  function showUpdateBanner() { updateBanner.hidden = false; }
+
+  btnUpdate.addEventListener("click", function () {
+    if (pendingUpdateReg && pendingUpdateReg.waiting) {
+      pendingUpdateReg.waiting.postMessage("SKIP_WAITING");
+    }
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("./sw.js").then(function (reg) {
+        reg.addEventListener("updatefound", function () {
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener("statechange", function () {
+            if (nw.state === "installed" && navigator.serviceWorker.controller) {
+              pendingUpdateReg = reg;
+              if (currentScreen === "home") showUpdateBanner();
+            }
+          });
+        });
+      }).catch(function () { /* app still runs from the page itself */ });
+
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", function () {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+    });
+  }
+
+  /* ---------------- wire up controls ---------------- */
+
+  bindRepeat(btnMinus, function () { setLength(Number(lengthInput.value) - 1); });
+  bindRepeat(btnPlus, function () { setLength(Number(lengthInput.value) + 1); });
+  lengthInput.addEventListener("change", function () {
+    var v = parseInt(lengthInput.value, 10);
+    setLength(Number.isFinite(v) ? v : state.lastSessionMinutes);
+  });
+
+  btnSettings.addEventListener("click", goSettings);
+  settingsSummary.addEventListener("click", goSettings);
+  btnBack.addEventListener("click", goHome);
+
+  btnStart.addEventListener("click", handleStartTap);
+  btnSkip.addEventListener("click", skipSettling);
+  btnCancel.addEventListener("click", cancelSettling);
+  btnPause.addEventListener("click", pauseSession);
+  btnResume.addEventListener("click", resumeSession);
+  btnDone.addEventListener("click", goHome);
+
+  btnEnd.addEventListener("click", openEndSheet);
+  btnKeepGoing.addEventListener("click", closeEndSheet);
+  btnEndConfirm.addEventListener("click", function () {
+    closeEndSheet();
+    endEarly();
+  });
+
+  bindRepeat(intervalMinus, function () { setIntervalMinutes(state.intervalMinutes - 1); });
+  bindRepeat(intervalPlus, function () { setIntervalMinutes(state.intervalMinutes + 1); });
+
+  btnTestChime.addEventListener("click", function () {
+    unlockAudio().then(function () {
+      renderAbout();
+      playStartChime();
+    });
+  });
+
+  btnResetPopular.addEventListener("click", function () {
+    openConfirm("Clear your popular lengths? This can\u2019t be undone.", "Reset", function () {
+      state.history = {};
+      saveState();
+      updateChips();
+    });
+  });
+
+  btnResetAll.addEventListener("click", function () {
+    openConfirm("Reset all settings and history to their defaults? This can\u2019t be undone.", "Reset all", function () {
+      state = cloneDefaults();
+      saveState();
+      renderSettings();
+      updateLengthDisplay();
+      updateChips();
+      updateSettingsSummary();
+    });
+  });
+
+  btnConfirmCancel.addEventListener("click", closeConfirm);
+  btnConfirmOk.addEventListener("click", function () {
+    var action = pendingConfirmAction;
+    closeConfirm();
+    if (action) action();
+  });
+
+  /* ---------------- init ---------------- */
+
+  updateLengthDisplay();
+  updateChips();
+  updateSettingsSummary();
+  renderSessionPhase();
+  window.setTimeout(maybeShowInstallHint, 300);
+
+})();
+</script>
+</body>
+</html>
